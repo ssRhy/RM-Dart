@@ -64,6 +64,7 @@ void CalcJacobian(float phi1, float phi4, float J[2][2])
     float phi2, phi3;
     float L0, phi0;
     float j11, j12, j21, j22;
+
     YD = LEG_L4 * sin(phi4);
     YB = LEG_L1 * sin(phi1);
     XD = LEG_L5 + LEG_L4 * cos(phi4);
@@ -78,10 +79,16 @@ void CalcJacobian(float phi1, float phi4, float J[2][2])
     YC = LEG_L1 * sin(phi1) + LEG_L2 * sin(phi2);
     L0 = sqrt((XC - LEG_L5 / 2) * (XC - LEG_L5 / 2) + YC * YC);
     phi0 = atan2(YC, XC - LEG_L5 / 2);
+
     j11 = (LEG_L1 * sin(phi0 - phi3) * sin(phi1 - phi2)) / sin(phi3 - phi2);
-    j12 = (LEG_L1 * cos(phi0 - phi3) * sin(phi1 - phi2)) / L0 * sin(phi3 - phi2);
-    j21 = (LEG_L4 * sin(phi0 - phi2) * sin(phi3 - phi4)) / sin(phi3 - phi2);
-    j22 = (LEG_L4 * cos(phi0 - phi2) * sin(phi3 - phi4)) / L0 * sin(phi3 - phi2);
+    j12 = (LEG_L4 * sin(phi0 - phi2) * sin(phi3 - phi4)) / sin(phi3 - phi2);
+    j21 = (LEG_L1 * cos(phi0 - phi3) * sin(phi1 - phi2)) / (L0 * sin(phi3 - phi2));
+    j22 = (LEG_L4 * cos(phi0 - phi2) * sin(phi3 - phi4)) / (L0 * sin(phi3 - phi2));
+
+    J[0][0] = j11;
+    J[0][1] = j12;
+    J[1][0] = j21;
+    J[1][1] = j22;
 }
 
 /**
@@ -117,14 +124,14 @@ void CalcVmc(float F0, float Tp, float phi1, float phi4, float T[2])
     j21 = (LEG_L4 * sin(phi0 - phi2) * sin(phi3 - phi4)) / sin(phi3 - phi2);
     j22 = (LEG_L4 * cos(phi0 - phi2) * sin(phi3 - phi4)) / L0 * sin(phi3 - phi2);
     // clang-format off
-    float J[2][2] = {
+    float JtRM[2][2] = {
         {j11, j12},
         {j21, j22}
     };
     float F[2] = {F0, Tp};
     // clang-format on
-    float T1 = J[0][0] * F[0] + J[0][1] * F[1];
-    float T2 = J[1][0] * F[0] + J[1][1] * F[1];
+    float T1 = JtRM[0][0] * F[0] + JtRM[0][1] * F[1];
+    float T2 = JtRM[1][0] * F[0] + JtRM[1][1] * F[1];
 
     T[0] = T1;
     T[1] = T2;
