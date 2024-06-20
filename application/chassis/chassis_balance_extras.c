@@ -50,7 +50,15 @@ void GetPhi1AndPhi4(float phi0, float l0, float phi1_phi4[2]) {}
  * @param[in]  d_phi1 
  * @param[in]  d_phi4 
  */
-float GetdPhi0(float phi_1, float phi_4, float d_phi1, float d_phi4) {}
+void GetdPhi0AnddL0(float J[2][2], float d_phi1, float d_phi4, float dPhi0_dL0[2])
+{
+    // clang-format off
+    float d_l0   = J[0][0] * d_phi1 + J[0][1] * d_phi4;
+    float d_phi0 = J[1][0] * d_phi1 + J[1][1] * d_phi4;
+    // clang-format on
+    dPhi0_dL0[0] = d_phi0;
+    dPhi0_dL0[1] = d_l0;
+}
 
 /**
  * @brief 计算雅可比矩阵

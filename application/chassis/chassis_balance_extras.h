@@ -10,7 +10,7 @@ extern void GetL0AndPhi0(float phi1, float phi4, float l0_phi0[2]);
 
 extern void GetPhi1AndPhi4(float phi0,float l0,float phi1_phi4[2]);
 
-extern float GetdPhi0(float phi_1, float phi_4, float d_phi1, float d_phi4);
+extern void GetdPhi0AnddL0(float J[2][2], float d_phi1, float d_phi4, float dPhi0_dL0[2]);
 
 extern void CalcVmc(float F0, float Tp, float J[2][2], float T[2]);
 
