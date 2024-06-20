@@ -99,39 +99,15 @@ void CalcJacobian(float phi1, float phi4, float J[2][2])
  * @param[in]  phi4 
  * @param[out] T 2个关节的输出力矩
  */
-void CalcVmc(float F0, float Tp, float phi1, float phi4, float T[2])
+void CalcVmc(float F0, float Tp, float J[2][2], float T[2])
 {
-    float YD, YB, XD, XB, lBD, A0, B0, C0, XC, YC;
-    float phi2, phi3;
-    float L0, phi0;
-    float j11, j12, j21, j22;
-    YD = LEG_L4 * sin(phi4);
-    YB = LEG_L1 * sin(phi1);
-    XD = LEG_L5 + LEG_L4 * cos(phi4);
-    XB = LEG_L1 * cos(phi1);
-    lBD = sqrt((XD - XB) * (XD - XB) + (YD - YB) * (YD - YB));
-    A0 = 2 * LEG_L2 * (XD - XB);
-    B0 = 2 * LEG_L2 * (YD - YB);
-    C0 = LEG_L2 * LEG_L2 + lBD * lBD - LEG_L3 * LEG_L3;
-    phi2 = 2 * atan2((B0 + sqrt(A0 * A0 + B0 * B0 - C0 * C0)), A0 + C0);
-    phi3 = atan2(YB - YD + LEG_L2 * sin(phi2), XB - XD + LEG_L2 * cos(phi2));
-    XC = LEG_L1 * cos(phi1) + LEG_L2 * cos(phi2);
-    YC = LEG_L1 * sin(phi1) + LEG_L2 * sin(phi2);
-    L0 = sqrt((XC - LEG_L5 / 2) * (XC - LEG_L5 / 2) + YC * YC);
-    phi0 = atan2(YC, XC - LEG_L5 / 2);
-    j11 = (LEG_L1 * sin(phi0 - phi3) * sin(phi1 - phi2)) / sin(phi3 - phi2);
-    j12 = (LEG_L1 * cos(phi0 - phi3) * sin(phi1 - phi2)) / L0 * sin(phi3 - phi2);
-    j21 = (LEG_L4 * sin(phi0 - phi2) * sin(phi3 - phi4)) / sin(phi3 - phi2);
-    j22 = (LEG_L4 * cos(phi0 - phi2) * sin(phi3 - phi4)) / L0 * sin(phi3 - phi2);
     // clang-format off
-    float JtRM[2][2] = {
-        {j11, j12},
-        {j21, j22}
-    };
+    float JT[2][2] = {{J[0][0],J[1][0]}, // 转置矩阵
+                      {J[0][1],J[1][1]}};
     float F[2] = {F0, Tp};
     // clang-format on
-    float T1 = JtRM[0][0] * F[0] + JtRM[0][1] * F[1];
-    float T2 = JtRM[1][0] * F[0] + JtRM[1][1] * F[1];
+    float T1 = JT[0][0] * F[0] + JT[0][1] * F[1];
+    float T2 = JT[1][0] * F[0] + JT[1][1] * F[1];
 
     T[0] = T1;
     T[1] = T2;
