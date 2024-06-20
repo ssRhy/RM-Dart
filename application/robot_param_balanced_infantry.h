@@ -67,6 +67,12 @@
 #define DEBUG_POS_KD (0.8f) // 调试MIT位置控制KD
 
 //physical parameters ---------------------
+#define LEG_L1 (0.130f)  // (m)腿1长度
+#define LEG_L2 (0.240f)  // (m)腿2长度
+#define LEG_L3 (LEG_L2)  // (m)腿3长度
+#define LEG_L4 (LEG_L1)  // (m)腿4长度
+#define LEG_L5 (0.150f)  // (m)关节间距
+
 #define BODY_MASS            (12.65813f)    // (kg)机身重量
 #define LEG_MASS             (0.4f)    // (kg)腿重量
 #define WHEEL_MASS           (1.74f)   // (kg)轮子重量
