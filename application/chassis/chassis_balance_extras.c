@@ -36,14 +36,6 @@ void GetL0AndPhi0(float phi1, float phi4, float l0_phi0[2])
 }
 
 /**
- * @brief 通过L0和Phi0的值获取关节phi1和phi4
- * @param[in]  phi0
- * @param[in]  l0
- * @param[out] phi1_phi4 phi1和phi4
- */
-void GetPhi1AndPhi4(float phi0, float l0, float phi1_phi4[2]) {}
-
-/**
  * @brief 获取dPhi0
  * @param[in]  phi_1 
  * @param[in]  phi_4 
@@ -120,5 +112,14 @@ void CalcVmc(float F0, float Tp, float J[2][2], float T[2])
     T[0] = T1;
     T[1] = T2;
 }
+
+/**
+ * @brief 通过L0和Phi0的值计算关节phi1和phi4
+ * @param[in]  phi0
+ * @param[in]  l0
+ * @param[out] phi1_phi4 phi1和phi4
+ * @note 用于位置控制时求逆解
+ */
+void CalcPhi1AndPhi4(float phi0, float l0, float phi1_phi4[2]) {}
 
 #endif /* CHASSIS_BALANCE */
