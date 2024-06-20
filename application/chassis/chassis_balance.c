@@ -19,8 +19,8 @@
 #if (CHASSIS_TYPE == CHASSIS_BALANCE)
 #include "CAN_communication.h"
 #include "bsp_delay.h"
+#include "chassis_balance_extras.h"
 #include "detect_task.h"
-#include "leg_model.h"
 #include "signal_generator.h"
 #include "stdbool.h"
 #include "string.h"
