@@ -643,7 +643,7 @@ void ChassisReference(void)
 
 /*-------------------- Console --------------------*/
 
-static void LocomotionController(float Tp[2], float T_w[2]);
+static void LocomotionController(void);
 static void LegPositionController(double joint_pos_l[2], double joint_pos_r[2]);
 static void LegTorqueController(float F[2]);
 static float LegFeedForward(float theta);
@@ -687,17 +687,13 @@ void ChassisConsole(void)
 
 /**
  * @brief      运动控制器
- * @param[out]  Tp 输出的髋关节力矩 0-左，1-右
- * @param[out]  T_w 输出的驱动轮力矩  0-左，1-右
  */
-static void LocomotionController(float Tp[2], float T_w[2])
+static void LocomotionController(void)
 {
     // 计算LQR增益
     float k[2][6];
     float x[6];
     float T_Tp[2];
-
-    float t[2] = {0, 0};
 
     for (uint8_t i = 0; i < 2; i++) {
         GetK(CHASSIS.fdb.leg[i].rod.L0, k);
@@ -710,15 +706,29 @@ static void LocomotionController(float Tp[2], float T_w[2])
         x[5] = CHASSIS.fdb.leg[i].state.phi_dot   - CHASSIS.ref.leg[i].state.phi_dot;
         // clang-format on
         CalcLQR(k, x, T_Tp);
-        t[i] = T_Tp[0];
-        Tp[i] = T_Tp[1];
+
+        CHASSIS.cmd.leg[i].wheel.T = T_Tp[0];
+        CHASSIS.cmd.leg[i].rod.Tp = T_Tp[1];
     }
 
     // 转向控制
     PID_calc(&CHASSIS.pid.yaw_velocity, CHASSIS.fdb.body.yaw_dot, CHASSIS.ref.speed_vector.wz);
-    T_w[0] = t[0] + CHASSIS.pid.yaw_velocity.out;
-    T_w[1] = t[1] - CHASSIS.pid.yaw_velocity.out;
+    CHASSIS.cmd.leg[0].wheel.T += CHASSIS.pid.yaw_velocity.out;
+    CHASSIS.cmd.leg[1].wheel.T -= CHASSIS.pid.yaw_velocity.out;
 }
+
+/**
+ * @brief 腿部位置控制
+ * @param joint_pos_l 
+ * @param joint_pos_r 
+ */
+static void LegPositionController(double joint_pos_l[2], double joint_pos_r[2]) {}
+
+/**
+ * @brief 腿部力矩控制
+ * @param F 
+ */
+static void LegTorqueController(float F[2]) {}
 
 /**
  * @brief        前馈控制
