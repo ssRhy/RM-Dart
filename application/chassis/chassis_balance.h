@@ -89,7 +89,6 @@ typedef struct Body
     float phi;
     float phi_dot;
 
-    float speed_integral;
     float roll;
     float roll_dot;
     float yaw;
@@ -135,6 +134,7 @@ typedef struct
  */
 typedef struct
 {
+    Body_t body;
     LegState_t leg_state[2];  // 0-左 1-右
     ChassisSpeedVector_t speed_vector;
 } Ref_t;

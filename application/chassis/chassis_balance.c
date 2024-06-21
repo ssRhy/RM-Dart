@@ -374,12 +374,12 @@ void ChassisObserver(void)
     OutputPCData.packets[1].data = CHASSIS.fdb.leg[0].rod.dPhi0;
     OutputPCData.packets[2].data = CHASSIS.fdb.leg[1].rod.dL0;
     OutputPCData.packets[3].data = CHASSIS.fdb.leg[1].rod.dPhi0;
-    OutputPCData.packets[4].data = CHASSIS.fdb.leg[0].state.theta;
-    OutputPCData.packets[5].data = CHASSIS.fdb.leg[0].state.theta_dot;
-    OutputPCData.packets[6].data = CHASSIS.fdb.leg[0].state.x;
-    OutputPCData.packets[7].data = CHASSIS.fdb.leg[0].state.x_dot;
-    OutputPCData.packets[8].data = CHASSIS.fdb.leg[0].state.phi;
-    OutputPCData.packets[9].data = CHASSIS.fdb.leg[0].state.phi_dot;
+    // OutputPCData.packets[4].data = CHASSIS.fdb.leg[0].state.theta;
+    // OutputPCData.packets[5].data = CHASSIS.fdb.leg[0].state.theta_dot;
+    // OutputPCData.packets[6].data = CHASSIS.fdb.leg[0].state.x;
+    // OutputPCData.packets[7].data = CHASSIS.fdb.leg[0].state.x_dot;
+    // OutputPCData.packets[8].data = CHASSIS.fdb.leg[0].state.phi;
+    // OutputPCData.packets[9].data = CHASSIS.fdb.leg[0].state.phi_dot;
     OutputPCData.packets[10].data = CHASSIS.joint_motor[1].set.tor;
     OutputPCData.packets[11].data = CHASSIS.joint_motor[2].set.tor;
     OutputPCData.packets[12].data = CHASSIS.joint_motor[3].set.tor;
@@ -480,12 +480,12 @@ static void UpdateLegStatus(void)
         //     LowPassFilterCalc(&CHASSIS.lpf.leg_angle_accel_filter[i], accel);
 
         // clang-format off
-        CHASSIS.fdb.leg[i].state.theta     =  M_PI_2 - CHASSIS.fdb.leg[i].rod.Phi0 - CHASSIS.fdb.body.phi;
-        CHASSIS.fdb.leg[i].state.theta_dot = -CHASSIS.fdb.leg[i].rod.dPhi0 - CHASSIS.fdb.body.phi_dot;
-        CHASSIS.fdb.leg[i].state.x         =  CHASSIS.fdb.body.x;
-        CHASSIS.fdb.leg[i].state.x_dot     =  CHASSIS.fdb.body.x_dot;
-        CHASSIS.fdb.leg[i].state.phi       =  CHASSIS.fdb.body.phi;
-        CHASSIS.fdb.leg[i].state.phi_dot   =  CHASSIS.fdb.body.phi_dot;
+        CHASSIS.fdb.leg_state[i].theta     =  M_PI_2 - CHASSIS.fdb.leg[i].rod.Phi0 - CHASSIS.fdb.body.phi;
+        CHASSIS.fdb.leg_state[i].theta_dot = -CHASSIS.fdb.leg[i].rod.dPhi0 - CHASSIS.fdb.body.phi_dot;
+        CHASSIS.fdb.leg_state[i].x         =  CHASSIS.fdb.body.x;
+        CHASSIS.fdb.leg_state[i].x_dot     =  CHASSIS.fdb.body.x_dot;
+        CHASSIS.fdb.leg_state[i].phi       =  CHASSIS.fdb.body.phi;
+        CHASSIS.fdb.leg_state[i].phi_dot   =  CHASSIS.fdb.body.phi_dot;
         // clang-format on
     }
 }
@@ -587,13 +587,13 @@ void ChassisReference(void)
     // 计算期望状态
     // clang-format off
     for (uint8_t i = 0; i < 2; i++) {
-        CHASSIS.ref.leg[i].state.theta     =  0;
-        CHASSIS.ref.leg[i].state.theta_dot =  0;
-        CHASSIS.ref.leg[i].state.x         =  CHASSIS.fdb.leg[i].state.x 
+        CHASSIS.ref.leg_state[i].theta     =  0;
+        CHASSIS.ref.leg_state[i].theta_dot =  0;
+        CHASSIS.ref.leg_state[i].x         =  CHASSIS.fdb.leg_state[i].x 
                                              +CHASSIS.ref.speed_vector.vx * CHASSIS_CONTROL_TIME_S * X_ADD_RATIO;
-        CHASSIS.ref.leg[i].state.x_dot     =  0;
-        CHASSIS.ref.leg[i].state.phi       =  0;
-        CHASSIS.ref.leg[i].state.phi_dot   =  0;
+        CHASSIS.ref.leg_state[i].x_dot     =  0;
+        CHASSIS.ref.leg_state[i].phi       =  0;
+        CHASSIS.ref.leg_state[i].phi_dot   =  0;
     }
     // clang-format on
 
@@ -644,8 +644,8 @@ void ChassisReference(void)
 /*-------------------- Console --------------------*/
 
 static void LocomotionController(void);
-static void LegPositionController(double joint_pos_l[2], double joint_pos_r[2]);
-static void LegTorqueController(float F[2]);
+static void LegPositionController(void);
+static void LegTorqueController(void);
 static float LegFeedForward(float theta);
 static void CalcLQR(float k[2][6], float x[6], float t[2]);
 
@@ -698,12 +698,12 @@ static void LocomotionController(void)
     for (uint8_t i = 0; i < 2; i++) {
         GetK(CHASSIS.fdb.leg[i].rod.L0, k);
         // clang-format off
-        x[0] = CHASSIS.fdb.leg[i].state.theta     - CHASSIS.ref.leg[i].state.theta;
-        x[1] = CHASSIS.fdb.leg[i].state.theta_dot - CHASSIS.ref.leg[i].state.theta_dot;
-        x[2] = CHASSIS.fdb.leg[i].state.x         - CHASSIS.ref.leg[i].state.x;
-        x[3] = CHASSIS.fdb.leg[i].state.x_dot     - CHASSIS.ref.leg[i].state.x_dot;
-        x[4] = CHASSIS.fdb.leg[i].state.phi       - CHASSIS.ref.leg[i].state.phi;
-        x[5] = CHASSIS.fdb.leg[i].state.phi_dot   - CHASSIS.ref.leg[i].state.phi_dot;
+        x[0] = CHASSIS.fdb.leg_state[i].theta     - CHASSIS.ref.leg_state[i].theta;
+        x[1] = CHASSIS.fdb.leg_state[i].theta_dot - CHASSIS.ref.leg_state[i].theta_dot;
+        x[2] = CHASSIS.fdb.leg_state[i].x         - CHASSIS.ref.leg_state[i].x;
+        x[3] = CHASSIS.fdb.leg_state[i].x_dot     - CHASSIS.ref.leg_state[i].x_dot;
+        x[4] = CHASSIS.fdb.leg_state[i].phi       - CHASSIS.ref.leg_state[i].phi;
+        x[5] = CHASSIS.fdb.leg_state[i].phi_dot   - CHASSIS.ref.leg_state[i].phi_dot;
         // clang-format on
         CalcLQR(k, x, T_Tp);
 
@@ -722,13 +722,13 @@ static void LocomotionController(void)
  * @param joint_pos_l 
  * @param joint_pos_r 
  */
-static void LegPositionController(double joint_pos_l[2], double joint_pos_r[2]) {}
+static void LegPositionController(void) {}
 
 /**
  * @brief 腿部力矩控制
  * @param F 
  */
-static void LegTorqueController(float F[2]) {}
+static void LegTorqueController(void) {}
 
 /**
  * @brief        前馈控制
@@ -788,14 +788,13 @@ static void ConsoleCalibrate(void)
 
 static void ConsoleNormal(void)
 {
-    float tp[2], t[2];
-    LocomotionController(tp, t);
-    CHASSIS.ref.leg[0].rod.Tp = tp[0];
-    CHASSIS.ref.leg[1].rod.Tp = tp[1];
+    LocomotionController();
+    LegTorqueController();
 
     // QUESTION: 排查电机发送的力矩要反向的问题，这种情况下控制正常
-    CHASSIS.wheel_motor[0].set.tor = -(t[0] * (W0_DIRECTION));  //不知道为什么要反向，待后续研究
-    CHASSIS.wheel_motor[1].set.tor = -(t[1] * (W1_DIRECTION));  //不知道为什么要反向，待后续研究
+    CHASSIS.wheel_motor[0].set.tor = -(CHASSIS.cmd.leg[0].wheel.T * (W0_DIRECTION));
+    CHASSIS.wheel_motor[1].set.tor = -(CHASSIS.cmd.leg[1].wheel.T * (W0_DIRECTION));
+    //不知道为什么要反向，待后续研究
 }
 
 static void ConsoleDebug(void)
