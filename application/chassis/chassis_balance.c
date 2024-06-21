@@ -344,7 +344,7 @@ void ChassisSetMode(void)
             break;
     }
 
-    if (CHASSIS.mode == CHASSIS_STAND_UP && fabs(CHASSIS.fdb.phi) < 0.1f) {
+    if (CHASSIS.mode == CHASSIS_STAND_UP && fabs(CHASSIS.fdb.body.phi) < 0.1f) {
         CHASSIS.mode = CHASSIS_CUSTOM;
     }
 }
@@ -353,8 +353,10 @@ void ChassisSetMode(void)
 
 #define ZERO_POS_THRESHOLD 0.001f
 
+static void UpdateBodyStatus(void);
 static void UpdateLegStatus(void);
 static void UpdateMotorStatus(void);
+static void UpdateCalibrateStatus(void);
 
 /**
  * @brief          更新状态量
@@ -364,29 +366,9 @@ static void UpdateMotorStatus(void);
 void ChassisObserver(void)
 {
     UpdateMotorStatus();
+    UpdateBodyStatus();
     UpdateLegStatus();
-
-    // 更新校准相关的数据
-    if ((CHASSIS.rc->rc.ch[0] < -655) && (CHASSIS.rc->rc.ch[1] < -655) &&
-        (CHASSIS.rc->rc.ch[2] > 655) && (CHASSIS.rc->rc.ch[3] < -655)) {
-        CALIBRATE.cali_cnt++;  // 遥控器下内八进入底盘校准
-    } else {
-        CALIBRATE.cali_cnt = 0;
-    }
-
-    if ((CHASSIS.mode == CHASSIS_CALIBRATE) &&
-        fabs(CHASSIS.joint_motor[0].fdb.pos) < ZERO_POS_THRESHOLD &&
-        fabs(CHASSIS.joint_motor[1].fdb.pos) < ZERO_POS_THRESHOLD &&
-        fabs(CHASSIS.joint_motor[2].fdb.pos) < ZERO_POS_THRESHOLD &&
-        fabs(CHASSIS.joint_motor[3].fdb.pos) < ZERO_POS_THRESHOLD) {
-        CALIBRATE.calibrated = true;
-    }
-
-    // 更新fdb数据
-    CHASSIS.fdb.roll = CHASSIS.imu->roll;
-    CHASSIS.fdb.roll_velocity = CHASSIS.imu->roll_vel;
-    CHASSIS.fdb.yaw = CHASSIS.imu->yaw;
-    CHASSIS.fdb.yaw_velocity = CHASSIS.imu->yaw_vel;
+    UpdateCalibrateStatus();
 
     // 更新LQR状态向量
     // clang-format off
@@ -400,21 +382,14 @@ void ChassisObserver(void)
     // CHASSIS.fdb.phi_dot   = CHASSIS.imu->pitch_vel;
     // clang-format on
 
-    // 校准模式的相关反馈数据
-    uint32_t now = HAL_GetTick();
-    if (CHASSIS.mode == CHASSIS_CALIBRATE) {
-        for (uint8_t i = 0; i < 4; i++) {
-            CALIBRATE.velocity[i] = CHASSIS.joint_motor[i].fdb.vel;
-            if (CALIBRATE.velocity[i] > CALIBRATE_STOP_VELOCITY) {  // 速度大于阈值时重置计时
-                CALIBRATE.reached[i] = false;
-                CALIBRATE.stpo_time[i] = now;
-            } else {
-                if (now - CALIBRATE.stpo_time[i] > CALIBRATE_STOP_TIME) {
-                    CALIBRATE.reached[i] = true;
-                }
-            }
-        }
-    }
+    // clang-format off
+    // CHASSIS.fdb.leg[i].theta     =  M_PI_2 - CHASSIS.fdb.leg[i].rod.Phi0 - CHASSIS.fdb.phi;
+    // CHASSIS.fdb.leg[i].theta_dot = -CHASSIS.fdb.leg[i].rod.dPhi0 - CHASSIS.fdb.phi_dot;
+    // CHASSIS.fdb.leg[i].x         = 
+    // CHASSIS.fdb.leg[i].x_dot     = 
+    // CHASSIS.fdb.leg[i].phi       =  CHASSIS.fdb.phi;
+    // CHASSIS.fdb.leg[i].phi_dot   =  CHASSIS.fdb.phi_dot;
+    // clang-format on
 
     OutputPCData.packets[0].data = CHASSIS.fdb.leg[0].rod.dL0;
     OutputPCData.packets[1].data = CHASSIS.fdb.leg[0].rod.dPhi0;
@@ -454,6 +429,23 @@ static void UpdateMotorStatus(void)
     }
 }
 
+static void UpdateBodyStatus(void)
+{
+    CHASSIS.fdb.body.phi = CHASSIS.imu->pitch;
+    CHASSIS.fdb.body.phi_dot = CHASSIS.imu->pitch_vel;
+
+    CHASSIS.fdb.body.roll = CHASSIS.imu->roll;
+    CHASSIS.fdb.body.roll_dot = CHASSIS.imu->roll_vel;
+
+    CHASSIS.fdb.body.yaw = CHASSIS.imu->yaw;
+    CHASSIS.fdb.body.yaw_dot = CHASSIS.imu->yaw_vel;
+
+    CHASSIS.fdb.body.x_dot =
+        WHEEL_RADIUS * (CHASSIS.fdb.leg[0].wheel.Velocity + CHASSIS.fdb.leg[1].wheel.Velocity) / 2;
+    
+    CHASSIS.fdb.body.x += CHASSIS.fdb.body.x_dot * CHASSIS_CONTROL_TIME_S;
+}
+
 /**
  * @brief  更新腿部状态
  * @param  none
@@ -482,7 +474,6 @@ static void UpdateLegStatus(void)
     // =====更新摆杆姿态=====
     float L0_Phi0[2];
     float dL0_dPhi0[2];
-
     for (uint8_t i = 0; i < 2; i++) {
         // 更新位置信息
         GetL0AndPhi0(CHASSIS.fdb.leg[i].joint.Phi1, CHASSIS.fdb.leg[i].joint.Phi4, L0_Phi0);
@@ -508,6 +499,41 @@ static void UpdateLegStatus(void)
         // accel = (CHASSIS.fdb.leg[i].rod.dAngle - last_dAngle) / CHASSIS_CONTROL_TIME_S;
         // CHASSIS.fdb.leg[i].rod.ddAngle =
         //     LowPassFilterCalc(&CHASSIS.lpf.leg_angle_accel_filter[i], accel);
+    }
+}
+
+static void UpdateCalibrateStatus(void)
+{
+    // 更新校准相关的数据
+    if ((CHASSIS.rc->rc.ch[0] < -655) && (CHASSIS.rc->rc.ch[1] < -655) &&
+        (CHASSIS.rc->rc.ch[2] > 655) && (CHASSIS.rc->rc.ch[3] < -655)) {
+        CALIBRATE.cali_cnt++;  // 遥控器下内八进入底盘校准
+    } else {
+        CALIBRATE.cali_cnt = 0;
+    }
+
+    if ((CHASSIS.mode == CHASSIS_CALIBRATE) &&
+        fabs(CHASSIS.joint_motor[0].fdb.pos) < ZERO_POS_THRESHOLD &&
+        fabs(CHASSIS.joint_motor[1].fdb.pos) < ZERO_POS_THRESHOLD &&
+        fabs(CHASSIS.joint_motor[2].fdb.pos) < ZERO_POS_THRESHOLD &&
+        fabs(CHASSIS.joint_motor[3].fdb.pos) < ZERO_POS_THRESHOLD) {
+        CALIBRATE.calibrated = true;
+    }
+
+    // 校准模式的相关反馈数据
+    uint32_t now = HAL_GetTick();
+    if (CHASSIS.mode == CHASSIS_CALIBRATE) {
+        for (uint8_t i = 0; i < 4; i++) {
+            CALIBRATE.velocity[i] = CHASSIS.joint_motor[i].fdb.vel;
+            if (CALIBRATE.velocity[i] > CALIBRATE_STOP_VELOCITY) {  // 速度大于阈值时重置计时
+                CALIBRATE.reached[i] = false;
+                CALIBRATE.stpo_time[i] = now;
+            } else {
+                if (now - CALIBRATE.stpo_time[i] > CALIBRATE_STOP_TIME) {
+                    CALIBRATE.reached[i] = true;
+                }
+            }
+        }
     }
 }
 
@@ -555,40 +581,36 @@ void ChassisReference(void)
     float v = v_set.vx;
     float x;
 
-    if (fabs(v) > WHEEL_DEADZONE) {  // 运动状态，只需控制速度
-        x = CHASSIS.fdb.x;
-    } else {
-        if (CHASSIS.ref.speed_vector.vx > WHEEL_DEADZONE) {
-            // 进入停止状态，需要加入位置控制
-            x = (CHASSIS.fdb.leg[0].wheel.Angle + CHASSIS.fdb.leg[1].wheel.Angle) / 2;
-        } else {  // 还是停止状态，保留原位置
-            x = CHASSIS.ref.x;
-        }
-    }
+    // if (fabs(v) > WHEEL_DEADZONE) {  // 运动状态，只需控制速度
+    //     x = CHASSIS.fdb.x;
+    // } else {
+    //     if (CHASSIS.ref.speed_vector.vx > WHEEL_DEADZONE) {
+    //         // 进入停止状态，需要加入位置控制
+    //         x = (CHASSIS.fdb.leg[0].wheel.Angle + CHASSIS.fdb.leg[1].wheel.Angle) / 2;
+    //     } else {  // 还是停止状态，保留原位置
+    //         x = CHASSIS.ref.x;
+    //     }
+    // }
 
     CHASSIS.ref.speed_vector.vx = v_set.vx;
     CHASSIS.ref.speed_vector.vy = 0;
     CHASSIS.ref.speed_vector.wz = v_set.wz;
 
     // clang-format off
-    CHASSIS.ref.theta     = 0;
-    CHASSIS.ref.theta_dot = 0;
-    CHASSIS.ref.x         = x;
-    CHASSIS.ref.x_dot     = fp32_constrain(CHASSIS.ref.speed_vector.vx, MIN_SPEED, MAX_SPEED);
-    CHASSIS.ref.phi       = 0;
-    CHASSIS.ref.phi_dot   = 0;
+    // CHASSIS.ref.phi       = 0;
+    // CHASSIS.ref.phi_dot   = 0;
     // clang-format on
 
-    static float vel_add = 0;  // 速度增量，用于适应重心位置变化
-    if (fabs(CHASSIS.ref.x_dot) < WHEEL_DEADZONE && fabs(CHASSIS.fdb.x_dot) < 0.8f) {
-        // 当目标速度为0，且速度小于阈值时，增加速度增量
-        vel_add = PID_calc(&CHASSIS.pid.vel_add, CHASSIS.fdb.x_dot, CHASSIS.ref.x_dot);
-    }
-    CHASSIS.ref.x_dot += vel_add;
-    CHASSIS.ref.x_dot = fp32_constrain(
-        CHASSIS.ref.x_dot,                              //ref
-        CHASSIS.fdb.x_dot + MIN_DELTA_VEL_FDB_TO_REF,   //min
-        CHASSIS.fdb.x_dot + MAX_DELTA_VEL_FDB_TO_REF);  //max
+    // static float vel_add = 0;  // 速度增量，用于适应重心位置变化
+    // if (fabs(CHASSIS.ref.x_dot) < WHEEL_DEADZONE && fabs(CHASSIS.fdb.x_dot) < 0.8f) {
+    //     // 当目标速度为0，且速度小于阈值时，增加速度增量
+    //     vel_add = PID_calc(&CHASSIS.pid.vel_add, CHASSIS.fdb.x_dot, CHASSIS.ref.x_dot);
+    // }
+    // CHASSIS.ref.x_dot += vel_add;
+    // CHASSIS.ref.x_dot = fp32_constrain(
+    //     CHASSIS.ref.x_dot,                              //ref
+    //     CHASSIS.fdb.x_dot + MIN_DELTA_VEL_FDB_TO_REF,   //min
+    //     CHASSIS.fdb.x_dot + MAX_DELTA_VEL_FDB_TO_REF);  //max
 
     static float angle = M_PI_2;
     static float length = 0.25f;
@@ -619,7 +641,7 @@ void ChassisReference(void)
     // CHASSIS.ref.leg[0].rod.Angle = angle;
     // CHASSIS.ref.leg[1].rod.Angle = angle;
 
-    CHASSIS.ref.roll = fp32_constrain(rc_roll * RC_TO_ONE * MAX_ROLL, MIN_ROLL, MAX_ROLL);
+    CHASSIS.ref.body.roll = fp32_constrain(rc_roll * RC_TO_ONE * MAX_ROLL, MIN_ROLL, MAX_ROLL);
 }
 
 /*-------------------- Console --------------------*/
@@ -752,7 +774,7 @@ static void LegController(float F[2])
     // float theta_r = CHASSIS.fdb.leg[1].rod.Angle - M_PI_2 - CHASSIS.imu->pitch;
     // float fdf_right = LegFeedForward(theta_r) * FF_RATIO;
 
-    PID_calc(&CHASSIS.pid.roll_angle, CHASSIS.fdb.roll, CHASSIS.ref.roll);
+    PID_calc(&CHASSIS.pid.roll_angle, CHASSIS.fdb.body.roll, CHASSIS.ref.body.roll);
     // PID_calc(&CHASSIS.pid.roll_velocity, CHASSIS.fdb.roll_velocity, CHASSIS.pid.roll_angle.out);
 
     // F[0] = CHASSIS.pid.leg_length_length[0].out + fdf_left + CHASSIS.pid.roll_angle.out;
@@ -911,7 +933,7 @@ static void ConsoleStandUp(void)
 
     // ===驱动轮pid控制===
     float feedforward = -220;
-    PID_calc(&CHASSIS.pid.stand_up, CHASSIS.fdb.phi, 0);
+    PID_calc(&CHASSIS.pid.stand_up, CHASSIS.fdb.body.phi, 0);
     CHASSIS.wheel_motor[0].set.value = (feedforward + CHASSIS.pid.stand_up.out) * W0_DIRECTION;
     CHASSIS.wheel_motor[1].set.value = (feedforward + CHASSIS.pid.stand_up.out) * W1_DIRECTION;
 }

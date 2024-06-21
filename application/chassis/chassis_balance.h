@@ -56,6 +56,14 @@ typedef enum {
 
 typedef struct Leg
 {
+    //状态向量
+    float theta;
+    float theta_dot;
+    float x;
+    float x_dot;
+    float phi;
+    float phi_dot;
+
     struct rod
     {
         float Phi0;    // rad
@@ -84,9 +92,22 @@ typedef struct Leg
         float T;         // N*m
     } wheel;
 
-    float x[6];     //状态向量
     float J[2][2];  //雅可比矩阵
 } Leg_t;
+
+typedef struct Body
+{
+    float x;
+    float x_dot;
+    float phi;
+    float phi_dot;
+
+    float speed_integral;
+    float roll;
+    float roll_dot;
+    float yaw;
+    float yaw_dot;
+} Body_t;
 
 /**
  * @brief      比例系数结构体
@@ -105,19 +126,7 @@ typedef struct
  */
 typedef struct
 {
-    float theta;
-    float theta_dot;
-    float x;
-    float x_dot;
-    float phi;
-    float phi_dot;
-
-    float speed_integral;
-    float roll;
-    float roll_velocity;
-    float yaw;
-    float yaw_velocity;
-
+    Body_t body;
     Leg_t leg[2];  // 0-左 1-右
 
     ChassisSpeedVector_t speed_vector;
