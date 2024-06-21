@@ -66,7 +66,7 @@ typedef struct Leg
         float phi;
         float phi_dot;
     } state;
-    
+
     struct rod
     {
         float Phi0;    // rad
@@ -76,27 +76,43 @@ typedef struct Leg
         float L0;    // m
         float dL0;   // m/s
         float ddL0;  // m/s^2
-
-        float F;   // N
-        float Tp;  // N*m
     } rod;
 
     struct joint
     {
         float Phi1, Phi4;    // rad
         float dPhi1, dPhi4;  // rad/s
-        float T1, T2;        // N*m
     } joint;
 
     struct wheel
     {
         float Angle;     // rad
         float Velocity;  // rad/s
-        float T;         // N*m
     } wheel;
 
     float J[2][2];  //雅可比矩阵
 } Leg_t;
+
+typedef struct Cmd
+{
+    struct leg
+    {
+        struct rod
+        {
+            float F;   // N
+            float Tp;  // N*m
+        } rod;
+        struct joint
+        {
+            float T1, T2;  // N*m
+            float Pos[2];  // rad
+        } joint;
+        struct wheel
+        {
+            float T;  // N*m
+        } wheel;
+    } leg[2];  // 0-左 1-右
+} Cmd_t;
 
 typedef struct Body
 {
@@ -192,6 +208,7 @@ typedef struct
 
     Values_t ref;  // 期望值
     Values_t fdb;  // 状态值
+    Cmd_t cmd;     // 控制量
 
     PID_t pid;  // PID控制器
     LPF_t lpf;  // 低通滤波器
