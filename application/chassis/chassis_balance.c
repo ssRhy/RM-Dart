@@ -322,7 +322,8 @@ void ChassisSetMode(void)
     }
 
     if (switch_is_up(CHASSIS.rc->rc.s[CHASSIS_MODE_CHANNEL])) {
-        CHASSIS.mode = CHASSIS_FREE;
+        // CHASSIS.mode = CHASSIS_FREE;
+        CHASSIS.mode = CHASSIS_CUSTOM;
     } else if (switch_is_mid(CHASSIS.rc->rc.s[CHASSIS_MODE_CHANNEL])) {
         CHASSIS.mode = CHASSIS_DEBUG;
     } else if (switch_is_down(CHASSIS.rc->rc.s[CHASSIS_MODE_CHANNEL])) {
@@ -590,20 +591,21 @@ void ChassisReference(void)
     for (uint8_t i = 0; i < 2; i++) {
         CHASSIS.ref.leg_state[i].theta     =  0;
         CHASSIS.ref.leg_state[i].theta_dot =  0;
-        CHASSIS.ref.leg_state[i].x         =  CHASSIS.fdb.leg_state[i].x 
-                                             +CHASSIS.ref.speed_vector.vx * CHASSIS_CONTROL_TIME_S * X_ADD_RATIO;
-        CHASSIS.ref.leg_state[i].x_dot     =  0;
+        CHASSIS.ref.leg_state[i].x         =  CHASSIS.fdb.body.x;//CHASSIS.ref.speed_vector.vx * CHASSIS_CONTROL_TIME_S * X_ADD_RATIO;
+        CHASSIS.ref.leg_state[i].x_dot     =  CHASSIS.ref.speed_vector.vx;
         CHASSIS.ref.leg_state[i].phi       =  0;
         CHASSIS.ref.leg_state[i].phi_dot   =  0;
     }
     // clang-format on
 
-    // static float vel_add = 0;  // 速度增量，用于适应重心位置变化
-    // if (fabs(CHASSIS.ref.x_dot) < WHEEL_DEADZONE && fabs(CHASSIS.fdb.x_dot) < 0.8f) {
-    //     // 当目标速度为0，且速度小于阈值时，增加速度增量
-    //     vel_add = PID_calc(&CHASSIS.pid.vel_add, CHASSIS.fdb.x_dot, CHASSIS.ref.x_dot);
-    // }
-    // CHASSIS.ref.x_dot += vel_add;
+    static float vel_add = 0;  // 速度增量，用于适应重心位置变化
+    if (fabs(CHASSIS.ref.speed_vector.vx) < WHEEL_DEADZONE && fabs(CHASSIS.fdb.body.x_dot) < 0.8f) {
+        // 当目标速度为0，且速度小于阈值时，增加速度增量
+        vel_add = PID_calc(&CHASSIS.pid.vel_add, CHASSIS.fdb.body.x_dot, 0);
+    }
+    CHASSIS.ref.leg_state[0].x_dot += vel_add;
+    CHASSIS.ref.leg_state[1].x_dot += vel_add;
+
     // CHASSIS.ref.x_dot = fp32_constrain(
     //     CHASSIS.ref.x_dot,                              //ref
     //     CHASSIS.fdb.x_dot + MIN_DELTA_VEL_FDB_TO_REF,   //min
@@ -732,7 +734,7 @@ static void LegTorqueController(void)
     float F_ff, F_compensate;
     for (uint8_t i = 0; i < 2; i++) {
         // 计算前馈力
-        F_ff = LegFeedForward(CHASSIS.fdb.leg_state[i].theta);
+        F_ff = LegFeedForward(CHASSIS.fdb.leg_state[i].theta) * FF_RATIO;
         // PID补偿
         F_compensate = PID_calc(
             &CHASSIS.pid.leg_length_length[i], CHASSIS.fdb.leg[i].rod.L0, CHASSIS.ref.rod_L0[i]);

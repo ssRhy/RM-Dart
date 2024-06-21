@@ -50,7 +50,7 @@ function K = get_k_length(leg_length)
     B=double(B);
     
     Q=diag([100 1 500 100 5000 1]);%theta d_theta x d_x phi d_phi%700 1 600 200 1000 1
-    R=[10 0;0 25];                %T Tp
+    R=[35 0;0 250];                %T Tp
     
     K=lqr(A,B,Q,R);
   

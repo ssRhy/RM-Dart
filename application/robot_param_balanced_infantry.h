@@ -174,11 +174,11 @@
 #define MAX_OUT_CHASSIS_YAW_VELOCITY   (1.0f)
 
 // vel_add PID参数
-#define KP_CHASSIS_VEL_ADD        (0.1f)
-#define KI_CHASSIS_VEL_ADD        (0.005f)
-#define KD_CHASSIS_VEL_ADD        (0.001f)
-#define MAX_IOUT_CHASSIS_VEL_ADD  (0.5f)
-#define MAX_OUT_CHASSIS_VEL_ADD   (1.0f)
+#define KP_CHASSIS_VEL_ADD        (0.1f) //0.1
+#define KI_CHASSIS_VEL_ADD        (0.005f)//0.005
+#define KD_CHASSIS_VEL_ADD        (0.001f)//0.001
+#define MAX_IOUT_CHASSIS_VEL_ADD  (0.8f)//0.5
+#define MAX_OUT_CHASSIS_VEL_ADD   (1.5f)//1.0
 
 #if LOCATION_CONTROL
     //roll轴跟踪角度环PID参数
@@ -231,11 +231,11 @@
     // #define MAX_OUT_CHASSIS_PITCH_VELOCITY   (0.0f)
 
     // 腿长跟踪长度环PID参数
-    #define KP_CHASSIS_LEG_LENGTH_LENGTH        (1.0f)
+    #define KP_CHASSIS_LEG_LENGTH_LENGTH        (3.0f)
     #define KI_CHASSIS_LEG_LENGTH_LENGTH        (0.0f)
-    #define KD_CHASSIS_LEG_LENGTH_LENGTH        (1.0f)
-    #define MAX_IOUT_CHASSIS_LEG_LENGTH_LENGTH  (0.5f)
-    #define MAX_OUT_CHASSIS_LEG_LENGTH_LENGTH   (10.0f)
+    #define KD_CHASSIS_LEG_LENGTH_LENGTH        (0.0f)
+    #define MAX_IOUT_CHASSIS_LEG_LENGTH_LENGTH  (0.0f)
+    #define MAX_OUT_CHASSIS_LEG_LENGTH_LENGTH   (20.0f)
 
     // 腿长跟踪速度环PID参数
     // #define KP_CHASSIS_LEG_LENGTH_SPEED 0.0f
