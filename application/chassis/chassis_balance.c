@@ -719,16 +719,34 @@ static void LocomotionController(void)
 
 /**
  * @brief 腿部位置控制
- * @param joint_pos_l 
- * @param joint_pos_r 
  */
 static void LegPositionController(void) {}
 
 /**
  * @brief 腿部力矩控制
- * @param F 
  */
-static void LegTorqueController(void) {}
+static void LegTorqueController(void)
+{
+    // 腿长控制
+    float F_ff, F_compensate;
+    for (uint8_t i = 0; i < 2; i++) {
+        // 计算前馈力
+        F_ff = LegFeedForward(CHASSIS.fdb.leg_state[i].theta);
+        // PID补偿
+        F_compensate = PID_calc(
+            &CHASSIS.pid.leg_length_length[i], CHASSIS.fdb.leg[i].rod.L0, CHASSIS.ref.rod_L0[i]);
+        // 计算总力
+        CHASSIS.cmd.leg[i].rod.F = F_ff + F_compensate;
+    }
+
+    // 转换为关节力矩
+    CalcVmc(
+        CHASSIS.cmd.leg[0].rod.F, CHASSIS.cmd.leg[0].rod.Tp, CHASSIS.fdb.leg[0].J,
+        CHASSIS.cmd.leg[0].joint.T);
+    CalcVmc(
+        CHASSIS.cmd.leg[1].rod.F, CHASSIS.cmd.leg[1].rod.Tp, CHASSIS.fdb.leg[1].J,
+        CHASSIS.cmd.leg[1].joint.T);
+}
 
 /**
  * @brief        前馈控制

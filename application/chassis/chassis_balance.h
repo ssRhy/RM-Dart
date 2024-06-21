@@ -136,6 +136,7 @@ typedef struct
 {
     Body_t body;
     LegState_t leg_state[2];  // 0-左 1-右
+    float rod_L0[2];         // 0-左 1-右
     ChassisSpeedVector_t speed_vector;
 } Ref_t;
 
@@ -150,7 +151,7 @@ typedef struct Cmd
         } rod;
         struct joint
         {
-            float T1, T2;  // N*m
+            float T[2];  // N*m
             float Pos[2];  // rad
         } joint;
         struct wheel
