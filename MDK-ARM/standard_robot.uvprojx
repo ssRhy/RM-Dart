@@ -3263,11 +3263,6 @@
               <FileType>1</FileType>
               <FilePath>..\components\controller\pid.c</FilePath>
             </File>
-            <File>
-              <FileName>leg_model.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\components\controller\leg_model.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
@@ -3327,6 +3322,11 @@
               <FileName>chassis_balance.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\application\chassis\chassis_balance.c</FilePath>
+            </File>
+            <File>
+              <FileName>chassis_balance_extras.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\chassis\chassis_balance_extras.c</FilePath>
             </File>
             <File>
               <FileName>chassis_mecanum.c</FileName>
