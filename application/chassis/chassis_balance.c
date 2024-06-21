@@ -416,10 +416,10 @@ void ChassisObserver(void)
         }
     }
 
-    OutputPCData.packets[0].data = CHASSIS.fdb.leg[0].joint.dPhi1;
-    OutputPCData.packets[1].data = CHASSIS.fdb.leg[0].joint.dPhi4;
-    OutputPCData.packets[2].data = CHASSIS.fdb.leg[1].joint.dPhi1;
-    OutputPCData.packets[3].data = CHASSIS.fdb.leg[1].joint.dPhi4;
+    OutputPCData.packets[0].data = CHASSIS.fdb.leg[0].rod.dL0;
+    OutputPCData.packets[1].data = CHASSIS.fdb.leg[0].rod.dPhi0;
+    OutputPCData.packets[2].data = CHASSIS.fdb.leg[1].rod.dL0;
+    OutputPCData.packets[3].data = CHASSIS.fdb.leg[1].rod.dPhi0;
     OutputPCData.packets[4].data = CHASSIS.joint_motor[0].fdb.pos;
     OutputPCData.packets[5].data = CHASSIS.joint_motor[1].fdb.pos;
     OutputPCData.packets[6].data = CHASSIS.joint_motor[2].fdb.pos;
@@ -474,21 +474,14 @@ static void UpdateLegStatus(void)
     CHASSIS.fdb.leg[0].joint.dPhi4 = CHASSIS.joint_motor[1].fdb.vel * (J1_DIRECTION);
     CHASSIS.fdb.leg[1].joint.dPhi1 = CHASSIS.joint_motor[2].fdb.vel * (J2_DIRECTION);
     CHASSIS.fdb.leg[1].joint.dPhi4 = CHASSIS.joint_motor[3].fdb.vel * (J3_DIRECTION);
-    // CHASSIS.fdb.leg[0].joint[0].dAngle = CHASSIS.joint_motor[0].fdb.vel;
-    // CHASSIS.fdb.leg[0].joint[1].dAngle = CHASSIS.joint_motor[1].fdb.vel;
-    // CHASSIS.fdb.leg[1].joint[0].dAngle = CHASSIS.joint_motor[2].fdb.vel;
-    // CHASSIS.fdb.leg[1].joint[1].dAngle = CHASSIS.joint_motor[3].fdb.vel;
 
     // =====更新驱动轮姿态=====
     CHASSIS.fdb.leg[0].wheel.Velocity = CHASSIS.wheel_motor[0].fdb.vel * (W0_DIRECTION);
     CHASSIS.fdb.leg[1].wheel.Velocity = CHASSIS.wheel_motor[1].fdb.vel * (W1_DIRECTION);
 
     // =====更新摆杆姿态=====
-    // double leg_pos[2];
-    // double leg_speed[2];
-
-    // float last_dLength, last_dAngle;
     float L0_Phi0[2];
+    float dL0_dPhi0[2];
 
     for (uint8_t i = 0; i < 2; i++) {
         // 更新位置信息
@@ -496,17 +489,16 @@ static void UpdateLegStatus(void)
         CHASSIS.fdb.leg[i].rod.L0 = L0_Phi0[0];
         CHASSIS.fdb.leg[i].rod.Phi0 = L0_Phi0[1];
 
-        // // 更新速度信息
-        // // clang-format off
-        // last_dLength = CHASSIS.fdb.leg[i].rod.dLength;
-        // last_dAngle = CHASSIS.fdb.leg[i].rod.dAngle;
-        // LegSpeed(
-        //     CHASSIS.fdb.leg[i].joint[1].dAngle, CHASSIS.fdb.leg[i].joint[0].dAngle,
-        //     CHASSIS.fdb.leg[i].joint[1].Angle , CHASSIS.fdb.leg[i].joint[0].Angle,
-        //     leg_speed);
-        // CHASSIS.fdb.leg[i].rod.dLength = leg_speed[0];
-        // CHASSIS.fdb.leg[i].rod.dAngle  = leg_speed[1];
-        // // clang-format on
+        // 计算雅可比矩阵
+        CalcJacobian(
+            CHASSIS.fdb.leg[i].joint.Phi1, CHASSIS.fdb.leg[i].joint.Phi4, CHASSIS.fdb.leg[i].J);
+
+        // 更新速度信息
+        GetdL0AnddPhi0(
+            CHASSIS.fdb.leg[i].J, CHASSIS.fdb.leg[i].joint.dPhi1, CHASSIS.fdb.leg[i].joint.dPhi4,
+            dL0_dPhi0);
+        CHASSIS.fdb.leg[i].rod.dL0 = dL0_dPhi0[0];
+        CHASSIS.fdb.leg[i].rod.dPhi0 = dL0_dPhi0[1];
 
         // // 更新加速度信息
         // float accel = (CHASSIS.fdb.leg[i].rod.dLength - last_dLength) / CHASSIS_CONTROL_TIME_S;

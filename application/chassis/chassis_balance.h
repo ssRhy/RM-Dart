@@ -74,7 +74,7 @@ typedef struct Leg
     {
         float Phi1, Phi4;    // rad
         float dPhi1, dPhi4;  // rad/s
-        float T1, T2;          // N*m
+        float T1, T2;        // N*m
     } joint;
 
     struct wheel
@@ -84,7 +84,8 @@ typedef struct Leg
         float T;         // N*m
     } wheel;
 
-    float x[6];  //状态向量
+    float x[6];     //状态向量
+    float J[2][2];  //雅可比矩阵
 } Leg_t;
 
 /**
