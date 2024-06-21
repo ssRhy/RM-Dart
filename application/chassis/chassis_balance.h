@@ -56,17 +56,6 @@ typedef enum {
 
 typedef struct Leg
 {
-    //状态向量
-    struct state
-    {
-        float theta;
-        float theta_dot;
-        float x;
-        float x_dot;
-        float phi;
-        float phi_dot;
-    } state;
-
     struct rod
     {
         float Phi0;    // rad
@@ -93,6 +82,63 @@ typedef struct Leg
     float J[2][2];  //雅可比矩阵
 } Leg_t;
 
+typedef struct Body
+{
+    float x;
+    float x_dot;
+    float phi;
+    float phi_dot;
+
+    float speed_integral;
+    float roll;
+    float roll_dot;
+    float yaw;
+    float yaw_dot;
+} Body_t;
+
+//状态向量
+typedef struct LegState
+{
+    float theta;
+    float theta_dot;
+    float x;
+    float x_dot;
+    float phi;
+    float phi_dot;
+} LegState_t;
+
+/**
+ * @brief      比例系数结构体
+ * @note       比例系数，用于手动优化控制效果
+ */
+typedef struct
+{
+    float k[2][6];
+    float Tp;
+    float T;
+    float length;
+} Ratio_t;
+
+/**
+ * @brief 状态
+ */
+typedef struct
+{
+    Body_t body;
+    Leg_t leg[2];             // 0-左 1-右
+    LegState_t leg_state[2];  // 0-左 1-右
+    ChassisSpeedVector_t speed_vector;
+} Fdb_t;
+
+/**
+ * @brief 期望
+ */
+typedef struct
+{
+    LegState_t leg_state[2];  // 0-左 1-右
+    ChassisSpeedVector_t speed_vector;
+} Ref_t;
+
 typedef struct Cmd
 {
     struct leg
@@ -113,43 +159,6 @@ typedef struct Cmd
         } wheel;
     } leg[2];  // 0-左 1-右
 } Cmd_t;
-
-typedef struct Body
-{
-    float x;
-    float x_dot;
-    float phi;
-    float phi_dot;
-
-    float speed_integral;
-    float roll;
-    float roll_dot;
-    float yaw;
-    float yaw_dot;
-} Body_t;
-
-/**
- * @brief      比例系数结构体
- * @note       比例系数，用于手动优化控制效果
- */
-typedef struct
-{
-    float k[2][6];
-    float Tp;
-    float T;
-    float length;
-} Ratio_t;
-
-/**
- * @brief 状态、期望和限制值
- */
-typedef struct
-{
-    Body_t body;
-    Leg_t leg[2];  // 0-左 1-右
-
-    ChassisSpeedVector_t speed_vector;
-} Values_t;
 
 typedef struct
 {
@@ -206,9 +215,9 @@ typedef struct
     Motor_s wheel_motor[2];  // 驱动轮电机 0-左轮，1-右轮
     /*-------------------- Values --------------------*/
 
-    Values_t ref;  // 期望值
-    Values_t fdb;  // 状态值
-    Cmd_t cmd;     // 控制量
+    Ref_t ref;  // 期望值
+    Fdb_t fdb;  // 状态值
+    Cmd_t cmd;  // 控制量
 
     PID_t pid;  // PID控制器
     LPF_t lpf;  // 低通滤波器
