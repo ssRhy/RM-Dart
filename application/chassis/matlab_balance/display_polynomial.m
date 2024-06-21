@@ -5,9 +5,9 @@ function display_polynomial(coefficients, name)
     for i = 1:n
         if coefficients(i) ~= 0
             if i == n
-                term = sprintf('%.4f', coefficients(i));
+                term = sprintf('%.4ff', coefficients(i));
             else
-                term = sprintf('%.4f*t%d', coefficients(i), n-i);
+                term = sprintf('%.4ff*t%d', coefficients(i), n-i);
             end
             if i > 1 && coefficients(i) > 0
                 term = [' + ', term];
