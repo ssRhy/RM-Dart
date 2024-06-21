@@ -379,14 +379,14 @@ static void usb_send_outputPC(uint8_t t)
     OutputPCData.header = SET_OUTPUT_PC_HEDER;
     OutputPCData.length = sizeof(OutputPCData_s);
 
-    // char_to_uint(OutputPCData.packets[0].name, "len0_fdb");
-    // char_to_uint(OutputPCData.packets[1].name, "len0_ref");
-    // char_to_uint(OutputPCData.packets[2].name, "len1_fdb");
-    // char_to_uint(OutputPCData.packets[3].name, "len1_ref");
-    // char_to_uint(OutputPCData.packets[4].name, "tor0");
-    // char_to_uint(OutputPCData.packets[5].name, "tor1");
-    // char_to_uint(OutputPCData.packets[6].name, "tor2");
-    // char_to_uint(OutputPCData.packets[7].name, "tor3");
+    char_to_uint(OutputPCData.packets[0].name, "Leg0_phi1");
+    char_to_uint(OutputPCData.packets[1].name, "Leg0_phi4");
+    char_to_uint(OutputPCData.packets[2].name, "Leg1_phi1");
+    char_to_uint(OutputPCData.packets[3].name, "Leg1_phi4");
+    char_to_uint(OutputPCData.packets[4].name, "pos0");
+    char_to_uint(OutputPCData.packets[5].name, "pos1");
+    char_to_uint(OutputPCData.packets[6].name, "pos2");
+    char_to_uint(OutputPCData.packets[7].name, "pos3");
     // char_to_uint(OutputPCData.packets[8].name, "pid_out");
     // char_to_uint(OutputPCData.packets[9].name, "tor_set0");
     // char_to_uint(OutputPCData.packets[10].name, "tor_set1");
@@ -395,8 +395,8 @@ static void usb_send_outputPC(uint8_t t)
     // char_to_uint(OutputPCData.packets[13].name, "Fn0");
     // char_to_uint(OutputPCData.packets[14].name, "Fn1");
     // char_to_uint(OutputPCData.packets[15].name, "r_fdb");
-    char_to_uint(OutputPCData.packets[16].name, "t0");
-    char_to_uint(OutputPCData.packets[17].name, "t1");
+    // char_to_uint(OutputPCData.packets[16].name, "t0");
+    // char_to_uint(OutputPCData.packets[17].name, "t1");
     // char_to_uint(OutputPCData.packets[18].name, "Theta");
     // char_to_uint(OutputPCData.packets[19].name, "F");
     // char_to_uint(OutputPCData.packets[20].name, "Tp");

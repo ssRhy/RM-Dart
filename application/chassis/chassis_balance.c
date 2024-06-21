@@ -416,14 +416,14 @@ void ChassisObserver(void)
         }
     }
 
-    // OutputPCData.packets[0].data = CHASSIS.fdb.leg[0].rod.Length;
-    // OutputPCData.packets[1].data = CHASSIS.ref.leg[0].rod.Length;
-    // OutputPCData.packets[2].data = CHASSIS.fdb.leg[1].rod.Length;
-    // OutputPCData.packets[3].data = CHASSIS.ref.leg[1].rod.Length;
-    OutputPCData.packets[4].data = CHASSIS.joint_motor[0].fdb.tor;
-    OutputPCData.packets[5].data = CHASSIS.joint_motor[1].fdb.tor;
-    OutputPCData.packets[6].data = CHASSIS.joint_motor[2].fdb.tor;
-    OutputPCData.packets[7].data = CHASSIS.joint_motor[3].fdb.tor;
+    OutputPCData.packets[0].data = CHASSIS.fdb.leg[0].joint.Phi_1;
+    OutputPCData.packets[1].data = CHASSIS.fdb.leg[0].joint.Phi_4;
+    OutputPCData.packets[2].data = CHASSIS.fdb.leg[1].joint.Phi_1;
+    OutputPCData.packets[3].data = CHASSIS.fdb.leg[1].joint.Phi_4;
+    OutputPCData.packets[4].data = CHASSIS.joint_motor[0].fdb.pos;
+    OutputPCData.packets[5].data = CHASSIS.joint_motor[1].fdb.pos;
+    OutputPCData.packets[6].data = CHASSIS.joint_motor[2].fdb.pos;
+    OutputPCData.packets[7].data = CHASSIS.joint_motor[3].fdb.pos;
     // OutputPCData.packets[8].data = CHASSIS.pid.leg_length_length[0].out;
     OutputPCData.packets[9].data = CHASSIS.joint_motor[0].set.tor;
     OutputPCData.packets[10].data = CHASSIS.joint_motor[1].set.tor;
@@ -461,14 +461,14 @@ static void UpdateMotorStatus(void)
 static void UpdateLegStatus(void)
 {
     // =====更新关节姿态=====
-    // CHASSIS.fdb.leg[0].joint[0].Angle =
-    //     theta_transform(CHASSIS.joint_motor[0].fdb.pos, J0_ANGLE_OFFSET, J0_DIRECTION, 1);
-    // CHASSIS.fdb.leg[0].joint[1].Angle =
-    //     theta_transform(CHASSIS.joint_motor[1].fdb.pos, J1_ANGLE_OFFSET, J1_DIRECTION, 1);
-    // CHASSIS.fdb.leg[1].joint[0].Angle =
-    //     theta_transform(CHASSIS.joint_motor[2].fdb.pos, J2_ANGLE_OFFSET, J2_DIRECTION, 1);
-    // CHASSIS.fdb.leg[1].joint[1].Angle =
-    //     theta_transform(CHASSIS.joint_motor[3].fdb.pos, J3_ANGLE_OFFSET, J3_DIRECTION, 1);
+    CHASSIS.fdb.leg[0].joint.Phi_1 =
+        theta_transform(CHASSIS.joint_motor[0].fdb.pos, J0_ANGLE_OFFSET, J0_DIRECTION, 1);
+    CHASSIS.fdb.leg[0].joint.Phi_4 =
+        theta_transform(CHASSIS.joint_motor[1].fdb.pos, J1_ANGLE_OFFSET, J1_DIRECTION, 1);
+    CHASSIS.fdb.leg[1].joint.Phi_1 =
+        theta_transform(CHASSIS.joint_motor[2].fdb.pos, J2_ANGLE_OFFSET, J2_DIRECTION, 1);
+    CHASSIS.fdb.leg[1].joint.Phi_4 =
+        theta_transform(CHASSIS.joint_motor[3].fdb.pos, J3_ANGLE_OFFSET, J3_DIRECTION, 1);
 
     // CHASSIS.fdb.leg[0].joint[0].dAngle = CHASSIS.joint_motor[0].fdb.vel;
     // CHASSIS.fdb.leg[0].joint[1].dAngle = CHASSIS.joint_motor[1].fdb.vel;
