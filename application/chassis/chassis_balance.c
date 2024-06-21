@@ -825,7 +825,7 @@ static void ConsoleNormal(void)
     // QUESTION: 排查电机发送的力矩要反向的问题，这种情况下控制正常
     //不知道为什么要反向，待后续研究
     CHASSIS.wheel_motor[0].set.tor = -(CHASSIS.cmd.leg[0].wheel.T * (W0_DIRECTION));
-    CHASSIS.wheel_motor[1].set.tor = -(CHASSIS.cmd.leg[1].wheel.T * (W0_DIRECTION));
+    CHASSIS.wheel_motor[1].set.tor = -(CHASSIS.cmd.leg[1].wheel.T * (W1_DIRECTION));
 }
 
 static void ConsoleDebug(void)
@@ -847,7 +847,7 @@ static void ConsoleDebug(void)
 
     LocomotionController();
     CHASSIS.wheel_motor[0].set.tor = -(CHASSIS.cmd.leg[0].wheel.T * (W0_DIRECTION));
-    CHASSIS.wheel_motor[1].set.tor = -(CHASSIS.cmd.leg[1].wheel.T * (W0_DIRECTION));
+    CHASSIS.wheel_motor[1].set.tor = -(CHASSIS.cmd.leg[1].wheel.T * (W1_DIRECTION));
 }
 
 static void ConsoleStandUp(void)
