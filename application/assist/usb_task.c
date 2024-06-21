@@ -379,16 +379,16 @@ static void usb_send_outputPC(uint8_t t)
     OutputPCData.header = SET_OUTPUT_PC_HEDER;
     OutputPCData.length = sizeof(OutputPCData_s);
 
-    char_to_uint(OutputPCData.packets[0].name, "Leg0_ddL0");
-    char_to_uint(OutputPCData.packets[1].name, "Leg0_dPhi0");
-    char_to_uint(OutputPCData.packets[2].name, "Leg1_ddL0");
-    char_to_uint(OutputPCData.packets[3].name, "Leg1_dPhi0");
-    char_to_uint(OutputPCData.packets[4].name, "pos0");
-    char_to_uint(OutputPCData.packets[5].name, "pos1");
-    char_to_uint(OutputPCData.packets[6].name, "pos2");
-    char_to_uint(OutputPCData.packets[7].name, "pos3");
-    // char_to_uint(OutputPCData.packets[8].name, "pid_out");
-    // char_to_uint(OutputPCData.packets[9].name, "tor_set0");
+    // char_to_uint(OutputPCData.packets[0].name, "Leg0_ddL0");
+    // char_to_uint(OutputPCData.packets[1].name, "Leg0_dPhi0");
+    // char_to_uint(OutputPCData.packets[2].name, "Leg1_ddL0");
+    // char_to_uint(OutputPCData.packets[3].name, "Leg1_dPhi0");
+    char_to_uint(OutputPCData.packets[4].name, "theta");
+    char_to_uint(OutputPCData.packets[5].name, "dtheta");
+    char_to_uint(OutputPCData.packets[6].name, "x");
+    char_to_uint(OutputPCData.packets[7].name, "dx");
+    char_to_uint(OutputPCData.packets[8].name, "phi");
+    char_to_uint(OutputPCData.packets[9].name, "dphi");
     // char_to_uint(OutputPCData.packets[10].name, "tor_set1");
     // char_to_uint(OutputPCData.packets[11].name, "tor_set2");
     // char_to_uint(OutputPCData.packets[12].name, "tor_set3");

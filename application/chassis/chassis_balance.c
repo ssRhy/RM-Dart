@@ -374,12 +374,12 @@ void ChassisObserver(void)
     OutputPCData.packets[1].data = CHASSIS.fdb.leg[0].rod.dPhi0;
     OutputPCData.packets[2].data = CHASSIS.fdb.leg[1].rod.dL0;
     OutputPCData.packets[3].data = CHASSIS.fdb.leg[1].rod.dPhi0;
-    OutputPCData.packets[4].data = CHASSIS.joint_motor[0].fdb.pos;
-    OutputPCData.packets[5].data = CHASSIS.joint_motor[1].fdb.pos;
-    OutputPCData.packets[6].data = CHASSIS.joint_motor[2].fdb.pos;
-    OutputPCData.packets[7].data = CHASSIS.joint_motor[3].fdb.pos;
-    // OutputPCData.packets[8].data = CHASSIS.pid.leg_length_length[0].out;
-    OutputPCData.packets[9].data = CHASSIS.joint_motor[0].set.tor;
+    OutputPCData.packets[4].data = CHASSIS.fdb.leg[0].state.theta;
+    OutputPCData.packets[5].data = CHASSIS.fdb.leg[0].state.theta_dot;
+    OutputPCData.packets[6].data = CHASSIS.fdb.leg[0].state.x;
+    OutputPCData.packets[7].data = CHASSIS.fdb.leg[0].state.x_dot;
+    OutputPCData.packets[8].data = CHASSIS.fdb.leg[0].state.phi;
+    OutputPCData.packets[9].data = CHASSIS.fdb.leg[0].state.phi_dot;
     OutputPCData.packets[10].data = CHASSIS.joint_motor[1].set.tor;
     OutputPCData.packets[11].data = CHASSIS.joint_motor[2].set.tor;
     OutputPCData.packets[12].data = CHASSIS.joint_motor[3].set.tor;
@@ -566,8 +566,8 @@ void ChassisReference(void)
             break;
     }
 
-    float v = v_set.vx;
-    float x;
+    // float v = v_set.vx;
+    // float x;
 
     // if (fabs(v) > WHEEL_DEADZONE) {  // 运动状态，只需控制速度
     //     x = CHASSIS.fdb.x;
