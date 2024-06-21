@@ -31,11 +31,12 @@ void GetK(float l, float k[2][6])
  * @brief 通过关节phi1和phi4的值获取L0和Phi0
  * @param[in]  phi1
  * @param[in]  phi4
- * @param[out] l0_phi0 L0和Phi0
+ * @param[out] L0_Phi0 L0和Phi0
  */
-void GetL0AndPhi0(float phi1, float phi4, float l0_phi0[2])
+void GetL0AndPhi0(float phi1, float phi4, float L0_Phi0[2])
 {
     float YD, YB, XD, XB, lBD, A0, B0, C0, phi2, XC, YC;
+    float L0, Phi0;
     YD = LEG_L4 * sin(phi4);
     YB = LEG_L1 * sin(phi1);
     XD = LEG_L5 + LEG_L4 * cos(phi4);
@@ -47,26 +48,27 @@ void GetL0AndPhi0(float phi1, float phi4, float l0_phi0[2])
     phi2 = 2 * atan2((B0 + sqrt(A0 * A0 + B0 * B0 - C0 * C0)), (A0 + C0));
     XC = LEG_L1 * cos(phi1) + LEG_L2 * cos(phi2);
     YC = LEG_L1 * sin(phi1) + LEG_L2 * sin(phi2);
+    L0 = sqrt((XC - LEG_L5 / 2) * (XC - LEG_L5 / 2) + YC * YC);
+    Phi0 = atan2(YC, (XC - LEG_L5 / 2));
 
-    l0_phi0[0] = sqrt((XC - LEG_L5 / 2) * (XC - LEG_L5 / 2) + YC * YC);
-    l0_phi0[1] = atan2(YC, (XC - LEG_L5 / 2));
+    L0_Phi0[0] = L0;
+    L0_Phi0[1] = Phi0;
 }
 
 /**
- * @brief 获取dPhi0
- * @param[in]  phi_1 
- * @param[in]  phi_4 
+ * @brief 获取dL0和dPhi0
+ * @param[in]  J 雅可比矩阵
  * @param[in]  d_phi1 
  * @param[in]  d_phi4 
  */
-void GetdPhi0AnddL0(float J[2][2], float d_phi1, float d_phi4, float dPhi0_dL0[2])
+void GetdL0AnddPhi0(float J[2][2], float d_phi1, float d_phi4, float dL0_dPhi0[2])
 {
     // clang-format off
     float d_l0   = J[0][0] * d_phi1 + J[0][1] * d_phi4;
     float d_phi0 = J[1][0] * d_phi1 + J[1][1] * d_phi4;
     // clang-format on
-    dPhi0_dL0[0] = d_phi0;
-    dPhi0_dL0[1] = d_l0;
+    dL0_dPhi0[0] = d_l0;
+    dL0_dPhi0[1] = d_phi0;
 }
 
 /**
@@ -112,8 +114,7 @@ void CalcJacobian(float phi1, float phi4, float J[2][2])
  * @brief 计算VMC
  * @param[in]  F0 沿杆方向的力
  * @param[in]  Tp 髋关节力矩
- * @param[in]  phi1 
- * @param[in]  phi4 
+ * @param[in]  J 雅可比矩阵
  * @param[out] T 2个关节的输出力矩
  */
 void CalcVmc(float F0, float Tp, float J[2][2], float T[2])

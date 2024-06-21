@@ -6,9 +6,9 @@
 
 extern void GetK(float l, float k[2][6]);
 
-extern void GetL0AndPhi0(float phi1, float phi4, float l0_phi0[2]);
+extern void GetL0AndPhi0(float phi1, float phi4, float L0_Phi0[2]);
 
-extern void GetdPhi0AnddL0(float J[2][2], float d_phi1, float d_phi4, float dPhi0_dL0[2]);
+extern void GetdL0AnddPhi0(float J[2][2], float d_phi1, float d_phi4, float dL0_dPhi0[2]);
 
 extern void CalcJacobian(float phi1, float phi4, float J[2][2]);
 
