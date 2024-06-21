@@ -57,13 +57,16 @@ typedef enum {
 typedef struct Leg
 {
     //状态向量
-    float theta;
-    float theta_dot;
-    float x;
-    float x_dot;
-    float phi;
-    float phi_dot;
-
+    struct state
+    {
+        float theta;
+        float theta_dot;
+        float x;
+        float x_dot;
+        float phi;
+        float phi_dot;
+    } state;
+    
     struct rod
     {
         float Phi0;    // rad

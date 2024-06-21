@@ -370,27 +370,6 @@ void ChassisObserver(void)
     UpdateLegStatus();
     UpdateCalibrateStatus();
 
-    // 更新LQR状态向量
-    // clang-format off
-    // CHASSIS.fdb.theta     = (CHASSIS.fdb.leg[0].rod.Angle + CHASSIS.fdb.leg[1].rod.Angle) / 2 
-    //                         - M_PI_2 - CHASSIS.imu->pitch;
-    // CHASSIS.fdb.theta_dot = (CHASSIS.fdb.leg[0].rod.dAngle + CHASSIS.fdb.leg[1].rod.dAngle) / 2 
-    //                         - CHASSIS.imu->pitch_vel;
-    // CHASSIS.fdb.x         = (CHASSIS.fdb.leg[0].wheel.Angle + CHASSIS.fdb.leg[1].wheel.Angle) / 2;
-    // CHASSIS.fdb.x_dot     = WHEEL_RADIUS * (CHASSIS.fdb.leg[0].wheel.Velocity + CHASSIS.fdb.leg[1].wheel.Velocity) / 2;
-    // CHASSIS.fdb.phi       = CHASSIS.imu->pitch;
-    // CHASSIS.fdb.phi_dot   = CHASSIS.imu->pitch_vel;
-    // clang-format on
-
-    // clang-format off
-    // CHASSIS.fdb.leg[i].theta     =  M_PI_2 - CHASSIS.fdb.leg[i].rod.Phi0 - CHASSIS.fdb.phi;
-    // CHASSIS.fdb.leg[i].theta_dot = -CHASSIS.fdb.leg[i].rod.dPhi0 - CHASSIS.fdb.phi_dot;
-    // CHASSIS.fdb.leg[i].x         = 
-    // CHASSIS.fdb.leg[i].x_dot     = 
-    // CHASSIS.fdb.leg[i].phi       =  CHASSIS.fdb.phi;
-    // CHASSIS.fdb.leg[i].phi_dot   =  CHASSIS.fdb.phi_dot;
-    // clang-format on
-
     OutputPCData.packets[0].data = CHASSIS.fdb.leg[0].rod.dL0;
     OutputPCData.packets[1].data = CHASSIS.fdb.leg[0].rod.dPhi0;
     OutputPCData.packets[2].data = CHASSIS.fdb.leg[1].rod.dL0;
@@ -442,7 +421,7 @@ static void UpdateBodyStatus(void)
 
     CHASSIS.fdb.body.x_dot =
         WHEEL_RADIUS * (CHASSIS.fdb.leg[0].wheel.Velocity + CHASSIS.fdb.leg[1].wheel.Velocity) / 2;
-    
+
     CHASSIS.fdb.body.x += CHASSIS.fdb.body.x_dot * CHASSIS_CONTROL_TIME_S;
 }
 
@@ -499,6 +478,15 @@ static void UpdateLegStatus(void)
         // accel = (CHASSIS.fdb.leg[i].rod.dAngle - last_dAngle) / CHASSIS_CONTROL_TIME_S;
         // CHASSIS.fdb.leg[i].rod.ddAngle =
         //     LowPassFilterCalc(&CHASSIS.lpf.leg_angle_accel_filter[i], accel);
+
+        // clang-format off
+        CHASSIS.fdb.leg[i].state.theta     =  M_PI_2 - CHASSIS.fdb.leg[i].rod.Phi0 - CHASSIS.fdb.body.phi;
+        CHASSIS.fdb.leg[i].state.theta_dot = -CHASSIS.fdb.leg[i].rod.dPhi0 - CHASSIS.fdb.body.phi_dot;
+        CHASSIS.fdb.leg[i].state.x         =  CHASSIS.fdb.body.x;
+        CHASSIS.fdb.leg[i].state.x_dot     =  CHASSIS.fdb.body.x_dot;
+        CHASSIS.fdb.leg[i].state.phi       =  CHASSIS.fdb.body.phi;
+        CHASSIS.fdb.leg[i].state.phi_dot   =  CHASSIS.fdb.body.phi_dot;
+        // clang-format on
     }
 }
 
