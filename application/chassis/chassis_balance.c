@@ -416,10 +416,10 @@ void ChassisObserver(void)
         }
     }
 
-    OutputPCData.packets[0].data = CHASSIS.fdb.leg[0].rod.L0;
-    OutputPCData.packets[1].data = CHASSIS.fdb.leg[0].rod.Phi0;
-    OutputPCData.packets[2].data = CHASSIS.fdb.leg[1].rod.L0;
-    OutputPCData.packets[3].data = CHASSIS.fdb.leg[1].rod.Phi0;
+    OutputPCData.packets[0].data = CHASSIS.fdb.leg[0].joint.dPhi1;
+    OutputPCData.packets[1].data = CHASSIS.fdb.leg[0].joint.dPhi4;
+    OutputPCData.packets[2].data = CHASSIS.fdb.leg[1].joint.dPhi1;
+    OutputPCData.packets[3].data = CHASSIS.fdb.leg[1].joint.dPhi4;
     OutputPCData.packets[4].data = CHASSIS.joint_motor[0].fdb.pos;
     OutputPCData.packets[5].data = CHASSIS.joint_motor[1].fdb.pos;
     OutputPCData.packets[6].data = CHASSIS.joint_motor[2].fdb.pos;
@@ -470,6 +470,10 @@ static void UpdateLegStatus(void)
     CHASSIS.fdb.leg[1].joint.Phi4 =
         theta_transform(CHASSIS.joint_motor[3].fdb.pos, J3_ANGLE_OFFSET, J3_DIRECTION, 1);
 
+    CHASSIS.fdb.leg[0].joint.dPhi1 = CHASSIS.joint_motor[0].fdb.vel * (J0_DIRECTION);
+    CHASSIS.fdb.leg[0].joint.dPhi4 = CHASSIS.joint_motor[1].fdb.vel * (J1_DIRECTION);
+    CHASSIS.fdb.leg[1].joint.dPhi1 = CHASSIS.joint_motor[2].fdb.vel * (J2_DIRECTION);
+    CHASSIS.fdb.leg[1].joint.dPhi4 = CHASSIS.joint_motor[3].fdb.vel * (J3_DIRECTION);
     // CHASSIS.fdb.leg[0].joint[0].dAngle = CHASSIS.joint_motor[0].fdb.vel;
     // CHASSIS.fdb.leg[0].joint[1].dAngle = CHASSIS.joint_motor[1].fdb.vel;
     // CHASSIS.fdb.leg[1].joint[0].dAngle = CHASSIS.joint_motor[2].fdb.vel;
