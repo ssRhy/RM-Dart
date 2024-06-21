@@ -58,13 +58,13 @@ typedef struct Leg
 {
     struct rod
     {
-        float Angle;    // rad
-        float dAngle;   // rad/s
-        float ddAngle;  // rad/s^2
+        float Phi0;    // rad
+        float dPhi0;   // rad/s
+        float ddPhi0;  // rad/s^2
 
-        float Length;    // m
-        float dLength;   // m/s
-        float ddLength;  // m/s^2
+        float L0;    // m
+        float dL0;   // m/s
+        float ddL0;  // m/s^2
 
         float F;   // N
         float Tp;  // N*m
@@ -72,15 +72,19 @@ typedef struct Leg
 
     struct joint
     {
-        float Angle;   // rad 0-前 1-后
-        float dAngle;  // rad/s 0-前 1-后
-    } joint[2];
+        float Phi_1, Phi_4;    // rad
+        float dPhi_1, dPhi_4;  // rad/s
+        float T1, T2;          // N*m
+    } joint;
 
     struct wheel
     {
         float Angle;     // rad
         float Velocity;  // rad/s
+        float T;         // N*m
     } wheel;
+
+    float x[6];  //状态向量
 } Leg_t;
 
 /**

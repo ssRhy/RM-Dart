@@ -400,6 +400,7 @@ void ChassisObserver(void)
     CHASSIS.fdb.phi_dot   = CHASSIS.imu->pitch_vel;
     // clang-format on
 
+    // 校准模式的相关反馈数据
     uint32_t now = HAL_GetTick();
     if (CHASSIS.mode == CHASSIS_CALIBRATE) {
         for (uint8_t i = 0; i < 4; i++) {
