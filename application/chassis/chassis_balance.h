@@ -72,8 +72,8 @@ typedef struct Leg
 
     struct joint
     {
-        float Phi_1, Phi_4;    // rad
-        float dPhi_1, dPhi_4;  // rad/s
+        float Phi1, Phi4;    // rad
+        float dPhi1, dPhi4;  // rad/s
         float T1, T2;          // N*m
     } joint;
 

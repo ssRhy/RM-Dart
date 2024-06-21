@@ -416,10 +416,10 @@ void ChassisObserver(void)
         }
     }
 
-    OutputPCData.packets[0].data = CHASSIS.fdb.leg[0].joint.Phi_1;
-    OutputPCData.packets[1].data = CHASSIS.fdb.leg[0].joint.Phi_4;
-    OutputPCData.packets[2].data = CHASSIS.fdb.leg[1].joint.Phi_1;
-    OutputPCData.packets[3].data = CHASSIS.fdb.leg[1].joint.Phi_4;
+    OutputPCData.packets[0].data = CHASSIS.fdb.leg[0].rod.L0;
+    OutputPCData.packets[1].data = CHASSIS.fdb.leg[0].rod.Phi0;
+    OutputPCData.packets[2].data = CHASSIS.fdb.leg[1].rod.L0;
+    OutputPCData.packets[3].data = CHASSIS.fdb.leg[1].rod.Phi0;
     OutputPCData.packets[4].data = CHASSIS.joint_motor[0].fdb.pos;
     OutputPCData.packets[5].data = CHASSIS.joint_motor[1].fdb.pos;
     OutputPCData.packets[6].data = CHASSIS.joint_motor[2].fdb.pos;
@@ -461,13 +461,13 @@ static void UpdateMotorStatus(void)
 static void UpdateLegStatus(void)
 {
     // =====更新关节姿态=====
-    CHASSIS.fdb.leg[0].joint.Phi_1 =
+    CHASSIS.fdb.leg[0].joint.Phi1 =
         theta_transform(CHASSIS.joint_motor[0].fdb.pos, J0_ANGLE_OFFSET, J0_DIRECTION, 1);
-    CHASSIS.fdb.leg[0].joint.Phi_4 =
+    CHASSIS.fdb.leg[0].joint.Phi4 =
         theta_transform(CHASSIS.joint_motor[1].fdb.pos, J1_ANGLE_OFFSET, J1_DIRECTION, 1);
-    CHASSIS.fdb.leg[1].joint.Phi_1 =
+    CHASSIS.fdb.leg[1].joint.Phi1 =
         theta_transform(CHASSIS.joint_motor[2].fdb.pos, J2_ANGLE_OFFSET, J2_DIRECTION, 1);
-    CHASSIS.fdb.leg[1].joint.Phi_4 =
+    CHASSIS.fdb.leg[1].joint.Phi4 =
         theta_transform(CHASSIS.joint_motor[3].fdb.pos, J3_ANGLE_OFFSET, J3_DIRECTION, 1);
 
     // CHASSIS.fdb.leg[0].joint[0].dAngle = CHASSIS.joint_motor[0].fdb.vel;
@@ -484,12 +484,13 @@ static void UpdateLegStatus(void)
     // double leg_speed[2];
 
     // float last_dLength, last_dAngle;
+    float L0_Phi0[2];
 
     for (uint8_t i = 0; i < 2; i++) {
         // 更新位置信息
-        // LegFKine(CHASSIS.fdb.leg[i].joint[1].Angle, CHASSIS.fdb.leg[i].joint[0].Angle, leg_pos);
-        // CHASSIS.fdb.leg[i].rod.Length = leg_pos[0];
-        // CHASSIS.fdb.leg[i].rod.Angle = leg_pos[1];
+        GetL0AndPhi0(CHASSIS.fdb.leg[i].joint.Phi1, CHASSIS.fdb.leg[i].joint.Phi4, L0_Phi0);
+        CHASSIS.fdb.leg[i].rod.L0 = L0_Phi0[0];
+        CHASSIS.fdb.leg[i].rod.Phi0 = L0_Phi0[1];
 
         // // 更新速度信息
         // // clang-format off

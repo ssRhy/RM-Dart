@@ -379,10 +379,10 @@ static void usb_send_outputPC(uint8_t t)
     OutputPCData.header = SET_OUTPUT_PC_HEDER;
     OutputPCData.length = sizeof(OutputPCData_s);
 
-    char_to_uint(OutputPCData.packets[0].name, "Leg0_phi1");
-    char_to_uint(OutputPCData.packets[1].name, "Leg0_phi4");
-    char_to_uint(OutputPCData.packets[2].name, "Leg1_phi1");
-    char_to_uint(OutputPCData.packets[3].name, "Leg1_phi4");
+    char_to_uint(OutputPCData.packets[0].name, "Leg0_l0");
+    char_to_uint(OutputPCData.packets[1].name, "Leg0_phi0");
+    char_to_uint(OutputPCData.packets[2].name, "Leg1_l0");
+    char_to_uint(OutputPCData.packets[3].name, "Leg1_phi0");
     char_to_uint(OutputPCData.packets[4].name, "pos0");
     char_to_uint(OutputPCData.packets[5].name, "pos1");
     char_to_uint(OutputPCData.packets[6].name, "pos2");
