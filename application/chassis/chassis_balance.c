@@ -371,10 +371,10 @@ void ChassisObserver(void)
     UpdateLegStatus();
     UpdateCalibrateStatus();
 
-    OutputPCData.packets[0].data = CHASSIS.fdb.leg[0].rod.dL0;
-    OutputPCData.packets[1].data = CHASSIS.fdb.leg[0].rod.dPhi0;
-    OutputPCData.packets[2].data = CHASSIS.fdb.leg[1].rod.dL0;
-    OutputPCData.packets[3].data = CHASSIS.fdb.leg[1].rod.dPhi0;
+    OutputPCData.packets[0].data = CHASSIS.fdb.leg[0].rod.L0;
+    OutputPCData.packets[1].data = CHASSIS.fdb.leg[1].rod.L0;
+    OutputPCData.packets[2].data = CHASSIS.ref.rod_L0[0];
+    OutputPCData.packets[3].data = CHASSIS.ref.rod_L0[1];
     // OutputPCData.packets[4].data = CHASSIS.fdb.leg[0].state.theta;
     // OutputPCData.packets[5].data = CHASSIS.fdb.leg[0].state.theta_dot;
     // OutputPCData.packets[6].data = CHASSIS.fdb.leg[0].state.x;
@@ -635,11 +635,8 @@ void ChassisReference(void)
     length = fp32_constrain(length, MIN_LEG_LENGTH, MAX_LEG_LENGTH);
     angle = fp32_constrain(angle, MIN_LEG_ANGLE, MAX_LEG_ANGLE);
 
-    // CHASSIS.ref.leg[0].rod.Length = length;
-    // CHASSIS.ref.leg[1].rod.Length = length;
-
-    // CHASSIS.ref.leg[0].rod.Angle = angle;
-    // CHASSIS.ref.leg[1].rod.Angle = angle;
+    CHASSIS.ref.rod_L0[0] = length;
+    CHASSIS.ref.rod_L0[1] = length;
 
     CHASSIS.ref.body.roll = fp32_constrain(rc_roll * RC_TO_ONE * MAX_ROLL, MIN_ROLL, MAX_ROLL);
 }
@@ -740,7 +737,10 @@ static void LegTorqueController(void)
             &CHASSIS.pid.leg_length_length[i], CHASSIS.fdb.leg[i].rod.L0, CHASSIS.ref.rod_L0[i]);
         // 计算总力
         CHASSIS.cmd.leg[i].rod.F = F_ff + F_compensate;
+        // CHASSIS.cmd.leg[i].rod.F = F_ff + F_compensate - F_ff;
     }
+    OutputPCData.packets[19].data = CHASSIS.pid.leg_length_length[0].out;
+    OutputPCData.packets[20].data = CHASSIS.pid.leg_length_length[1].out;
 
     // 转换为关节力矩
     CalcVmc(
