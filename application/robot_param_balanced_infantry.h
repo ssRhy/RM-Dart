@@ -42,7 +42,7 @@
 #define X_ADD_RATIO          (1.2f) // x增量比例系数
 
 #define TP_RATIO (0.05f)  // 髋关节转矩比例系数
-#define T_RATIO  (0.6f)   // 驱动轮转矩比例系数
+#define T_RATIO  (1.0f)   // 驱动轮转矩比例系数
 
 // motor parameters ---------------------
 #define JOINT_CAN (1)
@@ -260,7 +260,7 @@
 #define MAX_OUT_CHASSIS_STAND_UP  (2000.0f)
 
 // 轮子停止用的pid
-#define KP_CHASSIS_WHEEL_STOP       (4.0f)
+#define KP_CHASSIS_WHEEL_STOP       (3.0f)
 #define KI_CHASSIS_WHEEL_STOP       (0.0f)
 #define KD_CHASSIS_WHEEL_STOP       (0.5f)
 #define MAX_IOUT_CHASSIS_WHEEL_STOP (0.0f)
