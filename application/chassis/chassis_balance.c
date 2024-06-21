@@ -535,10 +535,11 @@ static void UpdateCalibrateStatus(void)
 void ChassisReference(void)
 {
     int16_t rc_x = 0, rc_wz = 0;
-    int16_t rc_length = 0, rc_roll = 0;
+    // int16_t rc_length = 0;
+    int16_t rc_roll = 0;
     rc_deadband_limit(CHASSIS.rc->rc.ch[CHASSIS_X_CHANNEL], rc_x, CHASSIS_RC_DEADLINE);
     rc_deadband_limit(CHASSIS.rc->rc.ch[CHASSIS_WZ_CHANNEL], rc_wz, CHASSIS_RC_DEADLINE);
-    rc_deadband_limit(CHASSIS.rc->rc.ch[CHASSIS_LENGTH_CHANNEL], rc_length, CHASSIS_RC_DEADLINE);
+    // rc_deadband_limit(CHASSIS.rc->rc.ch[CHASSIS_LENGTH_CHANNEL], rc_length, CHASSIS_RC_DEADLINE);
     rc_deadband_limit(CHASSIS.rc->rc.ch[CHASSIS_ROLL_CHANNEL], rc_roll, CHASSIS_RC_DEADLINE);
 
     // 计算速度向量
@@ -644,7 +645,7 @@ void ChassisReference(void)
 /*-------------------- Console --------------------*/
 
 static void LocomotionController(void);
-static void LegPositionController(void);
+// static void LegPositionController(void);
 static void LegTorqueController(void);
 static float LegFeedForward(float theta);
 static void CalcLQR(float k[2][6], float x[6], float t[2]);
@@ -720,7 +721,7 @@ static void LocomotionController(void)
 /**
  * @brief 腿部位置控制
  */
-static void LegPositionController(void) {}
+// static void LegPositionController(void) {}
 
 /**
  * @brief 腿部力矩控制
@@ -839,10 +840,14 @@ static void ConsoleDebug(void)
     CHASSIS.joint_motor[2].set.vel = 0;
     CHASSIS.joint_motor[3].set.vel = 0;
 
-    CHASSIS.wheel_motor[0].set.value = CHASSIS.wheel_motor[0].set.tor =
-        CHASSIS.rc->rc.ch[1] * RC_TO_ONE * 100;
-    CHASSIS.wheel_motor[1].set.value = CHASSIS.wheel_motor[1].set.tor =
-        CHASSIS.rc->rc.ch[1] * RC_TO_ONE * 100;
+    // CHASSIS.wheel_motor[0].set.value = CHASSIS.wheel_motor[0].set.tor =
+    //     CHASSIS.rc->rc.ch[1] * RC_TO_ONE * 100;
+    // CHASSIS.wheel_motor[1].set.value = CHASSIS.wheel_motor[1].set.tor =
+    //     CHASSIS.rc->rc.ch[1] * RC_TO_ONE * 100;
+
+    LocomotionController();
+    CHASSIS.wheel_motor[0].set.tor = -(CHASSIS.cmd.leg[0].wheel.T * (W0_DIRECTION));
+    CHASSIS.wheel_motor[1].set.tor = -(CHASSIS.cmd.leg[1].wheel.T * (W0_DIRECTION));
 }
 
 static void ConsoleStandUp(void)
@@ -970,11 +975,17 @@ static void SendJointMotorCmd(void)
                 }
             } break;
             case CHASSIS_DEBUG: {
-                DmMitCtrlTorque(&CHASSIS.joint_motor[0]);
-                DmMitCtrlTorque(&CHASSIS.joint_motor[1]);
+                DmMitCtrlVelocity(&CHASSIS.joint_motor[0], CALIBRATE_VEL_KP);
+                DmMitCtrlVelocity(&CHASSIS.joint_motor[1], CALIBRATE_VEL_KP);
                 delay_us(200);
-                DmMitCtrlTorque(&CHASSIS.joint_motor[2]);
-                DmMitCtrlTorque(&CHASSIS.joint_motor[3]);
+                DmMitCtrlVelocity(&CHASSIS.joint_motor[2], CALIBRATE_VEL_KP);
+                DmMitCtrlVelocity(&CHASSIS.joint_motor[3], CALIBRATE_VEL_KP);
+
+                // DmMitCtrlTorque(&CHASSIS.joint_motor[0]);
+                // DmMitCtrlTorque(&CHASSIS.joint_motor[1]);
+                // delay_us(200);
+                // DmMitCtrlTorque(&CHASSIS.joint_motor[2]);
+                // DmMitCtrlTorque(&CHASSIS.joint_motor[3]);
             } break;
             case CHASSIS_SAFE:
             default: {
@@ -1012,7 +1023,10 @@ static void SendWheelMotorCmd(void)
         case CHASSIS_OFF: {
             LkMultipleTorqueControl(WHEEL_CAN, 0, 0, 0, 0);
         } break;
-        case CHASSIS_DEBUG:
+        case CHASSIS_DEBUG: {
+            LkMultipleTorqueControl(
+                WHEEL_CAN, CHASSIS.wheel_motor[0].set.tor, CHASSIS.wheel_motor[1].set.tor, 0, 0);
+        } break;
         case CHASSIS_SAFE:
         default: {
             LkMultipleTorqueControl(

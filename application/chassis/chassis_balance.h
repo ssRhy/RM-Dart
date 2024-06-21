@@ -144,17 +144,17 @@ typedef struct Cmd
 {
     struct leg
     {
-        struct rod
+        struct rod_cmd
         {
             float F;   // N
             float Tp;  // N*m
         } rod;
-        struct joint
+        struct joint_cmd
         {
             float T[2];  // N*m
             float Pos[2];  // rad
         } joint;
-        struct wheel
+        struct wheel_cmd
         {
             float T;  // N*m
         } wheel;
