@@ -39,6 +39,7 @@
 #define PITCH_VEL_RATIO      (0.9f)    // pitch轴速度比例系数
 #define FF_RATIO             (0.20f)   // 前馈比例系数
 #define RC_LENGTH_ADD_RATIO  (0.0000015f) // 遥控器腿长增量比例系数
+#define X_ADD_RATIO          (1.2f) // x增量比例系数
 
 #define TP_RATIO (0.05f)  // 髋关节转矩比例系数
 #define T_RATIO  (0.6f)   // 驱动轮转矩比例系数

@@ -541,8 +541,8 @@ void ChassisReference(void)
     rc_deadband_limit(CHASSIS.rc->rc.ch[CHASSIS_LENGTH_CHANNEL], rc_length, CHASSIS_RC_DEADLINE);
     rc_deadband_limit(CHASSIS.rc->rc.ch[CHASSIS_ROLL_CHANNEL], rc_roll, CHASSIS_RC_DEADLINE);
 
+    // 计算速度向量
     ChassisSpeedVector_t v_set = {0.0f, 0.0f, 0.0f};
-
     v_set.vx = rc_x * RC_TO_ONE * MAX_SPEED_VECTOR_VX;
     v_set.vy = 0;
     v_set.wz = -rc_wz * RC_TO_ONE * MAX_SPEED_VECTOR_WZ;
@@ -584,9 +584,17 @@ void ChassisReference(void)
     CHASSIS.ref.speed_vector.vy = 0;
     CHASSIS.ref.speed_vector.wz = v_set.wz;
 
+    // 计算期望状态
     // clang-format off
-    // CHASSIS.ref.phi       = 0;
-    // CHASSIS.ref.phi_dot   = 0;
+    for (uint8_t i = 0; i < 2; i++) {
+        CHASSIS.ref.leg[i].state.theta     =  0;
+        CHASSIS.ref.leg[i].state.theta_dot =  0;
+        CHASSIS.ref.leg[i].state.x         =  CHASSIS.fdb.leg[i].state.x 
+                                             +CHASSIS.ref.speed_vector.vx * CHASSIS_CONTROL_TIME_S * X_ADD_RATIO;
+        CHASSIS.ref.leg[i].state.x_dot     =  0;
+        CHASSIS.ref.leg[i].state.phi       =  0;
+        CHASSIS.ref.leg[i].state.phi_dot   =  0;
+    }
     // clang-format on
 
     // static float vel_add = 0;  // 速度增量，用于适应重心位置变化
@@ -600,8 +608,9 @@ void ChassisReference(void)
     //     CHASSIS.fdb.x_dot + MIN_DELTA_VEL_FDB_TO_REF,   //min
     //     CHASSIS.fdb.x_dot + MAX_DELTA_VEL_FDB_TO_REF);  //max
 
+    // 腿部控制
     static float angle = M_PI_2;
-    static float length = 0.25f;
+    static float length = 0.15f;
     switch (CHASSIS.mode) {
         case CHASSIS_STAND_UP: {
             length = 0.12f;
@@ -610,14 +619,14 @@ void ChassisReference(void)
         case CHASSIS_CUSTOM:
         case CHASSIS_DEBUG: {
             angle = M_PI_2;  // + rc_angle * RC_TO_ONE * 0.3f;
-            length += rc_length * RC_LENGTH_ADD_RATIO;
+            length = 0.15f;//+= rc_length * RC_LENGTH_ADD_RATIO;
         } break;
         case CHASSIS_FREE: {
         } break;
         case CHASSIS_FOLLOW_GIMBAL_YAW:
         default: {
             angle = M_PI_2;
-            length = 0.25f;
+            length = 0.15f;
         }
     }
     length = fp32_constrain(length, MIN_LEG_LENGTH, MAX_LEG_LENGTH);
