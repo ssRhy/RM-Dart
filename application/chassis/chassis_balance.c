@@ -809,10 +809,22 @@ static void ConsoleNormal(void)
     LocomotionController();
     LegTorqueController();
 
+    // 给关节电机赋值
+    CHASSIS.joint_motor[0].set.tor = CHASSIS.cmd.leg[0].joint.T[0] * (J0_DIRECTION);
+    CHASSIS.joint_motor[1].set.tor = CHASSIS.cmd.leg[0].joint.T[1] * (J1_DIRECTION);
+    CHASSIS.joint_motor[2].set.tor = CHASSIS.cmd.leg[1].joint.T[0] * (J2_DIRECTION);
+    CHASSIS.joint_motor[3].set.tor = CHASSIS.cmd.leg[1].joint.T[1] * (J3_DIRECTION);
+
+    for (uint8_t i = 0; i < 4; i++) {
+        CHASSIS.joint_motor[0].set.tor =
+            fp32_constrain(CHASSIS.joint_motor[0].set.tor, MIN_JOINT_TORQUE, MAX_JOINT_TORQUE);
+    }
+
+    // 给驱动轮电机赋值
     // QUESTION: 排查电机发送的力矩要反向的问题，这种情况下控制正常
+    //不知道为什么要反向，待后续研究
     CHASSIS.wheel_motor[0].set.tor = -(CHASSIS.cmd.leg[0].wheel.T * (W0_DIRECTION));
     CHASSIS.wheel_motor[1].set.tor = -(CHASSIS.cmd.leg[1].wheel.T * (W0_DIRECTION));
-    //不知道为什么要反向，待后续研究
 }
 
 static void ConsoleDebug(void)
