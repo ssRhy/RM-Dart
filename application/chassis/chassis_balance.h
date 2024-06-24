@@ -58,30 +58,53 @@ typedef struct Leg
 {
     struct rod
     {
-        float Angle;    // rad
-        float dAngle;   // rad/s
-        float ddAngle;  // rad/s^2
+        float Phi0;    // rad
+        float dPhi0;   // rad/s
+        float ddPhi0;  // rad/s^2
 
-        float Length;    // m
-        float dLength;   // m/s
-        float ddLength;  // m/s^2
-
-        float F;   // N
-        float Tp;  // N*m
+        float L0;    // m
+        float dL0;   // m/s
+        float ddL0;  // m/s^2
     } rod;
 
     struct joint
     {
-        float Angle;   // rad 0-前 1-后
-        float dAngle;  // rad/s 0-前 1-后
-    } joint[2];
+        float Phi1, Phi4;    // rad
+        float dPhi1, dPhi4;  // rad/s
+    } joint;
 
     struct wheel
     {
         float Angle;     // rad
         float Velocity;  // rad/s
     } wheel;
+
+    float J[2][2];  //雅可比矩阵
 } Leg_t;
+
+typedef struct Body
+{
+    float x;
+    float x_dot;
+    float phi;
+    float phi_dot;
+
+    float roll;
+    float roll_dot;
+    float yaw;
+    float yaw_dot;
+} Body_t;
+
+//状态向量
+typedef struct LegState
+{
+    float theta;
+    float theta_dot;
+    float x;
+    float x_dot;
+    float phi;
+    float phi_dot;
+} LegState_t;
 
 /**
  * @brief      比例系数结构体
@@ -96,27 +119,47 @@ typedef struct
 } Ratio_t;
 
 /**
- * @brief 状态、期望和限制值
+ * @brief 状态
  */
 typedef struct
 {
-    float theta;
-    float theta_dot;
-    float x;
-    float x_dot;
-    float phi;
-    float phi_dot;
-
-    float speed_integral;
-    float roll;
-    float roll_velocity;
-    float yaw;
-    float yaw_velocity;
-
-    Leg_t leg[2];  // 0-左 1-右
-
+    Body_t body;
+    Leg_t leg[2];             // 0-左 1-右
+    LegState_t leg_state[2];  // 0-左 1-右
     ChassisSpeedVector_t speed_vector;
-} Values_t;
+} Fdb_t;
+
+/**
+ * @brief 期望
+ */
+typedef struct
+{
+    Body_t body;
+    LegState_t leg_state[2];  // 0-左 1-右
+    float rod_L0[2];         // 0-左 1-右
+    ChassisSpeedVector_t speed_vector;
+} Ref_t;
+
+typedef struct Cmd
+{
+    struct leg
+    {
+        struct rod_cmd
+        {
+            float F;   // N
+            float Tp;  // N*m
+        } rod;
+        struct joint_cmd
+        {
+            float T[2];  // N*m
+            float Pos[2];  // rad
+        } joint;
+        struct wheel_cmd
+        {
+            float T;  // N*m
+        } wheel;
+    } leg[2];  // 0-左 1-右
+} Cmd_t;
 
 typedef struct
 {
@@ -173,8 +216,9 @@ typedef struct
     Motor_s wheel_motor[2];  // 驱动轮电机 0-左轮，1-右轮
     /*-------------------- Values --------------------*/
 
-    Values_t ref;  // 期望值
-    Values_t fdb;  // 状态值
+    Ref_t ref;  // 期望值
+    Fdb_t fdb;  // 状态值
+    Cmd_t cmd;  // 控制量
 
     PID_t pid;  // PID控制器
     LPF_t lpf;  // 低通滤波器
