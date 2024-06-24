@@ -875,6 +875,8 @@ static void ConsoleStandUp(void)
 
 /*-------------------- Cmd --------------------*/
 
+#define DM_DELAY 250
+
 static void SendJointMotorCmd(void);
 static void SendWheelMotorCmd(void);
 
@@ -899,14 +901,14 @@ static void SendJointMotorCmd(void)
     if (CHASSIS.mode == CHASSIS_OFF) {
         DmMitStop(&CHASSIS.joint_motor[0]);
         DmMitStop(&CHASSIS.joint_motor[1]);
-        delay_us(200);
+        delay_us(DM_DELAY);
         DmMitStop(&CHASSIS.joint_motor[2]);
         DmMitStop(&CHASSIS.joint_motor[3]);
     } else {
         bool flag = false;
         for (uint8_t i = 0; i < 4; i++) {
             if (cnt % 2 == 0) {
-                delay_us(200);
+                delay_us(DM_DELAY);
             }
             if (CHASSIS.joint_motor[i].fdb.state == DM_STATE_DISABLE) {
                 DmEnable(&CHASSIS.joint_motor[i]);
@@ -926,13 +928,13 @@ static void SendJointMotorCmd(void)
 #if LOCATION_CONTROL
                 DmMitCtrlPosition(&CHASSIS.joint_motor[0], NORMAL_POS_KP, NORMAL_POS_KD);
                 DmMitCtrlPosition(&CHASSIS.joint_motor[1], NORMAL_POS_KP, NORMAL_POS_KD);
-                delay_us(200);
+                delay_us(DM_DELAY);
                 DmMitCtrlPosition(&CHASSIS.joint_motor[2], NORMAL_POS_KP, NORMAL_POS_KD);
                 DmMitCtrlPosition(&CHASSIS.joint_motor[3], NORMAL_POS_KP, NORMAL_POS_KD);
 #else
                 DmMitCtrlTorque(&CHASSIS.joint_motor[0]);
                 DmMitCtrlTorque(&CHASSIS.joint_motor[1]);
-                delay_us(200);
+                delay_us(DM_DELAY);
                 DmMitCtrlTorque(&CHASSIS.joint_motor[2]);
                 DmMitCtrlTorque(&CHASSIS.joint_motor[3]);
 #endif
@@ -940,23 +942,23 @@ static void SendJointMotorCmd(void)
             case CHASSIS_STAND_UP: {
                 DmMitCtrlPosition(&CHASSIS.joint_motor[0], NORMAL_POS_KP, NORMAL_POS_KD);
                 DmMitCtrlPosition(&CHASSIS.joint_motor[1], NORMAL_POS_KP, NORMAL_POS_KD);
-                delay_us(200);
+                delay_us(DM_DELAY);
                 DmMitCtrlPosition(&CHASSIS.joint_motor[2], NORMAL_POS_KP, NORMAL_POS_KD);
                 DmMitCtrlPosition(&CHASSIS.joint_motor[3], NORMAL_POS_KP, NORMAL_POS_KD);
             } break;
             case CHASSIS_CALIBRATE: {
                 DmMitCtrlVelocity(&CHASSIS.joint_motor[0], CALIBRATE_VEL_KP);
                 DmMitCtrlVelocity(&CHASSIS.joint_motor[1], CALIBRATE_VEL_KP);
-                delay_us(200);
+                delay_us(DM_DELAY);
                 DmMitCtrlVelocity(&CHASSIS.joint_motor[2], CALIBRATE_VEL_KP);
                 DmMitCtrlVelocity(&CHASSIS.joint_motor[3], CALIBRATE_VEL_KP);
 
                 if (CALIBRATE.reached[0] && CALIBRATE.reached[1] && CALIBRATE.reached[2] &&
                     CALIBRATE.reached[3]) {
-                    delay_us(200);
+                    delay_us(DM_DELAY);
                     DmSavePosZero(&CHASSIS.joint_motor[0]);
                     DmSavePosZero(&CHASSIS.joint_motor[1]);
-                    delay_us(200);
+                    delay_us(DM_DELAY);
                     DmSavePosZero(&CHASSIS.joint_motor[2]);
                     DmSavePosZero(&CHASSIS.joint_motor[3]);
                 }
@@ -964,13 +966,13 @@ static void SendJointMotorCmd(void)
             case CHASSIS_DEBUG: {
                 DmMitCtrlVelocity(&CHASSIS.joint_motor[0], CALIBRATE_VEL_KP);
                 DmMitCtrlVelocity(&CHASSIS.joint_motor[1], CALIBRATE_VEL_KP);
-                delay_us(200);
+                delay_us(DM_DELAY);
                 DmMitCtrlVelocity(&CHASSIS.joint_motor[2], CALIBRATE_VEL_KP);
                 DmMitCtrlVelocity(&CHASSIS.joint_motor[3], CALIBRATE_VEL_KP);
 
                 // DmMitCtrlTorque(&CHASSIS.joint_motor[0]);
                 // DmMitCtrlTorque(&CHASSIS.joint_motor[1]);
-                // delay_us(200);
+                // delay_us(DM_DELAY);
                 // DmMitCtrlTorque(&CHASSIS.joint_motor[2]);
                 // DmMitCtrlTorque(&CHASSIS.joint_motor[3]);
             } break;
@@ -978,7 +980,7 @@ static void SendJointMotorCmd(void)
             default: {
                 DmMitCtrlVelocity(&CHASSIS.joint_motor[0], ZERO_FORCE_VEL_KP);
                 DmMitCtrlVelocity(&CHASSIS.joint_motor[1], ZERO_FORCE_VEL_KP);
-                delay_us(200);
+                delay_us(DM_DELAY);
                 DmMitCtrlVelocity(&CHASSIS.joint_motor[2], ZERO_FORCE_VEL_KP);
                 DmMitCtrlVelocity(&CHASSIS.joint_motor[3], ZERO_FORCE_VEL_KP);
             }
