@@ -37,7 +37,7 @@
 // ratio parameters ---------------------
 #define VEL_ADD_RATIO        (0.008f)  // 速度增量比例系数
 #define PITCH_VEL_RATIO      (0.9f)    // pitch轴速度比例系数
-#define FF_RATIO             (0.20f)   // 前馈比例系数
+#define FF_RATIO             (0.18f)   // 前馈比例系数
 #define RC_LENGTH_ADD_RATIO  (0.0000015f) // 遥控器腿长增量比例系数
 #define X_ADD_RATIO          (1.2f) // x增量比例系数
 
@@ -210,11 +210,11 @@
     #define MAX_OUT_CHASSIS_PITCH_VELOCITY   (0.2f)
 #else
     //roll轴跟踪角度环PID参数
-    #define KP_CHASSIS_ROLL_ANGLE        (2.0f)
+    #define KP_CHASSIS_ROLL_ANGLE        (8.0f)
     #define KI_CHASSIS_ROLL_ANGLE        (0.0f)
-    #define KD_CHASSIS_ROLL_ANGLE        (0.5f)
+    #define KD_CHASSIS_ROLL_ANGLE        (1.0f)
     #define MAX_IOUT_CHASSIS_ROLL_ANGLE  (0.0f)
-    #define MAX_OUT_CHASSIS_ROLL_ANGLE   (10.0f)
+    #define MAX_OUT_CHASSIS_ROLL_ANGLE   (15.0f)
 
     // //roll轴跟踪速度环PID参数
     // #define KP_CHASSIS_ROLL_VELOCITY 0.1f
@@ -238,11 +238,11 @@
     // #define MAX_OUT_CHASSIS_PITCH_VELOCITY   (0.0f)
 
     // 腿长跟踪长度环PID参数
-    #define KP_CHASSIS_LEG_LENGTH_LENGTH        (50.0f)
+    #define KP_CHASSIS_LEG_LENGTH_LENGTH        (30.0f)
     #define KI_CHASSIS_LEG_LENGTH_LENGTH        (0.0f)
-    #define KD_CHASSIS_LEG_LENGTH_LENGTH        (5.0f)
+    #define KD_CHASSIS_LEG_LENGTH_LENGTH        (3.0f)
     #define MAX_IOUT_CHASSIS_LEG_LENGTH_LENGTH  (0.0f)
-    #define MAX_OUT_CHASSIS_LEG_LENGTH_LENGTH   (20.0f)
+    #define MAX_OUT_CHASSIS_LEG_LENGTH_LENGTH   (30.0f)
 
     // 腿长跟踪速度环PID参数
     // #define KP_CHASSIS_LEG_LENGTH_SPEED 0.0f
