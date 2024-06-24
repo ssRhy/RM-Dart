@@ -905,21 +905,19 @@ static void SendJointMotorCmd(void)
         DmMitStop(&CHASSIS.joint_motor[2]);
         DmMitStop(&CHASSIS.joint_motor[3]);
     } else {
-        bool flag = false;
+        // bool flag = false;
         for (uint8_t i = 0; i < 4; i++) {
             if (cnt % 2 == 0) {
                 delay_us(DM_DELAY);
             }
             if (CHASSIS.joint_motor[i].fdb.state == DM_STATE_DISABLE) {
                 DmEnable(&CHASSIS.joint_motor[i]);
-                flag = true;
+                // flag = true;
                 cnt++;
             }
         }
 
-        if (flag) {
-            delay_us(200);
-        }
+        delay_us(DM_DELAY);
 
         switch (CHASSIS.mode) {
             case CHASSIS_FOLLOW_GIMBAL_YAW:
