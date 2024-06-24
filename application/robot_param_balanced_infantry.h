@@ -46,7 +46,7 @@
 
 #define X_0_RATIO (1.0f)  // theta比例系数
 #define X_1_RATIO (1.0f)  // theta_dot比例系数
-#define X_2_RATIO (1.5f)  // x比例系数
+#define X_2_RATIO (3.0f)  // x比例系数
 #define X_3_RATIO (1.0f)  // x_dot比例系数
 #define X_4_RATIO (1.0f)  // phi比例系数
 #define X_5_RATIO (1.0f)  // phi_dot比例系数
@@ -126,7 +126,7 @@
 #define MAX_SPEED_VECTOR_VY  (1.5f)
 #define MAX_SPEED_VECTOR_WZ  (3.0f)
 
-#define MAX_JOINT_TORQUE   (4.0f)  // (Nm)关节最大扭矩
+#define MAX_JOINT_TORQUE   (5.0f)  // (Nm)关节最大扭矩
 #define MAX_VEL_ADD        (1.0f)  // (m/s)速度增量上限
 #define MAX_PITCH_VEL      (0.1f)  // (rad/s)pitch轴速度上限
 
