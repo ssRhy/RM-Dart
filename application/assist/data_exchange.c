@@ -18,7 +18,7 @@
 #include "string.h"
 
 #define DATA_LIST_LEN 10
-#define NAME_LEN 16
+#define NAME_LEN 20
 
 typedef struct
 {
@@ -33,7 +33,7 @@ static uint8_t USED_LEN = 0;  // 已经使用的数据量
 /**
  * @brief          发布数据
  * @param[in]      address 数据地址
- * @param[in]      name 数据名称(最大长度为15字符)
+ * @param[in]      name 数据名称(最大长度为19字符)
  * @retval         数据发布状态
  */
 uint8_t Publish(void * address, char * name)
