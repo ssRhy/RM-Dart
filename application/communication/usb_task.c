@@ -33,7 +33,7 @@ static const ChassisSpeedVector_t * FDB_SPEED_VECTOR;
 // clang-format off
 static DebugSendData_s SEND_DATA_DEBUG;
 static ImuSendData_s   SEND_DATA_IMU;
-static ImuSendData_s   SEND_DATA_IMU;
+// static ImuSendData_s   SEND_DATA_IMU;
 // clang-format on
 
 
