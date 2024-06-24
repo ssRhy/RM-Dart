@@ -31,6 +31,7 @@
 #include "string.h"
 #include "usb_task.h"
 #include "user_lib.h"
+#include "data_exchange.h"
 
 #define CALIBRATE_STOP_VELOCITY 0.05f  // rad/s
 #define CALIBRATE_STOP_TIME 200        // ms
@@ -67,6 +68,13 @@ static Chassis_s CHASSIS = {
         },
     .dyaw = 0.0f,
 };
+
+/*-------------------- Publish --------------------*/
+
+void ChassisPublish(void)
+{
+    Publish(&CHASSIS.fdb.speed_vector, "chassis_fdb_speed");
+}
 
 /*-------------------- Init --------------------*/
 
