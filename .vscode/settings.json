@@ -91,7 +91,8 @@
         "communication_task.h": "c",
         "communication.h": "c",
         "fifo.h": "c",
-        "bsp_usart.h": "c"
+        "bsp_usart.h": "c",
+        "usbd_cdc_if.h": "c"
     },
     "C_Cpp.codeAnalysis.clangTidy.enabled": true,
     "[cpp]": {
