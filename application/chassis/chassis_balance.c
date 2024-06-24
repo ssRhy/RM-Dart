@@ -423,7 +423,12 @@ static void UpdateBodyStatus(void)
     CHASSIS.fdb.body.x_dot =
         WHEEL_RADIUS * (CHASSIS.fdb.leg[0].wheel.Velocity + CHASSIS.fdb.leg[1].wheel.Velocity) / 2;
 
-    CHASSIS.fdb.body.x += CHASSIS.fdb.body.x_dot * CHASSIS_CONTROL_TIME_S;
+    if (fabs(CHASSIS.ref.speed_vector.vx) < WHEEL_DEADZONE && fabs(CHASSIS.fdb.body.x_dot) < 0.8f) {
+        // 当目标速度为0，且速度小于阈值时，计算反馈距离
+        CHASSIS.fdb.body.x += CHASSIS.fdb.body.x_dot * CHASSIS_CONTROL_TIME_S;
+    } else {
+        //CHASSIS.fdb.body.x = 0;
+    }
 }
 
 /**
@@ -591,20 +596,20 @@ void ChassisReference(void)
     for (uint8_t i = 0; i < 2; i++) {
         CHASSIS.ref.leg_state[i].theta     =  0;
         CHASSIS.ref.leg_state[i].theta_dot =  0;
-        CHASSIS.ref.leg_state[i].x         =  CHASSIS.fdb.body.x;//CHASSIS.ref.speed_vector.vx * CHASSIS_CONTROL_TIME_S * X_ADD_RATIO;
+        CHASSIS.ref.leg_state[i].x         =  0;//CHASSIS.ref.speed_vector.vx * CHASSIS_CONTROL_TIME_S * X_ADD_RATIO;
         CHASSIS.ref.leg_state[i].x_dot     =  CHASSIS.ref.speed_vector.vx;
         CHASSIS.ref.leg_state[i].phi       =  0;
         CHASSIS.ref.leg_state[i].phi_dot   =  0;
     }
     // clang-format on
 
-    static float vel_add = 0;  // 速度增量，用于适应重心位置变化
-    if (fabs(CHASSIS.ref.speed_vector.vx) < WHEEL_DEADZONE && fabs(CHASSIS.fdb.body.x_dot) < 0.8f) {
-        // 当目标速度为0，且速度小于阈值时，增加速度增量
-        vel_add = PID_calc(&CHASSIS.pid.vel_add, CHASSIS.fdb.body.x_dot, 0);
-    }
-    CHASSIS.ref.leg_state[0].x_dot += vel_add;
-    CHASSIS.ref.leg_state[1].x_dot += vel_add;
+    // static float vel_add = 0;  // 速度增量，用于适应重心位置变化
+    // if (fabs(CHASSIS.ref.speed_vector.vx) < WHEEL_DEADZONE && fabs(CHASSIS.fdb.body.x_dot) < 0.8f) {
+    //     // 当目标速度为0，且速度小于阈值时，增加速度增量
+    //     vel_add = PID_calc(&CHASSIS.pid.vel_add, CHASSIS.fdb.body.x_dot, 0);
+    // }
+    // CHASSIS.ref.leg_state[0].x_dot += vel_add;
+    // CHASSIS.ref.leg_state[1].x_dot += vel_add;
 
     // CHASSIS.ref.x_dot = fp32_constrain(
     //     CHASSIS.ref.x_dot,                              //ref
@@ -698,12 +703,12 @@ static void LocomotionController(void)
     for (uint8_t i = 0; i < 2; i++) {
         GetK(CHASSIS.fdb.leg[i].rod.L0, k);
         // clang-format off
-        x[0] = CHASSIS.fdb.leg_state[i].theta     - CHASSIS.ref.leg_state[i].theta;
-        x[1] = CHASSIS.fdb.leg_state[i].theta_dot - CHASSIS.ref.leg_state[i].theta_dot;
-        x[2] = CHASSIS.fdb.leg_state[i].x         - CHASSIS.ref.leg_state[i].x;
-        x[3] = CHASSIS.fdb.leg_state[i].x_dot     - CHASSIS.ref.leg_state[i].x_dot;
-        x[4] = CHASSIS.fdb.leg_state[i].phi       - CHASSIS.ref.leg_state[i].phi;
-        x[5] = CHASSIS.fdb.leg_state[i].phi_dot   - CHASSIS.ref.leg_state[i].phi_dot;
+        x[0] = X_0_RATIO * (CHASSIS.fdb.leg_state[i].theta     - CHASSIS.ref.leg_state[i].theta);
+        x[1] = X_1_RATIO * (CHASSIS.fdb.leg_state[i].theta_dot - CHASSIS.ref.leg_state[i].theta_dot);
+        x[2] = X_2_RATIO * (CHASSIS.fdb.leg_state[i].x         - CHASSIS.ref.leg_state[i].x);
+        x[3] = X_3_RATIO * (CHASSIS.fdb.leg_state[i].x_dot     - CHASSIS.ref.leg_state[i].x_dot);
+        x[4] = X_4_RATIO * (CHASSIS.fdb.leg_state[i].phi       - CHASSIS.ref.leg_state[i].phi);
+        x[5] = X_5_RATIO * (CHASSIS.fdb.leg_state[i].phi_dot   - CHASSIS.ref.leg_state[i].phi_dot);
         // clang-format on
         CalcLQR(k, x, T_Tp);
 

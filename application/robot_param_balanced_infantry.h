@@ -44,6 +44,13 @@
 #define TP_RATIO (0.05f)  // 髋关节转矩比例系数
 #define T_RATIO  (1.0f)   // 驱动轮转矩比例系数
 
+#define X_0_RATIO (1.0f)  // theta比例系数
+#define X_1_RATIO (1.0f)  // theta_dot比例系数
+#define X_2_RATIO (1.5f)  // x比例系数
+#define X_3_RATIO (1.0f)  // x_dot比例系数
+#define X_4_RATIO (1.0f)  // phi比例系数
+#define X_5_RATIO (1.0f)  // phi_dot比例系数
+
 // motor parameters ---------------------
 #define JOINT_CAN (1)
 #define WHEEL_CAN (2)
