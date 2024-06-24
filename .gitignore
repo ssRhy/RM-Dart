@@ -2,6 +2,7 @@
 *(*)*
 
 # MATLAB files
+application/chassis/matlab_balance/slprj/
 */slprj/
 */codegen/
 *.prj
