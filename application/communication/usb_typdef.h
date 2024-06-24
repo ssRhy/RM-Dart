@@ -1,7 +1,7 @@
 
 #include "struct_typedef.h"
 
-#define DEBUG_PACKET_NUM 20
+#define DEBUG_PACKAGE_NUM 20
 
 /*-------------------- Send --------------------*/
 
@@ -15,7 +15,7 @@ typedef struct DebugData
         uint8_t name[10];
         uint8_t type;
         float data;
-    } __attribute__((packed)) packets[DEBUG_PACKET_NUM];
+    } __attribute__((packed)) packages[DEBUG_PACKAGE_NUM];
     uint16_t checksum;
 } __attribute__((packed)) DebugSendData_s;
 

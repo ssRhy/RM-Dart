@@ -30,6 +30,13 @@
 static const Imu_t * IMU;
 static const ChassisSpeedVector_t * FDB_SPEED_VECTOR;
 
+// clang-format off
+static DebugSendData_s SEND_DATA_DEBUG;
+static ImuSendData_s   SEND_DATA_IMU;
+static ImuSendData_s   SEND_DATA_IMU;
+// clang-format on
+
+
 /**
  * @brief      USB任务主函数
  * @param[in]  argument: 任务参数
@@ -44,7 +51,19 @@ void usb_task(void const * argument)
     IMU = Subscribe("imu_data");                        // 获取IMU数据指针
     FDB_SPEED_VECTOR = Subscribe("chassis_fdb_speed");  // 获取底盘速度矢量指针
 
-        while (1) {
+    while (1) {
         vTaskDelay(USB_TASK_CONTROL_TIME);
+    }
+}
+
+void ModifyDebugDataPackage(uint8_t index, float data, const char * name)
+{
+    SEND_DATA_DEBUG.packages[index].data = data;
+    SEND_DATA_DEBUG.packages[index].type = 1;
+
+    uint8_t i = 0;
+    while (name[i] != '\0' && i < 10) {
+        SEND_DATA_DEBUG.packages[index].name[i] = name[i];
+        i++;
     }
 }
