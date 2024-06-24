@@ -573,20 +573,6 @@ void ChassisReference(void)
             break;
     }
 
-    // float v = v_set.vx;
-    // float x;
-
-    // if (fabs(v) > WHEEL_DEADZONE) {  // 运动状态，只需控制速度
-    //     x = CHASSIS.fdb.x;
-    // } else {
-    //     if (CHASSIS.ref.speed_vector.vx > WHEEL_DEADZONE) {
-    //         // 进入停止状态，需要加入位置控制
-    //         x = (CHASSIS.fdb.leg[0].wheel.Angle + CHASSIS.fdb.leg[1].wheel.Angle) / 2;
-    //     } else {  // 还是停止状态，保留原位置
-    //         x = CHASSIS.ref.x;
-    //     }
-    // }
-
     CHASSIS.ref.speed_vector.vx = v_set.vx;
     CHASSIS.ref.speed_vector.vy = 0;
     CHASSIS.ref.speed_vector.wz = v_set.wz;
@@ -602,19 +588,6 @@ void ChassisReference(void)
         CHASSIS.ref.leg_state[i].phi_dot   =  0;
     }
     // clang-format on
-
-    // static float vel_add = 0;  // 速度增量，用于适应重心位置变化
-    // if (fabs(CHASSIS.ref.speed_vector.vx) < WHEEL_DEADZONE && fabs(CHASSIS.fdb.body.x_dot) < 0.8f) {
-    //     // 当目标速度为0，且速度小于阈值时，增加速度增量
-    //     vel_add = PID_calc(&CHASSIS.pid.vel_add, CHASSIS.fdb.body.x_dot, 0);
-    // }
-    // CHASSIS.ref.leg_state[0].x_dot += vel_add;
-    // CHASSIS.ref.leg_state[1].x_dot += vel_add;
-
-    // CHASSIS.ref.x_dot = fp32_constrain(
-    //     CHASSIS.ref.x_dot,                              //ref
-    //     CHASSIS.fdb.x_dot + MIN_DELTA_VEL_FDB_TO_REF,   //min
-    //     CHASSIS.fdb.x_dot + MAX_DELTA_VEL_FDB_TO_REF);  //max
 
     // 腿部控制
     static float angle = M_PI_2;
@@ -746,6 +719,10 @@ static void LegTorqueController(void)
     }
     OutputPCData.packets[19].data = CHASSIS.pid.leg_length_length[0].out;
     OutputPCData.packets[20].data = CHASSIS.pid.leg_length_length[1].out;
+
+    // ROLL角控制
+
+    // 腿角控制
 
     // 转换为关节力矩
     CalcVmc(
