@@ -721,6 +721,9 @@ static void LegTorqueController(void)
     OutputPCData.packets[20].data = CHASSIS.pid.leg_length_length[1].out;
 
     // ROLL角控制
+    float F_delta = PID_calc(&CHASSIS.pid.roll_angle, CHASSIS.fdb.body.roll, CHASSIS.ref.body.roll);
+    CHASSIS.cmd.leg[0].rod.F += CHASSIS.pid.roll_angle.out;
+    CHASSIS.cmd.leg[0].rod.F -= CHASSIS.pid.roll_angle.out;
 
     // 腿角控制
 
