@@ -47,6 +47,7 @@ static ImuSendData_s   SEND_DATA_IMU;
 // function declaration
 static void UsbSendData(uint16_t len);
 static void UsbReceiveData(void);
+static void UsbInit(void);
 
 /**
  * @brief      USB任务主函数
@@ -59,20 +60,54 @@ void usb_task(void const * argument)
 
     vTaskDelay(10);  //等待USB设备初始化完成
 
-    IMU = Subscribe("imu_data");                        // 获取IMU数据指针
-    FDB_SPEED_VECTOR = Subscribe("chassis_fdb_speed");  // 获取底盘速度矢量指针
+    UsbInit();
 
-    while (IMU == NULL || FDB_SPEED_VECTOR == NULL || &SEND_DATA_DEBUG == NULL ||
-           &SEND_DATA_IMU == NULL) {
-        break;
+    if (IMU == NULL || FDB_SPEED_VECTOR == NULL || &SEND_DATA_DEBUG == NULL ||
+        &SEND_DATA_IMU == NULL) {
+        ;
     }
 
     while (1) {
         UsbSendData(sizeof(SEND_DATA_DEBUG));
         UsbReceiveData();
-        
+
         vTaskDelay(USB_TASK_CONTROL_TIME);
     }
+}
+
+/**
+ * @brief      USB初始化
+ * @param      None
+ * @retval     None
+ */
+static void UsbInit(void)
+{
+    // 订阅数据
+    IMU = Subscribe("imu_data");                        // 获取IMU数据指针
+    FDB_SPEED_VECTOR = Subscribe("chassis_fdb_speed");  // 获取底盘速度矢量指针
+
+    // 初始化调试数据包
+    // 帧头部分
+    SEND_DATA_DEBUG.frame_header.sof = 0x5A;
+    SEND_DATA_DEBUG.frame_header.len = sizeof(SEND_DATA_DEBUG.packages);
+    SEND_DATA_DEBUG.frame_header.id = 0x01;
+    append_CRC8_check_sum(  // 添加帧头 CRC8 校验位
+        (uint8_t *)(&SEND_DATA_DEBUG.frame_header), sizeof(SEND_DATA_DEBUG.frame_header));
+
+    // 数据部分
+    for (uint8_t i = 0; i < DEBUG_PACKAGE_NUM; i++) {
+        SEND_DATA_DEBUG.packages[i].type = 1;
+        SEND_DATA_DEBUG.packages[i].name[0] = '\0';
+    }
+
+    // 初始化IMU数据包
+    // 帧头部分
+    SEND_DATA_IMU.frame_header.sof = 0x5A;
+    SEND_DATA_IMU.frame_header.len = sizeof(SEND_DATA_IMU.data);
+    SEND_DATA_IMU.frame_header.id = 0x02;
+    append_CRC8_check_sum(  // 添加帧头 CRC8 校验位
+        (uint8_t *)(&SEND_DATA_IMU.frame_header), sizeof(SEND_DATA_IMU.frame_header));
+    // 数据部分
 }
 
 /**

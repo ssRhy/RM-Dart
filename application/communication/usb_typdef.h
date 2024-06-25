@@ -8,9 +8,15 @@
 // 串口调试数据包
 typedef struct DebugData
 {
-    uint8_t header;
-    uint16_t length;
-    struct __packet
+    struct
+    {
+        uint8_t sof;  // 数据帧起始字节，固定值为 0x5A
+        uint8_t len;  // 数据段长度
+        uint8_t id;   // 数据段id = 0x01
+        uint8_t crc;  // 数据帧头的 CRC8 校验
+    } __attribute__((packed)) frame_header;
+
+    struct
     {
         uint8_t name[10];
         uint8_t type;
@@ -26,7 +32,7 @@ typedef struct
     {
         uint8_t sof;  // 数据帧起始字节，固定值为 0x5A
         uint8_t len;  // 数据段长度
-        uint8_t id;   // 数据段id
+        uint8_t id;   // 数据段id = 0x02
         uint8_t crc;  // 数据帧头的 CRC8 校验
     } __attribute__((packed)) frame_header;
 
