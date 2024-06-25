@@ -26,7 +26,6 @@
 #include "usbd_conf.h"
 
 #define USB_TASK_CONTROL_TIME 1  // ms
-#define MAX_RESEND_CNT 10
 #define APP_RX_DATA_SIZE 2048
 #define APP_TX_DATA_SIZE 2048
 #define USB_RECEIVE_LEN 64  // byte
@@ -116,12 +115,8 @@ static void UsbInit(void)
  */
 static void UsbSendData(uint16_t len)
 {
-    uint8_t resend_cnt = 0;
     uint8_t usb_send_state = USBD_FAIL;
-    while (usb_send_state != USBD_OK && resend_cnt < MAX_RESEND_CNT) {
-        usb_send_state = CDC_Transmit_FS(USB_TX_BUF, len);
-        resend_cnt++;
-    }
+    usb_send_state = USB_Transmit(USB_TX_BUF, len);
 }
 
 /**
