@@ -28,7 +28,6 @@
 
 #define USB_TASK_CONTROL_TIME 1  // ms
 
-#define USB_TX_DATA_SIZE 512  // byte
 #define USB_RX_DATA_SIZE 512  // byte
 #define USB_RECEIVE_LEN 64    // byte
 
@@ -36,7 +35,6 @@
 #define SEND_DURATION_DEBUG 1  // ms
 
 // Variable Declarations
-static uint8_t USB_TX_BUF[USB_TX_DATA_SIZE];
 static uint8_t USB_RX_BUF[USB_RX_DATA_SIZE];
 
 static const Imu_t * IMU;
@@ -179,14 +177,14 @@ static void UsbSendImuData(uint8_t duration)
         return;
     }
 
+    DURATION.imu++;
     if (DURATION.imu < duration) {
-        DURATION.imu++;
         return;
     }
+    DURATION.imu = 0;
 
     append_CRC16_check_sum((uint8_t *)&SEND_DATA_IMU, sizeof(ImuSendData_s));
-    memcpy(USB_TX_BUF, &SEND_DATA_IMU, sizeof(ImuSendData_s));
-    USB_Transmit(USB_TX_BUF, sizeof(ImuSendData_s));
+    USB_Transmit((uint8_t *)&SEND_DATA_IMU, sizeof(ImuSendData_s));
 }
 
 /**
@@ -195,14 +193,14 @@ static void UsbSendImuData(uint8_t duration)
  */
 static void UsbSendDebugData(uint8_t duration)
 {
+    DURATION.debug++;
     if (DURATION.debug < duration) {
-        DURATION.debug++;
         return;
     }
+    DURATION.debug = 0;
 
     append_CRC16_check_sum((uint8_t *)&SEND_DATA_DEBUG, sizeof(DebugSendData_s));
-    memcpy(USB_TX_BUF, &SEND_DATA_DEBUG, sizeof(DebugSendData_s));
-    USB_Transmit(USB_TX_BUF, sizeof(DebugSendData_s));
+    USB_Transmit((uint8_t *)&SEND_DATA_DEBUG, sizeof(DebugSendData_s));
 }
 
 /*******************************************************************************/

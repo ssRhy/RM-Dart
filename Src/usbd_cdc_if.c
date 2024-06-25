@@ -296,7 +296,7 @@ uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len)
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_IMPLEMENTATION */
 
-#define MAX_RESEND_CNT 10
+#define MAX_RESEND_CNT 8192
 /**
   * @brief  本函数为了方便使用USB设备发送数据，其实就是调用CDC_Transmit_FS/-/
   * @brief  CDC_Transmit_FS
@@ -310,7 +310,7 @@ uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len)
   */
 uint8_t USB_Transmit(uint8_t* Buf, uint16_t Len)
 {
-    uint8_t resend_cnt = 0;
+    uint16_t resend_cnt = 0;
     uint8_t usb_send_state = USBD_FAIL;
     while (usb_send_state != USBD_OK && resend_cnt < MAX_RESEND_CNT) {
         usb_send_state = CDC_Transmit_FS(Buf, Len);
