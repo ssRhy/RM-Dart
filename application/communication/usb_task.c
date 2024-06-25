@@ -20,33 +20,57 @@
 #include "CRC8_CRC16.h"
 #include "cmsis_os.h"
 #include "data_exchange.h"
+#include "string.h"
 #include "usb_device.h"
 #include "usb_typdef.h"
 #include "usbd_cdc_if.h"
 #include "usbd_conf.h"
 
 #define USB_TASK_CONTROL_TIME 1  // ms
-#define APP_RX_DATA_SIZE 2048
-#define APP_TX_DATA_SIZE 2048
-#define USB_RECEIVE_LEN 64  // byte
+
+#define USB_TX_DATA_SIZE 512  // byte
+#define USB_RX_DATA_SIZE 512  // byte
+#define USB_RECEIVE_LEN 64    // byte
+
+#define SEND_DURATION_IMU 1    // ms
+#define SEND_DURATION_DEBUG 1  // ms
 
 // Variable Declarations
-static uint8_t USB_TX_BUF[APP_TX_DATA_SIZE];
-static uint8_t USB_RX_BUF[APP_RX_DATA_SIZE];
+static uint8_t USB_TX_BUF[USB_TX_DATA_SIZE];
+static uint8_t USB_RX_BUF[USB_RX_DATA_SIZE];
 
 static const Imu_t * IMU;
 static const ChassisSpeedVector_t * FDB_SPEED_VECTOR;
 
+// 数据发送结构体
 // clang-format off
 static DebugSendData_s SEND_DATA_DEBUG;
 static ImuSendData_s   SEND_DATA_IMU;
 // static ImuSendData_s   SEND_DATA_IMU;
 // clang-format on
 
-// function declaration
+// 发送数据间隔时间
+typedef struct
+{
+    uint8_t imu;
+    uint8_t debug;
+} Duration_t;
+static Duration_t DURATION;
+
+/*******************************************************************************/
+/* Main Function                                                               */
+/*******************************************************************************/
+
 static void UsbSendData(uint16_t len);
 static void UsbReceiveData(void);
 static void UsbInit(void);
+
+/*******************************************************************************/
+/* Send Function                                                               */
+/*******************************************************************************/
+
+static void UsbSendImuData(uint8_t duration);
+static void UsbSendDebugData(uint8_t duration);
 
 /**
  * @brief      USB任务主函数
@@ -74,6 +98,10 @@ void usb_task(void const * argument)
     }
 }
 
+/*******************************************************************************/
+/* Main Function                                                               */
+/*******************************************************************************/
+
 /**
  * @brief      USB初始化
  * @param      None
@@ -84,6 +112,9 @@ static void UsbInit(void)
     // 订阅数据
     IMU = Subscribe("imu_data");                        // 获取IMU数据指针
     FDB_SPEED_VECTOR = Subscribe("chassis_fdb_speed");  // 获取底盘速度矢量指针
+
+    // 数据置零
+    memset(&DURATION, 0, sizeof(Duration_t));
 
     // 初始化调试数据包
     // 帧头部分
@@ -111,12 +142,15 @@ static void UsbInit(void)
 
 /**
  * @brief      用USB发送数据
- * @param[in]  len 发送数据的长度
+ * @param      None
+ * @retval     None
  */
 static void UsbSendData(uint16_t len)
 {
-    uint8_t usb_send_state = USBD_FAIL;
-    usb_send_state = USB_Transmit(USB_TX_BUF, len);
+    // 发送imu数据
+    UsbSendImuData(SEND_DURATION_IMU);
+    // 发送debug数据
+    UsbSendDebugData(SEND_DURATION_DEBUG);
 }
 
 /**
@@ -130,6 +164,50 @@ static void UsbReceiveData(void)
     USB_Receive(USB_RX_BUF, &len);  // Read data into the buffer
     // uint8_t receive_ok = 0;
 }
+
+/*******************************************************************************/
+/* Send Function                                                               */
+/*******************************************************************************/
+
+/**
+ * @brief 
+ * @param duration 发送周期
+ */
+static void UsbSendImuData(uint8_t duration)
+{
+    if (IMU == NULL) {
+        return;
+    }
+
+    if (DURATION.imu < duration) {
+        DURATION.imu++;
+        return;
+    }
+
+    append_CRC16_check_sum((uint8_t *)&SEND_DATA_IMU, sizeof(ImuSendData_s));
+    memcpy(USB_TX_BUF, &SEND_DATA_IMU, sizeof(ImuSendData_s));
+    USB_Transmit(USB_TX_BUF, sizeof(ImuSendData_s));
+}
+
+/**
+ * @brief 
+ * @param duration 发送周期
+ */
+static void UsbSendDebugData(uint8_t duration)
+{
+    if (DURATION.debug < duration) {
+        DURATION.debug++;
+        return;
+    }
+
+    append_CRC16_check_sum((uint8_t *)&SEND_DATA_DEBUG, sizeof(DebugSendData_s));
+    memcpy(USB_TX_BUF, &SEND_DATA_DEBUG, sizeof(DebugSendData_s));
+    USB_Transmit(USB_TX_BUF, sizeof(DebugSendData_s));
+}
+
+/*******************************************************************************/
+/* Public Function                                                             */
+/*******************************************************************************/
 
 /**
  * @brief 修改调试数据包
@@ -147,4 +225,6 @@ void ModifyDebugDataPackage(uint8_t index, float data, const char * name)
         SEND_DATA_DEBUG.packages[index].name[i] = name[i];
         i++;
     }
+
+    //TODO:添加对数据名称的一些检查工作
 }
