@@ -61,7 +61,7 @@ static Duration_t DURATION;
 /* Main Function                                                               */
 /*******************************************************************************/
 
-static void UsbSendData(uint16_t len);
+static void UsbSendData(void);
 static void UsbReceiveData(void);
 static void UsbInit(void);
 
@@ -91,7 +91,7 @@ void usb_task(void const * argument)
     }
 
     while (1) {
-        UsbSendData(sizeof(SEND_DATA_DEBUG));
+        UsbSendData();
         UsbReceiveData();
 
         vTaskDelay(USB_TASK_CONTROL_TIME);
@@ -119,7 +119,7 @@ static void UsbInit(void)
     // 初始化调试数据包
     // 帧头部分
     SEND_DATA_DEBUG.frame_header.sof = 0x5A;
-    SEND_DATA_DEBUG.frame_header.len = sizeof(SEND_DATA_DEBUG.packages);
+    SEND_DATA_DEBUG.frame_header.len = (uint8_t)(sizeof(SEND_DATA_DEBUG.packages));
     SEND_DATA_DEBUG.frame_header.id = 0x01;
     append_CRC8_check_sum(  // 添加帧头 CRC8 校验位
         (uint8_t *)(&SEND_DATA_DEBUG.frame_header), sizeof(SEND_DATA_DEBUG.frame_header));
@@ -133,7 +133,7 @@ static void UsbInit(void)
     // 初始化IMU数据包
     // 帧头部分
     SEND_DATA_IMU.frame_header.sof = 0x5A;
-    SEND_DATA_IMU.frame_header.len = sizeof(SEND_DATA_IMU.data);
+    SEND_DATA_IMU.frame_header.len = (uint8_t)(sizeof(SEND_DATA_IMU.data));
     SEND_DATA_IMU.frame_header.id = 0x02;
     append_CRC8_check_sum(  // 添加帧头 CRC8 校验位
         (uint8_t *)(&SEND_DATA_IMU.frame_header), sizeof(SEND_DATA_IMU.frame_header));
@@ -145,7 +145,7 @@ static void UsbInit(void)
  * @param      None
  * @retval     None
  */
-static void UsbSendData(uint16_t len)
+static void UsbSendData(void)
 {
     // 发送imu数据
     UsbSendImuData(SEND_DURATION_IMU);

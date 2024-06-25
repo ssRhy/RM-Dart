@@ -316,6 +316,7 @@ uint8_t USB_Transmit(uint8_t* Buf, uint16_t Len)
         usb_send_state = CDC_Transmit_FS(Buf, Len);
         resend_cnt++;
     }
+    return usb_send_state;
 }
 
 /**
