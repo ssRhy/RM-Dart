@@ -117,7 +117,7 @@ static void UsbInit(void)
     // 初始化调试数据包
     // 帧头部分
     SEND_DATA_DEBUG.frame_header.sof = 0x5A;
-    SEND_DATA_DEBUG.frame_header.len = (uint8_t)(sizeof(SEND_DATA_DEBUG.packages));
+    SEND_DATA_DEBUG.frame_header.len = (uint8_t)(sizeof(DebugSendData_s) - 6);
     SEND_DATA_DEBUG.frame_header.id = 0x01;
     append_CRC8_check_sum(  // 添加帧头 CRC8 校验位
         (uint8_t *)(&SEND_DATA_DEBUG.frame_header), sizeof(SEND_DATA_DEBUG.frame_header));
@@ -131,7 +131,7 @@ static void UsbInit(void)
     // 初始化IMU数据包
     // 帧头部分
     SEND_DATA_IMU.frame_header.sof = 0x5A;
-    SEND_DATA_IMU.frame_header.len = (uint8_t)(sizeof(SEND_DATA_IMU.data));
+    SEND_DATA_IMU.frame_header.len = (uint8_t)(sizeof(ImuSendData_s) - 6);
     SEND_DATA_IMU.frame_header.id = 0x02;
     append_CRC8_check_sum(  // 添加帧头 CRC8 校验位
         (uint8_t *)(&SEND_DATA_IMU.frame_header), sizeof(SEND_DATA_IMU.frame_header));

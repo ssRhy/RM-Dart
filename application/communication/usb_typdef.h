@@ -1,7 +1,7 @@
 
 #include "struct_typedef.h"
 
-#define DEBUG_PACKAGE_NUM 20
+#define DEBUG_PACKAGE_NUM 10
 
 /*-------------------- Send --------------------*/
 
@@ -22,6 +22,7 @@ typedef struct DebugData
         uint8_t type;
         float data;
     } __attribute__((packed)) packages[DEBUG_PACKAGE_NUM];
+    
     uint16_t checksum;
 } __attribute__((packed)) DebugSendData_s;
 
@@ -46,9 +47,9 @@ typedef struct
         float pitch_vel;  // rad/s
         float roll_vel;   // rad/s
 
-        float x_accel;  // m/s^2
-        float y_accel;  // m/s^2
-        float z_accel;  // m/s^2
+        // float x_accel;  // m/s^2
+        // float y_accel;  // m/s^2
+        // float z_accel;  // m/s^2
     } __attribute__((packed)) data;
 
     uint16_t crc;
