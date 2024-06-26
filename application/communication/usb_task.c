@@ -168,7 +168,7 @@ static void UsbReceiveData(void)
 /*******************************************************************************/
 
 /**
- * @brief 
+ * @brief 发送IMU数据
  * @param duration 发送周期
  */
 static void UsbSendImuData(uint8_t duration)
@@ -183,12 +183,21 @@ static void UsbSendImuData(uint8_t duration)
     }
     DURATION.imu = 0;
 
+    SEND_DATA_IMU.data.yaw = IMU->yaw;
+    SEND_DATA_IMU.data.pitch = IMU->pitch;
+    SEND_DATA_IMU.data.roll = IMU->roll;
+
+    SEND_DATA_IMU.data.yaw_vel = IMU->yaw_vel;
+    SEND_DATA_IMU.data.pitch_vel = IMU->pitch_vel;
+    SEND_DATA_IMU.data.roll_vel = IMU->roll_vel;
+
+    SEND_DATA_IMU.time_stamp = HAL_GetTick();
     append_CRC16_check_sum((uint8_t *)&SEND_DATA_IMU, sizeof(ImuSendData_s));
     USB_Transmit((uint8_t *)&SEND_DATA_IMU, sizeof(ImuSendData_s));
 }
 
 /**
- * @brief 
+ * @brief 发送DEBUG数据
  * @param duration 发送周期
  */
 static void UsbSendDebugData(uint8_t duration)
@@ -199,6 +208,7 @@ static void UsbSendDebugData(uint8_t duration)
     }
     DURATION.debug = 0;
 
+    SEND_DATA_DEBUG.time_stamp = HAL_GetTick();
     append_CRC16_check_sum((uint8_t *)&SEND_DATA_DEBUG, sizeof(DebugSendData_s));
     USB_Transmit((uint8_t *)&SEND_DATA_DEBUG, sizeof(DebugSendData_s));
 }

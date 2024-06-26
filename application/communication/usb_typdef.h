@@ -5,6 +5,21 @@
 
 /*-------------------- Send --------------------*/
 
+typedef struct InfoData
+{
+    struct
+    {
+        uint8_t sof;  // 数据帧起始字节，固定值为 0x5A
+        uint8_t len;  // 数据段长度
+        uint8_t id;   // 数据段id = 0x00
+        uint8_t crc;  // 数据帧头的 CRC8 校验
+    } __attribute__((packed)) frame_header;
+
+    uint16_t type;
+
+    uint16_t checksum;
+} __attribute__((packed)) InfoData_s;
+
 // 串口调试数据包
 typedef struct DebugData
 {
@@ -16,13 +31,15 @@ typedef struct DebugData
         uint8_t crc;  // 数据帧头的 CRC8 校验
     } __attribute__((packed)) frame_header;
 
+    uint32_t time_stamp;
+
     struct
     {
         uint8_t name[10];
         uint8_t type;
         float data;
     } __attribute__((packed)) packages[DEBUG_PACKAGE_NUM];
-    
+
     uint16_t checksum;
 } __attribute__((packed)) DebugSendData_s;
 
@@ -36,6 +53,8 @@ typedef struct
         uint8_t id;   // 数据段id = 0x02
         uint8_t crc;  // 数据帧头的 CRC8 校验
     } __attribute__((packed)) frame_header;
+
+    uint32_t time_stamp;
 
     struct
     {
