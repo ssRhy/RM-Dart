@@ -74,4 +74,54 @@ typedef struct
     uint16_t crc;
 } __attribute__((packed)) ImuSendData_s;
 
+// 机器人信息数据包
+typedef struct
+{
+    struct
+    {
+        uint8_t sof;  // 数据帧起始字节，固定值为 0x5A
+        uint8_t len;  // 数据段长度
+        uint8_t id;   // 数据段id = 0x03
+        uint8_t crc;  // 数据帧头的 CRC8 校验
+    } __attribute__((packed)) frame_header;
+
+    uint32_t time_stamp;
+
+    struct
+    {
+        /// @brief 机器人部位类型 2 bytes
+        struct
+        {
+            uint16_t chassis:3;
+            uint16_t gimbal:3;
+            uint16_t shoot:3;
+            uint16_t arm:3;
+            uint16_t custom_controller:3;
+            uint16_t reserve:1;
+        } __attribute__((packed)) moudle;
+
+        /// @brief 机器人部位状态 1 byte
+        /// @note 0: 正常，1: 错误
+        struct
+        {
+            uint8_t chassis:1;
+            uint8_t gimbal:1;
+            uint8_t shoot:1;
+            uint8_t arm:1;
+            uint8_t custom_controller:1;
+            uint8_t reserve:3;
+        } __attribute__((packed)) state;
+
+        /// @brief 机器人运动状态 12 bytes
+        struct
+        {
+            float vx;  // m/s
+            float vy;  // m/s
+            float wz;  // rad/s
+        } __attribute__((packed)) speed_vector;
+
+    } __attribute__((packed)) data;
+
+    uint16_t crc;
+} __attribute__((packed)) RobotInfoSendData_s;
 /*-------------------- Receive --------------------*/
