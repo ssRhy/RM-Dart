@@ -150,10 +150,10 @@ static void UsbInit(void)
     append_CRC8_check_sum(  // 添加帧头 CRC8 校验位
         (uint8_t *)(&SEND_DATA_ROBOT_INFO.frame_header), sizeof(SEND_DATA_ROBOT_INFO.frame_header));
     // 数据部分
-    SEND_DATA_ROBOT_INFO.data.moudle.chassis = CHASSIS_TYPE;
-    SEND_DATA_ROBOT_INFO.data.moudle.gimbal = GIMBAL_TYPE;
-    SEND_DATA_ROBOT_INFO.data.moudle.shoot = SHOOT_TYPE;
-    SEND_DATA_ROBOT_INFO.data.moudle.arm = MECHANICAL_ARM_TYPE;
+    SEND_DATA_ROBOT_INFO.data.type.chassis = CHASSIS_TYPE;
+    SEND_DATA_ROBOT_INFO.data.type.gimbal = GIMBAL_TYPE;
+    SEND_DATA_ROBOT_INFO.data.type.shoot = SHOOT_TYPE;
+    SEND_DATA_ROBOT_INFO.data.type.arm = MECHANICAL_ARM_TYPE;
 
 }
 

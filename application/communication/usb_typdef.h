@@ -98,7 +98,7 @@ typedef struct
             uint16_t arm:3;
             uint16_t custom_controller:3;
             uint16_t reserve:1;
-        } __attribute__((packed)) moudle;
+        } __attribute__((packed)) type;
 
         /// @brief 机器人部位状态 1 byte
         /// @note 0: 正常，1: 错误
