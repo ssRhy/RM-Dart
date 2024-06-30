@@ -154,6 +154,14 @@ static void UsbInit(void)
     SEND_DATA_ROBOT_INFO.data.type.gimbal = GIMBAL_TYPE;
     SEND_DATA_ROBOT_INFO.data.type.shoot = SHOOT_TYPE;
     SEND_DATA_ROBOT_INFO.data.type.arm = MECHANICAL_ARM_TYPE;
+        
+    // SEND_DATA_ROBOT_INFO.data.type.chassis = 1;
+    // SEND_DATA_ROBOT_INFO.data.type.gimbal = 2;
+    // SEND_DATA_ROBOT_INFO.data.type.shoot = 3;
+    // SEND_DATA_ROBOT_INFO.data.type.arm = 4;
+    // SEND_DATA_ROBOT_INFO.data.type.custom_controller = 5;
+
+    // sizeof(RobotCmdData_s);
 
 }
 

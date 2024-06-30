@@ -92,24 +92,24 @@ typedef struct
         /// @brief 机器人部位类型 2 bytes
         struct
         {
-            uint16_t chassis:3;
-            uint16_t gimbal:3;
-            uint16_t shoot:3;
-            uint16_t arm:3;
-            uint16_t custom_controller:3;
-            uint16_t reserve:1;
+            uint16_t chassis : 3;
+            uint16_t gimbal : 3;
+            uint16_t shoot : 3;
+            uint16_t arm : 3;
+            uint16_t custom_controller : 3;
+            uint16_t reserve : 1;
         } __attribute__((packed)) type;
 
         /// @brief 机器人部位状态 1 byte
         /// @note 0: 正常，1: 错误
         struct
         {
-            uint8_t chassis:1;
-            uint8_t gimbal:1;
-            uint8_t shoot:1;
-            uint8_t arm:1;
-            uint8_t custom_controller:1;
-            uint8_t reserve:3;
+            uint8_t chassis : 1;
+            uint8_t gimbal : 1;
+            uint8_t shoot : 1;
+            uint8_t arm : 1;
+            uint8_t custom_controller : 1;
+            uint8_t reserve : 3;
         } __attribute__((packed)) state;
 
         /// @brief 机器人运动状态 12 bytes
@@ -124,4 +124,50 @@ typedef struct
 
     uint16_t crc;
 } __attribute__((packed)) RobotInfoSendData_s;
+
 /*-------------------- Receive --------------------*/
+typedef struct RobotCmdData
+{
+    struct
+    {
+        uint8_t sof;  // 数据帧起始字节，固定值为 0xA5
+        uint8_t len;  // 数据段长度
+        uint8_t id;   // 数据段id = 0x01
+        uint8_t crc;  // 数据帧头的 CRC8 校验
+    } __attribute__((packed)) frame_header;
+
+    uint32_t time_stamp;
+
+    struct
+    {
+        struct
+        {
+            float vx;
+            float vy;
+            float wz;
+        } __attribute__((packed)) speed_vector;
+
+        struct
+        {
+            float roll;
+            float yaw;
+            float pitch;
+            float leg_lenth;
+        } __attribute__((packed)) chassis;
+
+        struct
+        {
+            float yaw;
+            float pitch;
+        } __attribute__((packed)) gimbal;
+
+        struct
+        {
+            uint8_t fire;
+            uint8_t fric_on;
+        } __attribute__((packed)) shoot;
+
+    } __attribute__((packed)) data;
+
+    uint16_t checksum;
+} __attribute__((packed)) RobotCmdData_s;
