@@ -19,16 +19,22 @@
 static uint8_t USB_RX_BUF[USB_RX_DATA_SIZE];
 // 数据接收结构体
 static ReceiveRobotCmdData_s RECEIVE_ROBOT_CMD_DATA;
+static RobotCmdData_t ROBOT_CMD_DATA;
 
 // Function Declarations
 
 static void UsbReceiveData(void);
+static void GetCmdData(void);
 
 void usb_receive_task(void const * argument)
 {
+    Publish(&ROBOT_CMD_DATA, "ROBOT_CMD_DATA");
+
     vTaskDelay(10);  //等待USB设备初始化完成
+
     while (1) {
         UsbReceiveData();
+        GetCmdData();
 
         vTaskDelay(USB_RECEIVE_TASK_CONTROL_TIME);
     }
@@ -70,3 +76,20 @@ static void UsbReceiveData(void)
     }
 }
 
+static void GetCmdData(void)
+{
+    ROBOT_CMD_DATA.speed_vector.vx = RECEIVE_ROBOT_CMD_DATA.data.speed_vector.vx;
+    ROBOT_CMD_DATA.speed_vector.vy = RECEIVE_ROBOT_CMD_DATA.data.speed_vector.vy;
+    ROBOT_CMD_DATA.speed_vector.wz = RECEIVE_ROBOT_CMD_DATA.data.speed_vector.wz;
+
+    ROBOT_CMD_DATA.chassis.yaw = RECEIVE_ROBOT_CMD_DATA.data.chassis.yaw;
+    ROBOT_CMD_DATA.chassis.pitch = RECEIVE_ROBOT_CMD_DATA.data.chassis.pitch;
+    ROBOT_CMD_DATA.chassis.roll = RECEIVE_ROBOT_CMD_DATA.data.chassis.roll;
+    ROBOT_CMD_DATA.chassis.leg_length = RECEIVE_ROBOT_CMD_DATA.data.chassis.leg_lenth;
+
+    ROBOT_CMD_DATA.gimbal.yaw = RECEIVE_ROBOT_CMD_DATA.data.gimbal.yaw;
+    ROBOT_CMD_DATA.gimbal.pitch = RECEIVE_ROBOT_CMD_DATA.data.gimbal.pitch;
+
+    ROBOT_CMD_DATA.shoot.fire = RECEIVE_ROBOT_CMD_DATA.data.shoot.fire;
+    ROBOT_CMD_DATA.shoot.fric_on = RECEIVE_ROBOT_CMD_DATA.data.shoot.fric_on;
+}
