@@ -36,8 +36,9 @@
 #include "led_flow_task.h"
 #include "oled_task.h"
 #include "referee_usart_task.h"
-#include "usb_send_task.h"
-#include "usb_receive_task.h"
+// #include "usb_send_task.h"
+// #include "usb_receive_task.h"
+#include "usb_task.h"
 #include "voltage_task.h"
 #include "servo_task.h"
 #include "shoot_task.h"
@@ -93,9 +94,11 @@ osThreadId oled_handle;
 
 osThreadId referee_usart_task_handle;
 
-osThreadId usb_send_task_handle;
+osThreadId usb_task_handle;
 
-osThreadId usb_receive_task_handle;
+// osThreadId usb_send_task_handle;
+
+// osThreadId usb_receive_task_handle;
 
 osThreadId battery_voltage_handle;
 
@@ -255,11 +258,14 @@ void MX_FREERTOS_Init(void) {
     referee_usart_task_handle = osThreadCreate(osThread(REFEREE), NULL);
 
 
-    osThreadDef(USB_SendTask, usb_send_task, osPriorityNormal, 0, 128);
-    usb_send_task_handle = osThreadCreate(osThread(USB_SendTask), NULL);
+    osThreadDef(USB_Task, usb_task, osPriorityNormal, 0, 128);
+    usb_task_handle = osThreadCreate(osThread(USB_Task), NULL);
 
-    osThreadDef(USB_ReceiveTask, usb_receive_task, osPriorityBelowNormal, 0, 128);
-    usb_receive_task_handle = osThreadCreate(osThread(USB_ReceiveTask), NULL);
+    // osThreadDef(USB_SendTask, usb_send_task, osPriorityNormal, 0, 128);
+    // usb_send_task_handle = osThreadCreate(osThread(USB_SendTask), NULL);
+
+    // osThreadDef(USB_ReceiveTask, usb_receive_task, osPriorityBelowNormal, 0, 128);
+    // usb_receive_task_handle = osThreadCreate(osThread(USB_ReceiveTask), NULL);
 
     osThreadDef(BATTERY_VOLTAGE, battery_voltage_task, osPriorityNormal, 0, 128);
     battery_voltage_handle = osThreadCreate(osThread(BATTERY_VOLTAGE), NULL);
