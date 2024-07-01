@@ -150,15 +150,15 @@ typedef struct RobotCmdData
         struct
         {
             float roll;
-            float yaw;
             float pitch;
+            float yaw;
             float leg_lenth;
         } __attribute__((packed)) chassis;
 
         struct
         {
-            float yaw;
             float pitch;
+            float yaw;
         } __attribute__((packed)) gimbal;
 
         struct

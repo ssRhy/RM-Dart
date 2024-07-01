@@ -35,6 +35,7 @@
 // Variable Declarations
 static const Imu_t * IMU;
 static const ChassisSpeedVector_t * FDB_SPEED_VECTOR;
+static const RobotCmdData_t * ROBOT_CMD_DATA;
 
 // 数据发送结构体
 // clang-format off
@@ -89,8 +90,10 @@ void usb_send_task(void const * argument)
     while (1) {
         ModifyDebugDataPackage(0, IMU->yaw, "yaw");
         ModifyDebugDataPackage(1, SEND_DATA_IMU.time_stamp, "data1");
-        // ModifyDebugDataPackage(2, RECEIVE_ROBOT_CMD_DATA.data.speed_vector.vx, "vx_set");
-        // ModifyDebugDataPackage(3, RECEIVE_ROBOT_CMD_DATA.data.speed_vector.vy, "vy_set");
+        ModifyDebugDataPackage(2, ROBOT_CMD_DATA->speed_vector.vx, "vx_set");
+        ModifyDebugDataPackage(3, ROBOT_CMD_DATA->speed_vector.vy, "vy_set");
+        ModifyDebugDataPackage(4, ROBOT_CMD_DATA->gimbal.pitch, "pitch");
+        ModifyDebugDataPackage(5, ROBOT_CMD_DATA->gimbal.yaw, "yaw");
         UsbSendData();
 
         vTaskDelay(USB_TASK_CONTROL_TIME);
@@ -111,6 +114,7 @@ static void UsbInit(void)
     // 订阅数据
     IMU = Subscribe("imu_data");                        // 获取IMU数据指针
     FDB_SPEED_VECTOR = Subscribe("chassis_fdb_speed");  // 获取底盘速度矢量指针
+    ROBOT_CMD_DATA = Subscribe("ROBOT_CMD_DATA");        // 获取机器人指令数据指针
 
     // 数据置零
     memset(&DURATION, 0, sizeof(Duration_t));
