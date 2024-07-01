@@ -3354,14 +3354,9 @@
               <FilePath>..\application\communication\communication.c</FilePath>
             </File>
             <File>
-              <FileName>usb_send_task.c</FileName>
+              <FileName>usb_task.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\application\communication\usb_send_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>usb_receive_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\application\communication\usb_receive_task.c</FilePath>
+              <FilePath>..\application\communication\usb_task.c</FilePath>
             </File>
           </Files>
         </Group>
