@@ -96,7 +96,9 @@
         "custom_typedef.h": "c",
         "usbd_conf.h": "c",
         "usb_typdef.h": "c",
-        "typeinfo": "c"
+        "typeinfo": "c",
+        "usb_receive_task.h": "c",
+        "usb_device.h": "c"
     },
     "C_Cpp.codeAnalysis.clangTidy.enabled": true,
     "[cpp]": {
