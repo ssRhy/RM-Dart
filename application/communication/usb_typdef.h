@@ -130,7 +130,7 @@ typedef struct RobotCmdData
 {
     struct
     {
-        uint8_t sof;  // 数据帧起始字节，固定值为 0xA5
+        uint8_t sof;  // 数据帧起始字节，固定值为 0x5A
         uint8_t len;  // 数据段长度
         uint8_t id;   // 数据段id = 0x01
         uint8_t crc;  // 数据帧头的 CRC8 校验
@@ -170,4 +170,4 @@ typedef struct RobotCmdData
     } __attribute__((packed)) data;
 
     uint16_t checksum;
-} __attribute__((packed)) RobotCmdData_s;
+} __attribute__((packed)) ReceiveRobotCmdData_s;

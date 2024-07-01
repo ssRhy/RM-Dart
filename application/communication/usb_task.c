@@ -20,6 +20,7 @@
 #include "CRC8_CRC16.h"
 #include "cmsis_os.h"
 #include "data_exchange.h"
+#include "stdbool.h"
 #include "string.h"
 #include "usb_device.h"
 #include "usb_typdef.h"
@@ -28,11 +29,11 @@
 
 #define USB_TASK_CONTROL_TIME 1  // ms
 
-#define USB_RX_DATA_SIZE 512  // byte
+#define USB_RX_DATA_SIZE 256  // byte
 #define USB_RECEIVE_LEN 64    // byte
 
-#define SEND_DURATION_IMU 1    // ms
-#define SEND_DURATION_DEBUG 1  // ms
+#define SEND_DURATION_IMU 1          // ms
+#define SEND_DURATION_DEBUG 1        // ms
 #define SEND_DURATION_ROBOT_INFO 10  // ms
 
 // Variable Declarations
@@ -43,10 +44,13 @@ static const ChassisSpeedVector_t * FDB_SPEED_VECTOR;
 
 // 数据发送结构体
 // clang-format off
-static DebugSendData_s SEND_DATA_DEBUG;
-static ImuSendData_s   SEND_DATA_IMU;
+static DebugSendData_s     SEND_DATA_DEBUG;
+static ImuSendData_s       SEND_DATA_IMU;
 static RobotInfoSendData_s SEND_DATA_ROBOT_INFO;
 // clang-format on
+
+// 数据接收结构体
+static ReceiveRobotCmdData_s RECEIVE_ROBOT_CMD_DATA;
 
 // 发送数据间隔时间
 typedef struct
@@ -92,8 +96,10 @@ void usb_task(void const * argument)
     }
 
     while (1) {
-        ModifyDebugDataPackage(0,IMU->yaw,"yaw");
-        ModifyDebugDataPackage(1,SEND_DATA_IMU.time_stamp,"data1");
+        ModifyDebugDataPackage(0, IMU->yaw, "yaw");
+        ModifyDebugDataPackage(1, SEND_DATA_IMU.time_stamp, "data1");
+        ModifyDebugDataPackage(2, RECEIVE_ROBOT_CMD_DATA.data.speed_vector.vx, "vx_set");
+        ModifyDebugDataPackage(3, RECEIVE_ROBOT_CMD_DATA.data.speed_vector.vy, "vy_set");
         UsbSendData();
         UsbReceiveData();
 
@@ -154,7 +160,7 @@ static void UsbInit(void)
     SEND_DATA_ROBOT_INFO.data.type.gimbal = GIMBAL_TYPE;
     SEND_DATA_ROBOT_INFO.data.type.shoot = SHOOT_TYPE;
     SEND_DATA_ROBOT_INFO.data.type.arm = MECHANICAL_ARM_TYPE;
-        
+
     // SEND_DATA_ROBOT_INFO.data.type.chassis = 1;
     // SEND_DATA_ROBOT_INFO.data.type.gimbal = 2;
     // SEND_DATA_ROBOT_INFO.data.type.shoot = 3;
@@ -162,7 +168,6 @@ static void UsbInit(void)
     // SEND_DATA_ROBOT_INFO.data.type.custom_controller = 5;
 
     // sizeof(RobotCmdData_s);
-
 }
 
 /**
@@ -187,9 +192,33 @@ static void UsbSendData(void)
  */
 static void UsbReceiveData(void)
 {
-    static uint32_t len = USB_RECEIVE_LEN;
-    USB_Receive(USB_RX_BUF, &len);  // Read data into the buffer
-    // uint8_t receive_ok = 0;
+    static uint32_t sof_len = 1;
+    static uint32_t header_len_remain = 3;
+    static uint32_t data_len_remain = (sizeof(ReceiveRobotCmdData_s) - 4);
+    uint8_t header;
+    int8_t receive_state;
+
+    // 读取header_sof，接收数据以0x5A开头
+    receive_state = USB_Receive(&header, &sof_len);  // Read data into the buffer
+    while (header != 0x5A && receive_state == USBD_OK) {
+        receive_state = USB_Receive(&header, &sof_len);
+    }
+
+    // 读取剩余帧头数据
+    USB_RX_BUF[0] = header;
+    receive_state = USB_Receive(USB_RX_BUF + sof_len, &header_len_remain);
+
+    // 检查CRC8校验
+    bool crc8_ok = verify_CRC8_check_sum(USB_RX_BUF, sof_len + header_len_remain);
+    if (crc8_ok) {
+        // 读取剩余数据
+        receive_state = USB_Receive(USB_RX_BUF + sof_len + header_len_remain, &data_len_remain);
+        // 检查整包CRC16校验
+        bool crc16_ok = verify_CRC16_check_sum(USB_RX_BUF, sizeof(ReceiveRobotCmdData_s));
+        if (crc16_ok) {
+            memcpy(&RECEIVE_ROBOT_CMD_DATA, USB_RX_BUF, sizeof(ReceiveRobotCmdData_s));
+        }
+    }
 }
 
 /*******************************************************************************/
