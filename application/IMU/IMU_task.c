@@ -34,7 +34,7 @@
 #include "main.h"
 #include "math.h"
 #include "pid.h"
-#include "usb_task.h"
+#include "usb_debug.h"
 #include "data_exchange.h"
 
 // clang-format off

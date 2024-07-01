@@ -1,6 +1,8 @@
 #ifndef __CUSTOM_TYPEDEF_H
 #define __CUSTOM_TYPEDEF_H
 
+#include "stdbool.h"
+
 typedef struct __Imu
 {
     float yaw, pitch, roll;              // rad
@@ -14,5 +16,30 @@ typedef struct  // 底盘速度向量结构体
     float vy;  // (m/s) y方向速度
     float wz;  // (rad/s) 旋转速度
 } ChassisSpeedVector_t;
+
+typedef struct
+{
+    ChassisSpeedVector_t speed_vector;
+    struct
+    {
+        float roll;
+        float pitch;
+        float yaw;
+        float leg_length;
+    } chassis;
+
+    struct
+    {
+        float pitch;
+        float yaw;
+    } gimbal;
+
+    struct
+    {
+        bool fire;
+        bool fric_on;
+    } shoot;
+
+} RobotCmdData_t;
 
 #endif  // __CUSTOM_TYPEDEF_H
