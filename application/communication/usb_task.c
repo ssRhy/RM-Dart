@@ -228,7 +228,7 @@ static void UsbReceiveData(void)
         // 检查整包CRC16校验
         bool crc16_ok = verify_CRC16_check_sum(USB_RX_BUF + p, sizeof(ReceiveRobotCmdData_s));
         if (crc16_ok) {
-            memcpy(&RECEIVE_ROBOT_CMD_DATA, USB_RX_BUF, sizeof(ReceiveRobotCmdData_s));
+            memcpy(&RECEIVE_ROBOT_CMD_DATA, USB_RX_BUF + p, sizeof(ReceiveRobotCmdData_s));
         }
     }
 }
