@@ -29,7 +29,7 @@
 #include "signal_generator.h"
 #include "stdbool.h"
 #include "string.h"
-#include "usb_task.h"
+#include "usb_debug.h"
 #include "user_lib.h"
 #include "data_exchange.h"
 
