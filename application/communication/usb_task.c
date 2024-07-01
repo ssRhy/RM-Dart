@@ -96,6 +96,8 @@ void usb_task(void const * argument)
 {
     MX_USB_DEVICE_Init();
 
+    Publish(&ROBOT_CMD_DATA, "ROBOT_CMD_DATA");
+
     vTaskDelay(10);  //等待USB设备初始化完成
 
     UsbInit();
@@ -106,13 +108,13 @@ void usb_task(void const * argument)
     }
 
     while (1) {
-        ModifyDebugDataPackage(0, IMU->yaw, "yaw");
-        ModifyDebugDataPackage(1, SEND_DATA_IMU.time_stamp, "data1");
-        ModifyDebugDataPackage(2, ROBOT_CMD_DATA.speed_vector.vx, "vx_set");
-        ModifyDebugDataPackage(3, ROBOT_CMD_DATA.speed_vector.vy, "vy_set");
-        ModifyDebugDataPackage(4, ROBOT_CMD_DATA.gimbal.pitch, "pitch");
-        ModifyDebugDataPackage(5, ROBOT_CMD_DATA.gimbal.yaw, "yaw");
-        
+        // ModifyDebugDataPackage(0, IMU->yaw, "yaw");
+        // ModifyDebugDataPackage(1, SEND_DATA_IMU.time_stamp, "data1");
+        // ModifyDebugDataPackage(2, ROBOT_CMD_DATA.speed_vector.vx, "vx_set");
+        // ModifyDebugDataPackage(3, ROBOT_CMD_DATA.speed_vector.vy, "vy_set");
+        // ModifyDebugDataPackage(4, ROBOT_CMD_DATA.gimbal.pitch, "pitch");
+        // ModifyDebugDataPackage(5, ROBOT_CMD_DATA.gimbal.yaw, "yaw");
+
         UsbSendData();
         UsbReceiveData();
         GetCmdData();
@@ -208,17 +210,16 @@ static void UsbReceiveData(void)
 {
     static uint32_t len = USB_RECEIVE_LEN;
 
-    uint32_t p = 0; // p:sof的位置
+    uint32_t p = 0;  // p:sof的位置
 
     // 读取数据
     USB_Receive(USB_RX_BUF, &len);  // Read data into the buffer
     // 寻找帧头位置
-    while (*(USB_RX_BUF+p) != 0x5A && p < len/2)
-    {
+    while (*(USB_RX_BUF + p) != 0x5A && p < len / 2) {
         p++;
     }
 
-    if (p > len/2){
+    if (p > len / 2) {
         return;
     }
 

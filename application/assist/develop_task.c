@@ -19,6 +19,10 @@ void develop_task(void const * pvParameters)
 
     while (1) {
         // code here
+        // ModifyDebugDataPackage(0, imu->yaw, "yaw");
+        // ModifyDebugDataPackage(1, imu->pitch, "pitch");
+        // ModifyDebugDataPackage(2, imu->pitch, "roll");
+
         vTaskDelay(1);
     }
 }
