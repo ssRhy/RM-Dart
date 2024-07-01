@@ -15,8 +15,7 @@
   ****************************(C) COPYRIGHT 2024 Polarbear*************************
 */
 
-#include "usb_task.h"
-
+#include "usb_send_task.h"
 #include "CRC8_CRC16.h"
 #include "cmsis_os.h"
 #include "data_exchange.h"
@@ -37,7 +36,7 @@
 #define SEND_DURATION_ROBOT_INFO 10  // ms
 
 // Variable Declarations
-static uint8_t USB_RX_BUF[USB_RX_DATA_SIZE];
+// static uint8_t USB_RX_BUF[USB_RX_DATA_SIZE];
 
 static const Imu_t * IMU;
 static const ChassisSpeedVector_t * FDB_SPEED_VECTOR;
@@ -82,7 +81,7 @@ static void UsbSendRobotInfoData(uint8_t duration);
  * @param[in]  argument: 任务参数
  * @retval     None
  */
-void usb_task(void const * argument)
+void usb_send_task(void const * argument)
 {
     MX_USB_DEVICE_Init();
 
@@ -192,33 +191,33 @@ static void UsbSendData(void)
  */
 static void UsbReceiveData(void)
 {
-    static uint32_t sof_len = 1;
-    static uint32_t header_len_remain = 3;
-    static uint32_t data_len_remain = (sizeof(ReceiveRobotCmdData_s) - 4);
-    uint8_t header;
-    int8_t receive_state;
+    // static uint32_t sof_len = 1;
+    // static uint32_t header_len_remain = 3;
+    // static uint32_t data_len_remain = (sizeof(ReceiveRobotCmdData_s) - 4);
+    // uint8_t header;
+    // int8_t receive_state;
 
-    // 读取header_sof，接收数据以0x5A开头
-    receive_state = USB_Receive(&header, &sof_len);  // Read data into the buffer
-    while (header != 0x5A && receive_state == USBD_OK) {
-        receive_state = USB_Receive(&header, &sof_len);
-    }
+    // // 读取header_sof，接收数据以0x5A开头
+    // receive_state = USB_Receive(&header, &sof_len);  // Read data into the buffer
+    // while (header != 0x5A && receive_state == USBD_OK) {
+    //     receive_state = USB_Receive(&header, &sof_len);
+    // }
 
-    // 读取剩余帧头数据
-    USB_RX_BUF[0] = header;
-    receive_state = USB_Receive(USB_RX_BUF + sof_len, &header_len_remain);
+    // // 读取剩余帧头数据
+    // USB_RX_BUF[0] = header;
+    // receive_state = USB_Receive(USB_RX_BUF + sof_len, &header_len_remain);
 
-    // 检查CRC8校验
-    bool crc8_ok = verify_CRC8_check_sum(USB_RX_BUF, sof_len + header_len_remain);
-    if (crc8_ok) {
-        // 读取剩余数据
-        receive_state = USB_Receive(USB_RX_BUF + sof_len + header_len_remain, &data_len_remain);
-        // 检查整包CRC16校验
-        bool crc16_ok = verify_CRC16_check_sum(USB_RX_BUF, sizeof(ReceiveRobotCmdData_s));
-        if (crc16_ok) {
-            memcpy(&RECEIVE_ROBOT_CMD_DATA, USB_RX_BUF, sizeof(ReceiveRobotCmdData_s));
-        }
-    }
+    // // 检查CRC8校验
+    // bool crc8_ok = verify_CRC8_check_sum(USB_RX_BUF, sof_len + header_len_remain);
+    // if (crc8_ok) {
+    //     // 读取剩余数据
+    //     receive_state = USB_Receive(USB_RX_BUF + sof_len + header_len_remain, &data_len_remain);
+    //     // 检查整包CRC16校验
+    //     bool crc16_ok = verify_CRC16_check_sum(USB_RX_BUF, sizeof(ReceiveRobotCmdData_s));
+    //     if (crc16_ok) {
+    //         memcpy(&RECEIVE_ROBOT_CMD_DATA, USB_RX_BUF, sizeof(ReceiveRobotCmdData_s));
+    //     }
+    // }
 }
 
 /*******************************************************************************/
