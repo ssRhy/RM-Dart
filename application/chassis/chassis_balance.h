@@ -29,6 +29,7 @@
 #include "remote_control.h"
 #include "struct_typedef.h"
 #include "user_lib.h"
+#include "custom_typedef.h"
 
 // clang-format off
 #define JOINT_ERROR_OFFSET   ((uint8_t)1 << 0)  // 关节电机错误偏移量

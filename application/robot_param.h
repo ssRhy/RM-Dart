@@ -25,11 +25,17 @@
 #include "robot_param_balanced_infantry.h"
 
 // 选择机器人的各种类型
-#define __DEVELOP 0                    // 开发模式
-#define __DEBUG 0                      // 调试模式
-#define __TUNING 0                     // 调参模式
-#define __MUSIC_ON 0                   // 开启音乐
-#define __TUNING_MODE TUNING_NONE      // 调参模式
-#define __SELF_BOARD_ID 1  // 本板ID
+#define __DEVELOP 1                // 开发模式
+#define __DEBUG 0                  // 调试模式
+#define __TUNING 0                 // 调参模式
+#define __MUSIC_ON 0               // 开启音乐
+#define __TUNING_MODE TUNING_NONE  // 调参模式
+#define __SELF_BOARD_ID 1          // 本板ID
+
+// USB通信的部分选项
+#define __USING_OLD_USB 0   // 使用旧版USB通信
+#define __USB_SEND_IMU 1    // 发送IMU数据
+#define __USB_SEND_RC 1     // 发送遥控器数据
+#define __USB_SEND_DEBUG 1  // 发送DEBUG数据
 
 #endif /* ROBOT_PARAM_H */

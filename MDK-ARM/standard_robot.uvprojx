@@ -3284,11 +3284,6 @@
               <FilePath>..\application\assist\servo_task.c</FilePath>
             </File>
             <File>
-              <FileName>usb_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\application\assist\usb_task.c</FilePath>
-            </File>
-            <File>
               <FileName>develop_task.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\application\assist\develop_task.c</FilePath>
@@ -3357,6 +3352,11 @@
               <FileName>communication.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\application\communication\communication.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\communication\usb_task.c</FilePath>
             </File>
           </Files>
         </Group>

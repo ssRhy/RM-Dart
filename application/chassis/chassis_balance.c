@@ -29,8 +29,9 @@
 #include "signal_generator.h"
 #include "stdbool.h"
 #include "string.h"
-#include "usb_task.h"
+#include "usb_debug.h"
 #include "user_lib.h"
+#include "data_exchange.h"
 
 #define CALIBRATE_STOP_VELOCITY 0.05f  // rad/s
 #define CALIBRATE_STOP_TIME 200        // ms
@@ -67,6 +68,13 @@ static Chassis_s CHASSIS = {
         },
     .dyaw = 0.0f,
 };
+
+/*-------------------- Publish --------------------*/
+
+void ChassisPublish(void)
+{
+    Publish(&CHASSIS.fdb.speed_vector, "chassis_fdb_speed");
+}
 
 /*-------------------- Init --------------------*/
 
@@ -376,24 +384,24 @@ void ChassisObserver(void)
     UpdateLegStatus();
     UpdateCalibrateStatus();
 
-    OutputPCData.packets[0].data = CHASSIS.fdb.leg[0].rod.L0;
-    OutputPCData.packets[1].data = CHASSIS.fdb.leg[1].rod.L0;
-    OutputPCData.packets[2].data = CHASSIS.ref.rod_L0[0];
-    OutputPCData.packets[3].data = CHASSIS.ref.rod_L0[1];
+    // OutputPCData.packets[0].data = CHASSIS.fdb.leg[0].rod.L0;
+    // OutputPCData.packets[1].data = CHASSIS.fdb.leg[1].rod.L0;
+    // OutputPCData.packets[2].data = CHASSIS.ref.rod_L0[0];
+    // OutputPCData.packets[3].data = CHASSIS.ref.rod_L0[1];
     // OutputPCData.packets[4].data = CHASSIS.fdb.leg[0].state.theta;
     // OutputPCData.packets[5].data = CHASSIS.fdb.leg[0].state.theta_dot;
     // OutputPCData.packets[6].data = CHASSIS.fdb.leg[0].state.x;
     // OutputPCData.packets[7].data = CHASSIS.fdb.leg[0].state.x_dot;
     // OutputPCData.packets[8].data = CHASSIS.fdb.leg[0].state.phi;
     // OutputPCData.packets[9].data = CHASSIS.fdb.leg[0].state.phi_dot;
-    OutputPCData.packets[10].data = CHASSIS.joint_motor[1].set.tor;
-    OutputPCData.packets[11].data = CHASSIS.joint_motor[2].set.tor;
-    OutputPCData.packets[12].data = CHASSIS.joint_motor[3].set.tor;
-    OutputPCData.packets[13].data = GROUND_TOUCH.support_force[0];
-    OutputPCData.packets[14].data = GROUND_TOUCH.support_force[1];
-    OutputPCData.packets[15].data = CHASSIS.imu->roll;
-    OutputPCData.packets[16].data = CHASSIS.wheel_motor[0].set.tor;
-    OutputPCData.packets[17].data = CHASSIS.wheel_motor[1].set.tor;
+    // OutputPCData.packets[10].data = CHASSIS.joint_motor[1].set.tor;
+    // OutputPCData.packets[11].data = CHASSIS.joint_motor[2].set.tor;
+    // OutputPCData.packets[12].data = CHASSIS.joint_motor[3].set.tor;
+    // OutputPCData.packets[13].data = GROUND_TOUCH.support_force[0];
+    // OutputPCData.packets[14].data = GROUND_TOUCH.support_force[1];
+    // OutputPCData.packets[15].data = CHASSIS.imu->roll;
+    // OutputPCData.packets[16].data = CHASSIS.wheel_motor[0].set.tor;
+    // OutputPCData.packets[17].data = CHASSIS.wheel_motor[1].set.tor;
     // OutputPCData.packets[18].data = CHASSIS.wheel_motor[0].set.tor;
     // OutputPCData.packets[19].data = CHASSIS.wheel_motor[1].set.tor;
     // OutputPCData.packets[20].data = CHASSIS.imu->z_accel;
@@ -722,8 +730,8 @@ static void LegTorqueController(void)
         CHASSIS.cmd.leg[i].rod.F = F_ff + F_compensate;
         // CHASSIS.cmd.leg[i].rod.F = F_ff + F_compensate - F_ff;
     }
-    OutputPCData.packets[19].data = CHASSIS.pid.leg_length_length[0].out;
-    OutputPCData.packets[20].data = CHASSIS.pid.leg_length_length[1].out;
+    // OutputPCData.packets[19].data = CHASSIS.pid.leg_length_length[0].out;
+    // OutputPCData.packets[20].data = CHASSIS.pid.leg_length_length[1].out;
 
     // ROLL角控制
     float F_delta = PID_calc(&CHASSIS.pid.roll_angle, CHASSIS.fdb.body.roll, CHASSIS.ref.body.roll);

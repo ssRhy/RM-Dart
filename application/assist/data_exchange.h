@@ -17,6 +17,7 @@
 #ifndef __DATA_EXCHANGE_H
 #define __DATA_EXCHANGE_H
 #include "struct_typedef.h"
+#include "custom_typedef.h"
 
 typedef enum __DataExchangeIndex {
     TEST_DATA = 0,
@@ -43,13 +44,6 @@ typedef enum DataPublishStatus {
 } DataPublishStatus_e;
 
 typedef enum DataSubscribeStatus { SUBSCRIBE_FAIL = 0, SUBSCRIBE_OK } DataSubscribeStatus_e;
-
-typedef struct __Imu
-{
-    float yaw, pitch, roll;              // rad
-    float yaw_vel, pitch_vel, roll_vel;  // rad/s
-    float x_accel, y_accel, z_accel;     // m/s^2
-} Imu_t;
 
 extern uint8_t Publish(void * address, char * name);
 extern const void * Subscribe(char * name);

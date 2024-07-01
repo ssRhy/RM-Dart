@@ -5,7 +5,7 @@
 #include "cmsis_os.h"
 #include "data_exchange.h"
 #include "signal_generator.h"
-#include "usb_task.h"
+#include "usb_debug.h"
 #include "user_lib.h"
 
 const Imu_t * imu;
@@ -19,6 +19,10 @@ void develop_task(void const * pvParameters)
 
     while (1) {
         // code here
+        // ModifyDebugDataPackage(0, imu->yaw, "yaw");
+        // ModifyDebugDataPackage(1, imu->pitch, "pitch");
+        // ModifyDebugDataPackage(2, imu->pitch, "roll");
+
         vTaskDelay(1);
     }
 }
