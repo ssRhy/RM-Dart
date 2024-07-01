@@ -5,6 +5,4 @@
 
 extern void usb_task(void const * argument);
 
-extern void ModifyDebugDataPackage(uint8_t index, float data, const char * name);
-
 #endif /* USB_TASK_H */

@@ -16,7 +16,7 @@
 #include "custom_controller_penguin_mini.h"
 #if (CUSTOM_CONTROLLER_TYPE == CUSTOM_CONTROLLER_PENGUIN_MINI)
 #include "CAN_communication.h"
-#include "usb_task.h"
+#include "usb_debug.h"
 #include "user_lib.h"
 
 #define BIG_ARM_DATA_ID 1

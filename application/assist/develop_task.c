@@ -5,7 +5,7 @@
 #include "cmsis_os.h"
 #include "data_exchange.h"
 #include "signal_generator.h"
-#include "usb_task.h"
+#include "usb_debug.h"
 #include "user_lib.h"
 
 const Imu_t * imu;

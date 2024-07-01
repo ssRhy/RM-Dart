@@ -1,3 +1,5 @@
+#ifndef USB_TYPEDEF_H
+#define USB_TYPEDEF_H
 
 #include "struct_typedef.h"
 
@@ -171,3 +173,5 @@ typedef struct RobotCmdData
 
     uint16_t checksum;
 } __attribute__((packed)) ReceiveRobotCmdData_s;
+
+#endif  // USB_TYPEDEF_H

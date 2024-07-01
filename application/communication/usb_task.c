@@ -22,6 +22,7 @@
 #include "data_exchange.h"
 #include "stdbool.h"
 #include "string.h"
+#include "usb_debug.h"
 #include "usb_device.h"
 #include "usb_typdef.h"
 #include "usbd_cdc_if.h"
@@ -102,18 +103,13 @@ void usb_task(void const * argument)
 
     UsbInit();
 
-    if (IMU == NULL || FDB_SPEED_VECTOR == NULL || &SEND_DATA_DEBUG == NULL ||
-        &SEND_DATA_IMU == NULL) {
-        ;
-    }
-
     while (1) {
-        // ModifyDebugDataPackage(0, IMU->yaw, "yaw");
-        // ModifyDebugDataPackage(1, SEND_DATA_IMU.time_stamp, "data1");
-        // ModifyDebugDataPackage(2, ROBOT_CMD_DATA.speed_vector.vx, "vx_set");
-        // ModifyDebugDataPackage(3, ROBOT_CMD_DATA.speed_vector.vy, "vy_set");
-        // ModifyDebugDataPackage(4, ROBOT_CMD_DATA.gimbal.pitch, "pitch");
-        // ModifyDebugDataPackage(5, ROBOT_CMD_DATA.gimbal.yaw, "yaw");
+        ModifyDebugDataPackage(0, IMU->yaw, "yaw");
+        ModifyDebugDataPackage(1, SEND_DATA_IMU.time_stamp, "data1");
+        ModifyDebugDataPackage(2, ROBOT_CMD_DATA.speed_vector.vx, "vx_set");
+        ModifyDebugDataPackage(3, ROBOT_CMD_DATA.speed_vector.vy, "vy_set");
+        ModifyDebugDataPackage(4, ROBOT_CMD_DATA.gimbal.pitch, "pitch");
+        ModifyDebugDataPackage(5, ROBOT_CMD_DATA.gimbal.yaw, "yaw");
 
         UsbSendData();
         UsbReceiveData();
