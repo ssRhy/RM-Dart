@@ -138,6 +138,29 @@ typedef struct
     uint16_t crc;
 } __attribute__((packed)) RobotInfoSendData_s;
 
+// PID调参数据包
+typedef struct
+{
+    struct
+    {
+        uint8_t sof;  // 数据帧起始字节，固定值为 0x5A
+        uint8_t len;  // 数据段长度
+        uint8_t id;   // 数据段id = 0x04
+        uint8_t crc;  // 数据帧头的 CRC8 校验
+    } __attribute__((packed)) frame_header;
+
+    uint32_t time_stamp;
+
+    struct
+    {
+        float fdb;
+        float ref;
+        float pid_out;
+    } __attribute__((packed)) data;
+
+    uint16_t crc;
+} __attribute__((packed)) PidDebugSendData_s;
+
 /*-------------------- Receive --------------------*/
 typedef struct RobotCmdData
 {
@@ -183,6 +206,30 @@ typedef struct RobotCmdData
     } __attribute__((packed)) data;
 
     uint16_t checksum;
-} __attribute__((packed)) ReceiveRobotCmdData_s;
+} __attribute__((packed)) RobotCmdReceiveData_s;
 
+// PID调参数据包
+typedef struct
+{
+    struct
+    {
+        uint8_t sof;  // 数据帧起始字节，固定值为 0x5A
+        uint8_t len;  // 数据段长度
+        uint8_t id;   // 数据段id = 0x02
+        uint8_t crc;  // 数据帧头的 CRC8 校验
+    } __attribute__((packed)) frame_header;
+
+    uint32_t time_stamp;
+
+    struct
+    {
+        float kp;
+        float ki;
+        float kd;
+        float max_out;
+        float max_iout;
+    } __attribute__((packed)) data;
+
+    uint16_t crc;
+} __attribute__((packed)) PidDebugReceiveData_s;
 #endif  // USB_TYPEDEF_H

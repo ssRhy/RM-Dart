@@ -52,7 +52,7 @@ static RobotInfoSendData_s SEND_DATA_ROBOT_INFO;
 // clang-format on
 
 // 数据接收结构体
-static ReceiveRobotCmdData_s RECEIVE_ROBOT_CMD_DATA;
+static RobotCmdReceiveData_s RECEIVE_ROBOT_CMD_DATA;
 
 // 机器人控制指令数据
 static RobotCmdData_t ROBOT_CMD_DATA;
@@ -233,7 +233,7 @@ static void UsbReceiveData(void)
             if (crc16_ok) {
                 switch (data_id) {
                     case ROBOT_CMD_DATA_RECEIVE_ID: {
-                        memcpy(&RECEIVE_ROBOT_CMD_DATA, sof_address, sizeof(ReceiveRobotCmdData_s));
+                        memcpy(&RECEIVE_ROBOT_CMD_DATA, sof_address, sizeof(RobotCmdReceiveData_s));
                     } break;
                     default:
                         break;
