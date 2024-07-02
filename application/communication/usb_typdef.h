@@ -5,6 +5,17 @@
 
 #define DEBUG_PACKAGE_NUM 10
 
+// clang-format off
+#define SEND_SOF    ((uint8_t)0x5A)
+#define RECEIVE_SOF ((uint8_t)0x5A)
+
+#define DEBUG_DATA_SEND_ID      ((uint8_t)0x01)
+#define IMU_DATA_SEND_ID        ((uint8_t)0x02)
+#define ROBOT_INFO_DATA_SEND_ID ((uint8_t)0x03)
+
+#define ROBOT_CMD_DATA_RECEIVE_ID  ((uint8_t)0x01)
+// clang-format on
+
 /*-------------------- Send --------------------*/
 
 typedef struct InfoData

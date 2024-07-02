@@ -139,9 +139,9 @@ static void UsbInit(void)
 
     // 1.初始化调试数据包
     // 帧头部分
-    SEND_DATA_DEBUG.frame_header.sof = 0x5A;
+    SEND_DATA_DEBUG.frame_header.sof = SEND_SOF;
     SEND_DATA_DEBUG.frame_header.len = (uint8_t)(sizeof(DebugSendData_s) - 6);
-    SEND_DATA_DEBUG.frame_header.id = 0x01;
+    SEND_DATA_DEBUG.frame_header.id = DEBUG_DATA_SEND_ID;
     append_CRC8_check_sum(  // 添加帧头 CRC8 校验位
         (uint8_t *)(&SEND_DATA_DEBUG.frame_header), sizeof(SEND_DATA_DEBUG.frame_header));
 
@@ -153,18 +153,18 @@ static void UsbInit(void)
 
     // 2.初始化IMU数据包
     // 帧头部分
-    SEND_DATA_IMU.frame_header.sof = 0x5A;
+    SEND_DATA_IMU.frame_header.sof = SEND_SOF;
     SEND_DATA_IMU.frame_header.len = (uint8_t)(sizeof(ImuSendData_s) - 6);
-    SEND_DATA_IMU.frame_header.id = 0x02;
+    SEND_DATA_IMU.frame_header.id = IMU_DATA_SEND_ID;
     append_CRC8_check_sum(  // 添加帧头 CRC8 校验位
         (uint8_t *)(&SEND_DATA_IMU.frame_header), sizeof(SEND_DATA_IMU.frame_header));
     // 数据部分
 
     // 3.初始化机器人信息数据包
     // 帧头部分
-    SEND_DATA_ROBOT_INFO.frame_header.sof = 0x5A;
+    SEND_DATA_ROBOT_INFO.frame_header.sof = SEND_SOF;
     SEND_DATA_ROBOT_INFO.frame_header.len = (uint8_t)(sizeof(RobotInfoSendData_s) - 6);
-    SEND_DATA_ROBOT_INFO.frame_header.id = 0x03;
+    SEND_DATA_ROBOT_INFO.frame_header.id = ROBOT_INFO_DATA_SEND_ID;
     append_CRC8_check_sum(  // 添加帧头 CRC8 校验位
         (uint8_t *)(&SEND_DATA_ROBOT_INFO.frame_header), sizeof(SEND_DATA_ROBOT_INFO.frame_header));
     // 数据部分
@@ -216,7 +216,7 @@ static void UsbReceiveData(void)
 
     while (sof_address <= rx_data_end_address) {  // 解析缓冲区中的所有数据包
         // 寻找帧头位置
-        while (*(sof_address) != 0x5A && (sof_address <= rx_data_end_address)) {
+        while (*(sof_address) != RECEIVE_SOF && (sof_address <= rx_data_end_address)) {
             sof_address++;
         }
         // 判断是否超出接收数据范围
@@ -232,7 +232,7 @@ static void UsbReceiveData(void)
             bool crc16_ok = verify_CRC16_check_sum(sof_address, 4 + data_len + 2);
             if (crc16_ok) {
                 switch (data_id) {
-                    case 0x01: {
+                    case ROBOT_CMD_DATA_RECEIVE_ID: {
                         memcpy(&RECEIVE_ROBOT_CMD_DATA, sof_address, sizeof(ReceiveRobotCmdData_s));
                     } break;
                     default:
@@ -248,7 +248,7 @@ static void UsbReceiveData(void)
         rx_data_start_address = USB_RX_BUF;
     } else {
         uint16_t remaining_data_len = USB_RECEIVE_LEN - (sof_address - rx_data_start_address);
-        // 缓冲区中没有剩余数据，下次接收数据的起始位置为缓冲区中剩余数据的起始位置
+        // 缓冲区中有剩余数据，下次接收数据的起始位置为缓冲区中剩余数据的起始位置
         rx_data_start_address = USB_RX_BUF + remaining_data_len;
         // 将剩余数据移到缓冲区的起始位置
         memcpy(USB_RX_BUF, sof_address, remaining_data_len);
