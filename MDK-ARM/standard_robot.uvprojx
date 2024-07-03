@@ -3253,6 +3253,11 @@
               <FileType>1</FileType>
               <FilePath>..\components\support\signal_generator.c</FilePath>
             </File>
+            <File>
+              <FileName>list.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\components\support\list.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
