@@ -49,10 +49,12 @@ static const ChassisSpeedVector_t * FDB_SPEED_VECTOR;
 static DebugSendData_s     SEND_DATA_DEBUG;
 static ImuSendData_s       SEND_DATA_IMU;
 static RobotInfoSendData_s SEND_DATA_ROBOT_INFO;
+static PidDebugSendData_s  SEND_DATA_PID;
 // clang-format on
 
 // 数据接收结构体
 static RobotCmdReceiveData_s RECEIVE_ROBOT_CMD_DATA;
+static PidDebugReceiveData_s RECEIVE_PID_DEBUG_DATA;
 
 // 机器人控制指令数据
 static RobotCmdData_t ROBOT_CMD_DATA;
@@ -180,6 +182,16 @@ static void UsbInit(void)
     // SEND_DATA_ROBOT_INFO.data.type.custom_controller = 5;
 
     // sizeof(RobotCmdData_s);
+
+    // 4.初始化pid调参数据
+    // 帧头部分
+    SEND_DATA_PID.frame_header.sof = SEND_SOF;
+    SEND_DATA_PID.frame_header.len = (uint8_t)(sizeof(PidDebugSendData_s) - 6);
+    SEND_DATA_PID.frame_header.id = PID_DEBUG_DATA_SEND_ID;
+    append_CRC8_check_sum(  // 添加帧头 CRC8 校验位
+        (uint8_t *)(&SEND_DATA_PID.frame_header), sizeof(SEND_DATA_PID.frame_header));
+    // 数据部分
+
 }
 
 /**
@@ -234,6 +246,9 @@ static void UsbReceiveData(void)
                 switch (data_id) {
                     case ROBOT_CMD_DATA_RECEIVE_ID: {
                         memcpy(&RECEIVE_ROBOT_CMD_DATA, sof_address, sizeof(RobotCmdReceiveData_s));
+                    } break;
+                    case PID_DEBUG_DATA_RECEIVE_ID: {
+                        memcpy(&RECEIVE_PID_DEBUG_DATA, sof_address, sizeof(PidDebugReceiveData_s));
                     } break;
                     default:
                         break;

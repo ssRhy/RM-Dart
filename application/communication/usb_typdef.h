@@ -12,8 +12,10 @@
 #define DEBUG_DATA_SEND_ID      ((uint8_t)0x01)
 #define IMU_DATA_SEND_ID        ((uint8_t)0x02)
 #define ROBOT_INFO_DATA_SEND_ID ((uint8_t)0x03)
+#define PID_DEBUG_DATA_SEND_ID  ((uint8_t)0x04)
 
 #define ROBOT_CMD_DATA_RECEIVE_ID  ((uint8_t)0x01)
+#define PID_DEBUG_DATA_RECEIVE_ID  ((uint8_t)0x02)
 // clang-format on
 
 /*-------------------- Send --------------------*/
