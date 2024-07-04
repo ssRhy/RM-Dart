@@ -101,7 +101,8 @@
         "usb_device.h": "c",
         "usb_send_task.h": "c",
         "usb_debug.h": "c",
-        "chassis_balance_extras.h": "c"
+        "chassis_balance_extras.h": "c",
+        "list.h": "c"
     },
     "C_Cpp.codeAnalysis.clangTidy.enabled": true,
     "[cpp]": {
