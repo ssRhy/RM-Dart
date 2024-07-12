@@ -3254,9 +3254,9 @@
               <FilePath>..\components\support\signal_generator.c</FilePath>
             </File>
             <File>
-              <FileName>list.c</FileName>
+              <FileName>clist.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\components\support\list.c</FilePath>
+              <FilePath>..\components\support\clist.c</FilePath>
             </File>
           </Files>
         </Group>
