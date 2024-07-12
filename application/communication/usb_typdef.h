@@ -101,7 +101,6 @@ typedef struct
     } __attribute__((packed)) frame_header;
 
     uint32_t time_stamp;
-    uint8_t latency;// 通信延迟
 
     struct
     {
