@@ -103,7 +103,9 @@
         "usb_debug.h": "c",
         "chassis_balance_extras.h": "c",
         "list.h": "c",
-        "bsp_flash.h": "c"
+        "bsp_flash.h": "c",
+        "clist.h": "c",
+        "array": "c"
     },
     "C_Cpp.codeAnalysis.clangTidy.enabled": true,
     "[cpp]": {
