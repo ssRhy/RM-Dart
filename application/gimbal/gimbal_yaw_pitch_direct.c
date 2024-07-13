@@ -31,7 +31,7 @@ void InitGimbal(void)
 {
   //step1 获取所有所需变量指针
    gimbal_direct.rc = get_remote_control_point(); 
-   gimbal_direct.imu= GetImuDataPoint();
+   gimbal_direct.imu= Subscribe("imu_data");
    //step2 置零所有值
    gimbal_direct.reference.pitch=0;
    gimbal_direct.reference.yaw=0;
@@ -70,7 +70,23 @@ void InitGimbal(void)
  */
 void SetGimbalMode(void)
 {
-      
+  //加上保险防止出现意外情况
+  gimbal_direct.mode=GIMBAL_ZERO_FORCE;
+  //下档无力
+  if (switch_is_down(gimbal_direct.rc->rc.s[1]))
+  {
+    gimbal_direct.mode=GIMBAL_ZERO_FORCE;
+  }
+  //中档陀螺仪控制
+  else if(switch_is_mid(gimbal_direct.rc->rc.s[1]))
+  {
+    gimbal_direct.mode=GIMBAL_GYRO;
+  }
+  //上档直接控制
+  else if(switch_is_up(gimbal_direct.rc->rc.s[1]))
+  {
+    gimbal_direct.mode=GIMBAL_OPEN;
+  }
 }
 
 /*-------------------- Observe --------------------*/

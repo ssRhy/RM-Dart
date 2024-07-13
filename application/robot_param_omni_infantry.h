@@ -59,8 +59,8 @@ typedef enum {
 /*-------------------- Gimbal --------------------*/
 //motor parameters ---------------------
 //电机id
-#define GIMBAL_DIRECT_YAW_ID ((uint8_t)4)
-#define GIMBAL_DIRECT_PITCH_ID ((uint8_t)6)
+#define GIMBAL_DIRECT_YAW_ID ((uint8_t)1)
+#define GIMBAL_DIRECT_PITCH_ID ((uint8_t)2)
 
 //电机can口
 #define GIMBAL_DIRECT_YAW_CAN ((uint8_t)1)
