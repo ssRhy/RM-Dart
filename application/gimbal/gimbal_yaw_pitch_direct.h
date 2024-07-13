@@ -65,7 +65,7 @@ typedef struct
     /*-------------------- Motors --------------------*/
     Motor_s yaw,pitch;
     /*-------------------- Values --------------------*/
-    Imu_t  * imu;  // IMU数据
+    Imu_t  *imu;  // IMU数据
 
     Values_t reference;    // 期望值
     Values_t feedback;     // 状态值

@@ -31,7 +31,7 @@ void InitGimbal(void)
 {
   //step1 获取所有所需变量指针
    gimbal_direct.rc = get_remote_control_point(); 
-   gimbal_direct.imu=GetImuDataPoint();=
+   gimbal_direct.imu= GetImuDataPoint();
    //step2 置零所有值
    gimbal_direct.reference.pitch=0;
    gimbal_direct.reference.yaw=0;
