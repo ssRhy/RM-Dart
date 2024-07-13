@@ -43,36 +43,36 @@ typedef enum {
 
 //PID parameters ---------------------
 //驱动轮速度环PID参数
-#define KP_CHASSIS_WHEEL_SPEED 0.0f
-#define KI_CHASSIS_WHEEL_SPEED 0.0f
-#define KD_CHASSIS_WHEEL_SPEED 0.0f
-#define MAX_IOUT_CHASSIS_WHEEL_SPEED 0.0f
-#define MAX_OUT_CHASSIS_WHEEL_SPEED 0.0f
+#define KP_CHASSIS_WHEEL_SPEED (0.0f)
+#define KI_CHASSIS_WHEEL_SPEED (0.0f)
+#define KD_CHASSIS_WHEEL_SPEED (0.0f)
+#define MAX_IOUT_CHASSIS_WHEEL_SPEED (0.0f)
+#define MAX_OUT_CHASSIS_WHEEL_SPEED (0.0f)
 
 //云台跟随角度环PID参数
-#define KP_CHASSIS_GIMBAL_FOLLOW_ANGLE 0.0f
-#define KI_CHASSIS_GIMBAL_FOLLOW_ANGLE 0.0f
-#define KD_CHASSIS_GIMBAL_FOLLOW_ANGLE 0.0f
-#define MAX_IOUT_CHASSIS_GIMBAL_FOLLOW_ANGLE 0.0f
-#define MAX_OUT_CHASSIS_GIMBAL_FOLLOW_ANGLE 0.0f
+#define KP_CHASSIS_GIMBAL_FOLLOW_ANGLE (0.0f)
+#define KI_CHASSIS_GIMBAL_FOLLOW_ANGLE (0.0f)
+#define KD_CHASSIS_GIMBAL_FOLLOW_ANGLE (0.0f)
+#define MAX_IOUT_CHASSIS_GIMBAL_FOLLOW_ANGLE (0.0f)
+#define MAX_OUT_CHASSIS_GIMBAL_FOLLOW_ANGLE (0.0f)
 
 /*-------------------- Gimbal --------------------*/
 //motor parameters ---------------------
 //电机id
-#define uint8_t GIMBAL_DIRECT_YAW_ID 0x1ff
-#define uint8_t GIMBAL_DIRECT_PITCH_ID 5
+#define  GIMBAL_DIRECT_YAW_ID 0x1ff
+#define  GIMBAL_DIRECT_PITCH_ID 5
 
 //电机can口
-#define uint8_t GIMBAL_DIRECT_YAW_CAN 1
-#define uint8_t GIMBAL_DIRECT_PITCH_CAN 2 
+#define GIMBAL_DIRECT_YAW_CAN (1)
+#define GIMBAL_DIRECT_PITCH_CAN (2) 
 
-//电机种类
-#define MotorType_e GIMBAL_DIRECT_YAW_MOTOR_TYPE
-#define MotorType_e GIMBAL_DIRECT_PITCH_MOTOR_TYPE
+//电机种类        
+#define GIMBAL_DIRECT_YAW_MOTOR_TYPE  JI_M6020
+#define GIMBAL_DIRECT_PITCH_MOTOR_TYPE JI_M6020
 
 //旋转方向
-#define int8_t GIMBAL_DIRECT_YAW_DIRECTION
-#define int8_t GIMBAL_DIRECT_PITCH_DIRECTION
+#define GIMBAL_DIRECT_YAW_DIRECTION 1 
+#define GIMBAL_DIRECT_PITCH_DIRECTION 1
 
 //减速比
 #define float GIMBAL_DIRECT_YAW_REDUCTION_RATIO
@@ -81,6 +81,7 @@ typedef enum {
 //电机运行模式
 #define uint16_t GIMBAL_DIRECT_YAW_MODE
 #define uint16_t GIMBAL_DIRECT_PITCH_MODE
+
 //physical parameters ---------------------
 #define GIMBAL_UPPER_LIMIT_PITCH 0.0f
 #define GIMBAL_UPPER_LIMIT_YAW 0.0f

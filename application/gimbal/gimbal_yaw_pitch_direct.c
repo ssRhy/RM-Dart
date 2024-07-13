@@ -70,7 +70,7 @@ void InitGimbal(void)
  */
 void SetGimbalMode(void)
 {
-
+      
 }
 
 /*-------------------- Observe --------------------*/
