@@ -29,6 +29,7 @@
 #include "remote_control.h"
 #include "struct_typedef.h"
 #include "user_lib.h"
+#include "custom_typedef.h"
 
 // clang-format off
 #define JOINT_ERROR_OFFSET   ((uint8_t)1 << 0)  // 关节电机错误偏移量
@@ -41,47 +42,70 @@
 /*-------------------- Structural definition --------------------*/
 
 typedef enum {
-    CHASSIS_OFF,         // 底盘关闭
-    CHASSIS_ZERO_FORCE,  // 底盘无力，所有控制量置0
-    CHASSIS_STAND_UP,    // 底盘起立，从倒地状态到站立状态的中间过程
-    CHASSIS_CALIBRATE,   // 底盘校准
+    CHASSIS_OFF,        // 底盘关闭
+    CHASSIS_SAFE,       // 底盘无力，所有控制量置0
+    CHASSIS_STAND_UP,   // 底盘起立，从倒地状态到站立状态的中间过程
+    CHASSIS_CALIBRATE,  // 底盘校准
     CHASSIS_FOLLOW_GIMBAL_YAW,  // 底盘跟随云台（运动方向为云台坐标系方向，需进行坐标转换）
     CHASSIS_FLOATING,    // 底盘悬空状态
     CHASSIS_CUSHIONING,  // 底盘缓冲状态
     CHASSIS_FREE,        // 底盘不跟随云台
-    CHASSIS_SPIN,        // 底盘小陀螺模式
     CHASSIS_AUTO,        // 底盘自动模式
-    CHASSIS_DEBUG        // 调试模式
+    CHASSIS_DEBUG,       // 调试模式
+    CHASSIS_CUSTOM       // 自定义模式
 } ChassisMode_e;
 
 typedef struct Leg
 {
     struct rod
     {
-        float Angle;    // rad
-        float dAngle;   // rad/s
-        float ddAngle;  // rad/s^2
+        float Phi0;    // rad
+        float dPhi0;   // rad/s
+        float ddPhi0;  // rad/s^2
 
-        float Length;    // m
-        float dLength;   // m/s
-        float ddLength;  // m/s^2
-
-        float F;   // N
-        float Tp;  // N*m
+        float L0;    // m
+        float dL0;   // m/s
+        float ddL0;  // m/s^2
     } rod;
 
     struct joint
     {
-        float Angle;   // rad 0-前 1-后
-        float dAngle;  // rad/s 0-前 1-后
-    } joint[2];
+        float Phi1, Phi4;    // rad
+        float dPhi1, dPhi4;  // rad/s
+    } joint;
 
     struct wheel
     {
         float Angle;     // rad
         float Velocity;  // rad/s
     } wheel;
+
+    float J[2][2];  //雅可比矩阵
 } Leg_t;
+
+typedef struct Body
+{
+    float x;
+    float x_dot;
+    float phi;
+    float phi_dot;
+
+    float roll;
+    float roll_dot;
+    float yaw;
+    float yaw_dot;
+} Body_t;
+
+//状态向量
+typedef struct LegState
+{
+    float theta;
+    float theta_dot;
+    float x;
+    float x_dot;
+    float phi;
+    float phi_dot;
+} LegState_t;
 
 /**
  * @brief      比例系数结构体
@@ -96,32 +120,61 @@ typedef struct
 } Ratio_t;
 
 /**
- * @brief 状态、期望和限制值
+ * @brief 状态
  */
 typedef struct
 {
-    float theta;
-    float theta_dot;
-    float x;
-    float x_dot;
-    float phi;
-    float phi_dot;
-
-    float speed_integral;
-    float roll;
-    float roll_velocity;
-    float yaw;
-    float yaw_velocity;
-
-    Leg_t leg[2];  // 0-左 1-右
-
+    Body_t body;
+    Leg_t leg[2];             // 0-左 1-右
+    LegState_t leg_state[2];  // 0-左 1-右
     ChassisSpeedVector_t speed_vector;
-} Values_t;
+} Fdb_t;
+
+/**
+ * @brief 期望
+ */
+typedef struct
+{
+    Body_t body;
+    LegState_t leg_state[2];  // 0-左 1-右
+    float rod_L0[2];         // 0-左 1-右
+    ChassisSpeedVector_t speed_vector;
+} Ref_t;
+
+typedef struct Cmd
+{
+    struct leg
+    {
+        struct rod_cmd
+        {
+            float F;   // N
+            float Tp;  // N*m
+        } rod;
+        struct joint_cmd
+        {
+            float T[2];  // N*m
+            float Pos[2];  // rad
+        } joint;
+        struct wheel_cmd
+        {
+            float T;  // N*m
+        } wheel;
+    } leg[2];  // 0-左 1-右
+} Cmd_t;
 
 typedef struct
 {
     pid_type_def yaw_angle;
     pid_type_def yaw_velocity;
+
+    pid_type_def vel_add;
+
+#if LOCATION_CONTROL
+    pid_type_def roll_angle;
+
+    pid_type_def pitch_angle;
+    pid_type_def pitch_vel;
+#else
 
     pid_type_def roll_angle;
     // pid_type_def roll_velocity;
@@ -133,6 +186,10 @@ typedef struct
     pid_type_def leg_length_speed[2];
 
     pid_type_def leg_angle_angle;
+#endif
+
+    pid_type_def stand_up;
+    pid_type_def wheel_stop[2];
 } PID_t;
 
 typedef struct LPF
@@ -160,8 +217,9 @@ typedef struct
     Motor_s wheel_motor[2];  // 驱动轮电机 0-左轮，1-右轮
     /*-------------------- Values --------------------*/
 
-    Values_t ref;  // 期望值
-    Values_t fdb;  // 状态值
+    Ref_t ref;  // 期望值
+    Fdb_t fdb;  // 状态值
+    Cmd_t cmd;  // 控制量
 
     PID_t pid;  // PID控制器
     LPF_t lpf;  // 低通滤波器

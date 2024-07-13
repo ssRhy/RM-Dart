@@ -1,4 +1,5 @@
 # StandardRobot++
+
 <div align=center>
 
 ![Logo](./doc/pic/Logo6.png)
@@ -17,21 +18,30 @@
 </div>
 
 ## 简介
+
 > 也许不是最好的？但一定是最适合上手的电控开源！
 
 本项目的计划是基于 DJI StandardRobot 的基础上改造成一个更适合北极熊uu们的通用型机器人代码框架。
 
 本框架致力于实现不同类型的机器人的代码通用化，只需要选择底盘云台的类型，修改一下对应物理参数即可实现对机器人的适配。
 
+## 配套套件
+
+- [StandardRobot++ Tool](https://gitee.com/SMBU-POLARBEAR/Serial_Port_Assistant) 上位机调试工具，可用于可视化查看机器人状态及相关参数，便于调试。
+- [ROS2_StandardRobot++](https://gitee.com/SMBU-POLARBEAR/ROS2_StandardRobotpp) ROS2驱动包，可用于实现上位机对机器人的控制。
+
 ## 模块支持
+
 详细信息请参考 [StandardRobot++ 框架](./doc/framework.md)
+
 ### 主要模块
+
 - **Chassis**\
   底盘模块：
   - [ ] 麦轮底盘
   - [ ] 全向轮底盘
   - [ ] 舵轮底盘
-  - [ ] 平衡底盘
+  - [x] 平衡底盘
   
   详细信息请参考 [CHASSIS_README](./application/chassis/CHASSIS_README.md)
 
@@ -56,33 +66,44 @@
   详细信息请参考 [ARM_README](./application/arm/ARM_README.md) -->
 
 ## 开发工具
+
 使用VSCode作为代码编辑器，Keil5作为IDE。
 > 虽然keil5老，但在嵌入式调试以及环境配置方面是非常简单易上手的。**千万不要用keil5来编辑代码！！！**
-
+\
+\
 > VSCode作为现代化代码编辑器 ，通过各种插件即可实现各种提高效率的开发方式，**尤其是Github Copilot**
 
 `.vscode` 文件夹已经提供了很多非常好用的插件，在`扩展`页面输入 `@recommended` 即可获取这些插件，点击安装即可。
 
 ## 欢迎贡献
+
 如果你发现了本项目中的问题和可优化的点，可用创建issue进行讨论。
 
 并且fork本项目后提交pr来贡献你的代码。
 
 我们的管理员审核后会将你的代码合并进来。
 
-> ***贡献代码时请参照 [注意事项](./doc/注意事项.md/#贡献代码) 中的贡献代码部分。*** 
+> ***贡献代码时请参照 [注意事项](./doc/注意事项.md/#贡献代码) 中的贡献代码部分。***
+>
+> 编写代码时可以参考[代码编写指南](./doc/代码编写指南.md)
 
 ## 后续计划
+
 具体要做的事情在[TODO](./doc/TODO.md)中
+
 - 先完成当前框架，实现对现有机器人的适配。
 - 添加上下位机联调方便调参。
 
 ## 致谢
-感谢各个战队的代码开源
+
+感谢 DJI C板示例程序和各个战队的代码开源
+
+- DJI [Development-Board-C-Examples](https://github.com/RoboMaster/Development-Board-C-Examples)
 - 跃鹿 [basic_framework-dev](https://gitee.com/hnuyuelurm/basic_framework)
 - 未来战队 [XRobot仓库](https://github.com/xrobot-org/XRobot) , [XRobot文档](https://xrobot-org.github.io/)
 
 ## 附录
+
 本文的详细补充内容写在 [附录](./doc/appendix.md) 中。
 
 如发现本项目中的问题，请添加至[问题列表](./doc/questions.md)并与相关负责人联系，如果有解决方案可以提交pull request。

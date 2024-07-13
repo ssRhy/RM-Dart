@@ -17,6 +17,7 @@
 
 #ifndef CHASSIS_H
 #define CHASSIS_H
+#include "custom_typedef.h"
 
 #define rc_deadband_limit(input, output, dealine)          \
     {                                                      \
@@ -32,13 +33,6 @@ typedef enum __ChassisState
     CHASSIS_STATE_NORNAL,  // 底盘正常状态
     CHASSIS_STATE_ERROR    // 底盘错误状态
 } ChassisState_e;
-
-typedef struct  // 底盘速度向量结构体
-{
-    float vx;  // (m/s) x方向速度
-    float vy;  // (m/s) y方向速度
-    float wz;  // (rad/s) 旋转速度
-} ChassisSpeedVector_t;
 
 extern void GimbalSpeedVectorToChassisSpeedVector(ChassisSpeedVector_t * speed_vector_set, float dyaw);
 

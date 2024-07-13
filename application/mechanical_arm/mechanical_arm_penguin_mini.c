@@ -27,7 +27,7 @@
 #include "math.h"
 #include "pid.h"
 #include "signal_generator.h"
-#include "usb_task.h"
+#include "usb_debug.h"
 
 static MechanicalArm_s MECHANICAL_ARM = {
     .mode = MECHANICAL_ARM_ZERO_FORCE,
