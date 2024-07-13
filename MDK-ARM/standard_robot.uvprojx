@@ -3253,6 +3253,11 @@
               <FileType>1</FileType>
               <FilePath>..\components\support\signal_generator.c</FilePath>
             </File>
+            <File>
+              <FileName>clist.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\components\support\clist.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -3262,11 +3267,6 @@
               <FileName>pid.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\components\controller\pid.c</FilePath>
-            </File>
-            <File>
-              <FileName>leg_model.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\components\controller\leg_model.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -3287,11 +3287,6 @@
               <FileName>servo_task.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\application\assist\servo_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>usb_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\application\assist\usb_task.c</FilePath>
             </File>
             <File>
               <FileName>develop_task.c</FileName>
@@ -3329,6 +3324,11 @@
               <FilePath>..\application\chassis\chassis_balance.c</FilePath>
             </File>
             <File>
+              <FileName>chassis_balance_extras.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\chassis\chassis_balance_extras.c</FilePath>
+            </File>
+            <File>
               <FileName>chassis_mecanum.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\application\chassis\chassis_mecanum.c</FilePath>
@@ -3357,6 +3357,11 @@
               <FileName>communication.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\application\communication\communication.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\communication\usb_task.c</FilePath>
             </File>
           </Files>
         </Group>

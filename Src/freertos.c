@@ -94,6 +94,10 @@ osThreadId referee_usart_task_handle;
 
 osThreadId usb_task_handle;
 
+// osThreadId usb_send_task_handle;
+
+// osThreadId usb_receive_task_handle;
+
 osThreadId battery_voltage_handle;
 
 osThreadId servo_task_handle;
@@ -251,9 +255,8 @@ void MX_FREERTOS_Init(void) {
     osThreadDef(REFEREE, referee_usart_task, osPriorityNormal, 0, 128);
     referee_usart_task_handle = osThreadCreate(osThread(REFEREE), NULL);
 
-
-    osThreadDef(USBTask, usb_task, osPriorityNormal, 0, 128);
-    usb_task_handle = osThreadCreate(osThread(USBTask), NULL);
+    osThreadDef(USB_Task, usb_task, osPriorityNormal, 0, 128);
+    usb_task_handle = osThreadCreate(osThread(USB_Task), NULL);
 
     osThreadDef(BATTERY_VOLTAGE, battery_voltage_task, osPriorityNormal, 0, 128);
     battery_voltage_handle = osThreadCreate(osThread(BATTERY_VOLTAGE), NULL);
