@@ -28,6 +28,7 @@
 #include "robot_param.h"
 #include "struct_typedef.h"
 
+
 /**
  * @brief 云台模式
  */
@@ -65,7 +66,7 @@ typedef struct
     /*-------------------- Motors --------------------*/
     Motor_s yaw,pitch;
     /*-------------------- Values --------------------*/
-    Imu_t  *imu;  // IMU数据
+    const Imu_t  *imu;  // IMU数据
 
     Values_t reference;    // 期望值
     Values_t feedback;     // 状态值

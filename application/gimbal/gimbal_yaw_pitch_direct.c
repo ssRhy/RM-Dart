@@ -18,6 +18,7 @@
 
 #include "gimbal_yaw_pitch_direct.h"
 #if (GIMBAL_TYPE == GIMBAL_YAW_PITCH_DIRECT)
+#include "CAN_receive.h"
 Gimbal_s gimbal_direct;
 PID_t gimbal_direct_pid;
 /*-------------------- Init --------------------*/
@@ -72,6 +73,7 @@ void SetGimbalMode(void)
 {
   //加上保险防止出现意外情况
   gimbal_direct.mode=GIMBAL_ZERO_FORCE;
+
   //下档无力
   if (switch_is_down(gimbal_direct.rc->rc.s[1]))
   {
@@ -90,13 +92,17 @@ void SetGimbalMode(void)
 }
 
 /*-------------------- Observe --------------------*/
-
+ 
 /**
  * @brief          更新状态量
  * @param[in]      none
  * @retval         none
  */
-void GimbalObserver(void) {}
+void GimbalObserver(void) 
+{
+  GetMotorMeasure(&gimbal_direct.yaw);
+  GetMotorMeasure(&gimbal_direct.pitch);
+}
 
 /*-------------------- Reference --------------------*/
 
@@ -105,7 +111,10 @@ void GimbalObserver(void) {}
  * @param[in]      none
  * @retval         none
  */
-void GimbalReference(void) {}
+void GimbalReference(void) 
+{
+  
+}
 
 /*-------------------- Console --------------------*/
 
@@ -114,7 +123,10 @@ void GimbalReference(void) {}
  * @param[in]      none
  * @retval         none
  */
-void GimbalConsole(void) {}
+void GimbalConsole(void) 
+{
+
+}
 
 /*-------------------- Cmd --------------------*/
 
