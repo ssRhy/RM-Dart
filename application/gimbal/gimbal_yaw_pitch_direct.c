@@ -19,6 +19,7 @@
 #include "gimbal_yaw_pitch_direct.h"
 #if (GIMBAL_TYPE == GIMBAL_YAW_PITCH_DIRECT)
 #include "CAN_receive.h"
+#include "AHRS_middleware.h"
 Gimbal_s gimbal_direct;
 PID_t gimbal_direct_pid;
 /*-------------------- Init --------------------*/
@@ -113,7 +114,11 @@ void GimbalObserver(void)
  */
 void GimbalReference(void) 
 {
-  
+  //键鼠控制
+  //读取鼠标的移动
+  gimbal_direct.reference.pitch=loop_fp32_constrain(gimbal_direct.reference.pitch+gimbal_direct.rc->mouse.y*MOUSE_SENSITIVITY,gimbal_direct.lower_limit.pitch,gimbal_direct.upper_limit.pitch);
+  gimbal_direct.reference.yaw  =loop_fp32_constrain(gimbal_direct.reference.yaw+gimbal_direct.rc->mouse.x*MOUSE_SENSITIVITY,gimbal_direct.lower_limit.yaw,gimbal_direct.upper_limit.yaw);
+
 }
 
 /*-------------------- Console --------------------*/
@@ -125,8 +130,21 @@ void GimbalReference(void)
  */
 void GimbalConsole(void) 
 {
+  if (gimbal_direct.mode == GIMBAL_ZERO_FORCE)
+  {
+    gimbal_direct.pitch.set.curr=0;
+    gimbal_direct.yaw.set.curr=0;
+  }
+  else 
+  {
+    gimbal_direct.pitch.set.vel=PID_calc(&gimbal_direct_pid.pitch_angle,gimbal_direct.pitch.fdb.pos,gimbal_direct.reference.pitch);
+    gimbal_direct.pitch.set.curr=PID_calc(&gimbal_direct_pid.pitch_velocity,gimbal_direct.pitch.set.vel,gimbal_direct.pitch.set.vel);
 
+    gimbal_direct.yaw.set.vel=PID_calc(&gimbal_direct_pid.yaw_angle,gimbal_direct.yaw.fdb.pos,gimbal_direct.reference.yaw);
+    gimbal_direct.yaw.set.curr=PID_calc(&gimbal_direct_pid.yaw_velocity,gimbal_direct.yaw.set.vel,gimbal_direct.yaw.set.vel);
 }
+  }
+  
 
 /*-------------------- Cmd --------------------*/
 
@@ -135,6 +153,9 @@ void GimbalConsole(void)
  * @param[in]      none
  * @retval         none
  */
-void SendGimbalCmd(void) {}
+void SendGimbalCmd(void) 
+{
+
+}
 
 #endif  // GIMBAL_YAW_PITCH

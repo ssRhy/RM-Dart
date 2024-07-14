@@ -9,23 +9,9 @@
 
 #define CHASSIS_TYPE CHASSIS_NONE  // 选择底盘类型
 #define GIMBAL_TYPE GIMBAL_YAW_PITCH_DIRECT    // 选择云台类型
-#define SHOOT_TYPE SHOOT_FRIC            // 选择发射机构类型
+#define SHOOT_TYPE SHOOT_NONE            // 选择发射机构类型
 #define CONTROL_TYPE CHASSIS_AND_GIMBAL  // 选择控制类型
-
-// 机器人物理参数
-typedef enum {
-    // 底盘CAN1
-    WHEEL1 = 0,
-    WHEEL2 = 1,
-    WHEEL3 = 2,
-    WHEEL4 = 3,
-    // 云台CAN2
-    YAW = 4,
-    PITCH = 5,
-    TRIGGER = 6,
-    FRIC1 = 0,
-    FRIC2 = 1,
-} DJIMotorIndex_e;//DJI电机在接收数据数组中的索引
+#define MECHANICAL_ARM_NONE  //选择机械臂类型
 
 /*-------------------- Chassis --------------------*/
 //physical parameters ---------------------
@@ -57,6 +43,9 @@ typedef enum {
 #define MAX_OUT_CHASSIS_GIMBAL_FOLLOW_ANGLE (0.0f)
 
 /*-------------------- Gimbal --------------------*/
+//mouse sensitivity ---------------------
+#define MOUSE_SENSITIVITY 1
+
 //motor parameters ---------------------
 //电机id
 #define GIMBAL_DIRECT_YAW_ID ((uint8_t)1)
@@ -79,8 +68,8 @@ typedef enum {
 #define GIMBAL_DIRECT_PITCH_REDUCTION_RATIO (1)
 
 //电机运行模式
-#define GIMBAL_DIRECT_YAW_MODE (1)
-#define GIMBAL_DIRECT_PITCH_MODE (1)
+#define GIMBAL_DIRECT_YAW_MODE (0)
+#define GIMBAL_DIRECT_PITCH_MODE (0)
 
 //physical parameters ---------------------
 #define GIMBAL_UPPER_LIMIT_PITCH (0.0f)
