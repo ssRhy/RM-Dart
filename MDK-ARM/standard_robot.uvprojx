@@ -3468,6 +3468,11 @@
               <FileType>1</FileType>
               <FilePath>..\application\music\music_castle_in_the_sky.c</FilePath>
             </File>
+            <File>
+              <FileName>music_start.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\music\music_start.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

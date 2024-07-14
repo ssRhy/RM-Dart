@@ -2,19 +2,26 @@
 
 #include "music_task.h"
 
-#include "music_you.h"
-#include "music_unity.h"
-#include "music_canon.h"
-#include "music_castle_in_the_sky.h"
 #include "cmsis_os.h"
 #include "music.h"
+#include "music_canon.h"
+#include "music_castle_in_the_sky.h"
+#include "music_start.h"
+#include "music_unity.h"
+#include "music_you.h"
 
 #ifndef __weak
 #define __weak __attribute__((weak))
 #endif /* __weak */
 
-__weak void MusicInit(void);
-__weak void MusicPlay(void);
+#define STEP_INIT 1
+#define STEP_NORMAL 2
+
+// Variable Declarations
+static uint8_t music_step = STEP_INIT;
+
+static void MusicInit(void);
+static void MusicPlay(void);
 
 void music_task(void const * pvParameters)
 {
@@ -30,23 +37,27 @@ void music_task(void const * pvParameters)
     }
 }
 
-__weak void MusicInit(void)
+static void MusicInit(void)
 {
-    /* 
-     NOTE : 在其他文件中定义具体内容
-    */
-    MusicYouInit();
-    MusicUnityInit();
-    MusicCanonInit();
-    MusicCastleInTheSkyInit();
+    music_step = STEP_INIT;
+    MusicStartInit();
+    // MusicYouInit();
+    // MusicUnityInit();
+    // MusicCanonInit();
+    // MusicCastleInTheSkyInit();
 }
-__weak void MusicPlay(void)
+
+static void MusicPlay(void)
 {
-    /* 
-     NOTE : 在其他文件中定义具体内容
-    */
     // MusicYouPlay();
-    MusicUnityPlay();
+    // MusicUnityPlay();
     // MusicCanonPlay();
     // MusicCastleInTheSkyPlay();
+    if (music_step == STEP_INIT) {
+        if (MusicStartPlay()) {
+            music_step = STEP_NORMAL;
+        }
+    } else {
+        ;
+    }
 }
