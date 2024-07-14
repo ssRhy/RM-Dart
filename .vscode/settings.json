@@ -105,7 +105,10 @@
         "list.h": "c",
         "bsp_flash.h": "c",
         "clist.h": "c",
-        "array": "c"
+        "array": "c",
+        "list": "c",
+        "unordered_map": "c",
+        "vector": "c"
     },
     "C_Cpp.codeAnalysis.clangTidy.enabled": true,
     "[cpp]": {

@@ -1,0 +1,9 @@
+#ifndef MUSIC_REFEREE_H
+#define MUSIC_REFEREE_H
+#include <stdbool.h>
+
+extern void MusicRefereeInit(void);
+
+extern void MusicRefereePlay(uint8_t index);
+
+#endif  // MUSIC_REFEREE_H
