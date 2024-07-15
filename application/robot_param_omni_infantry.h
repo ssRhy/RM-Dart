@@ -11,7 +11,7 @@
 #define GIMBAL_TYPE GIMBAL_YAW_PITCH_DIRECT    // 选择云台类型
 #define SHOOT_TYPE SHOOT_NONE            // 选择发射机构类型
 #define CONTROL_TYPE CHASSIS_AND_GIMBAL  // 选择控制类型
-#define MECHANICAL_ARM_NONE  //选择机械臂类型
+#define MECHANICAL_ARM_TYPE MECHANICAL_ARM_NONE  //选择机械臂类型
 
 /*-------------------- Chassis --------------------*/
 //physical parameters ---------------------
