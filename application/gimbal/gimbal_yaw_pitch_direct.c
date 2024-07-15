@@ -114,11 +114,13 @@ void GimbalObserver(void)
  */
 void GimbalReference(void) 
 {
-  //键鼠控制
+  // warning :不建议键鼠跟遥控器同时使用！
   //读取鼠标的移动
   gimbal_direct.reference.pitch=loop_fp32_constrain(gimbal_direct.reference.pitch+gimbal_direct.rc->mouse.y*MOUSE_SENSITIVITY,gimbal_direct.lower_limit.pitch,gimbal_direct.upper_limit.pitch);
   gimbal_direct.reference.yaw  =loop_fp32_constrain(gimbal_direct.reference.yaw+gimbal_direct.rc->mouse.x*MOUSE_SENSITIVITY,gimbal_direct.lower_limit.yaw,gimbal_direct.upper_limit.yaw);
 
+  //读取摇杆的数据
+  //gimbal_direct.reference.pitch=
 }
 
 /*-------------------- Console --------------------*/
@@ -155,7 +157,8 @@ void GimbalConsole(void)
  */
 void SendGimbalCmd(void) 
 {
-
+  MultipleCurrentControl(gimbal_direct.pitch.can,gimbal_direct.pitch.id,gimbal_direct.pitch.set.curr,0,0,0);
+  MultipleCurrentControl(gimbal_direct.yaw.can,gimbal_direct.yaw.id,gimbal_direct.yaw.set.curr,0,0,0);
 }
 
 #endif  // GIMBAL_YAW_PITCH
