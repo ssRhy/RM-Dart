@@ -6,6 +6,7 @@
 #include "music.h"
 #include "music_canon.h"
 #include "music_castle_in_the_sky.h"
+#include "music_referee.h"
 #include "music_start.h"
 #include "music_unity.h"
 #include "music_you.h"
@@ -41,6 +42,7 @@ static void MusicInit(void)
 {
     music_step = STEP_INIT;
     MusicStartInit();
+    MusicRefereeInit();
     // MusicYouInit();
     // MusicUnityInit();
     // MusicCanonInit();
@@ -58,6 +60,7 @@ static void MusicPlay(void)
             music_step = STEP_NORMAL;
         }
     } else {
+        // MusicRefereeDisconnectPlay();
         ;
     }
 }

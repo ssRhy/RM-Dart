@@ -3473,6 +3473,11 @@
               <FileType>1</FileType>
               <FilePath>..\application\music\music_start.c</FilePath>
             </File>
+            <File>
+              <FileName>music_referee.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\music\music_referee.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

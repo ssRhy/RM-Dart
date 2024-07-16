@@ -1,7 +1,8 @@
 
+#include "music_referee.h"
+
 #include "bsp_buzzer.h"
 #include "music.h"
-#include "music_referee.h"
 #include "stm32f4xx_hal.h"
 
 // clang-format off
@@ -50,9 +51,10 @@
 static Note CONNECT_NOTES[10];
 static Note DISCONNECT_NOTES[10];
 
-static uint32_t last_note_id = 0;  // Index of the last note
-static uint32_t write_id = 1;      // Index of the note to be written
-static uint32_t play_id = 1;       // Index of the note to be played
+static uint32_t last_note_id = 0;        // Index of the last note
+static uint32_t write_id = 1;            // Index of the note to be written
+static uint32_t play_id_connect = 1;     // Index of the note to be played
+static uint32_t play_id_disconnect = 1;  // Index of the note to be played
 
 static uint32_t start_time = 0;  // Start time of the music
 static uint32_t now = 0;
@@ -76,55 +78,62 @@ static void WriteDisconnectNote(int note, float Long)
 
 /*-------------------- User functions --------------------*/
 
-/**
- * @brief 播放音乐
- * @param index 音乐编号 0-connect 1-disconnect
- */
-void MusicRefereePlay(uint8_t index)
+bool MusicRefereeConncetPlay()
 {
     now = HAL_GetTick();
-    switch (index) {
-        case 0: {
-            if (now - start_time >= CONNECT_NOTES[play_id].end) {
-                play_id++;
-                if (play_id > last_note_id) {
-                    play_id = 1;
-                    start_time = now;
-                }
 
-                buzzer_note(CONNECT_NOTES[play_id].note, 0.1);
-            }
-        } break;
-        case 1: {
-            if (now - start_time >= DISCONNECT_NOTES[play_id].end) {
-                play_id++;
-                if (play_id > last_note_id) {
-                    play_id = 1;
-                    start_time = now;
-                }
+    bool end = false;
+    if (now - start_time >= CONNECT_NOTES[play_id_connect].end) {
+        play_id_connect++;
+        if (play_id_connect > last_note_id) {
+            end = true;
+            play_id_connect = 1;
+            start_time = now;
+        }
 
-                buzzer_note(DISCONNECT_NOTES[play_id].note, 0.1);
-            }
-        } break;
-        default:
-            break;
+        buzzer_note(CONNECT_NOTES[play_id_connect].note, 0.05);
     }
+    return end;
+}
+
+bool MusicRefereeDisconnectPlay()
+{
+    now = HAL_GetTick();
+
+    bool end = false;
+    if (now - start_time >= DISCONNECT_NOTES[play_id_disconnect].end) {
+        play_id_disconnect++;
+        if (play_id_disconnect > last_note_id) {
+            end = true;
+            play_id_disconnect = 1;
+            start_time = now;
+        }
+
+        buzzer_note(DISCONNECT_NOTES[play_id_disconnect].note, 0.05);
+    }
+    return end;
 }
 
 void MusicRefereeInit(void)
 {
     // connect
     WriteConnectNote(0, 2);
-    WriteConnectNote(B1, HalfBeat * 2);
-    WriteConnectNote(0, 3);
     WriteConnectNote(C3, HalfBeat * 2);
     WriteConnectNote(0, 3);
-    WriteConnectNote(D5, HalfBeat * 2);
-    WriteConnectNote(0, 15);
-    WriteConnectNote(D1, HalfBeat * 5);
+    WriteConnectNote(B3, HalfBeat * 3);
+    WriteConnectNote(0, 3);
+    WriteConnectNote(B5, HalfBeat * 4);
+    WriteConnectNote(0, 500);
 
     last_note_id = write_id - 1;
     write_id = 1;
 
     // disconnect
+    WriteDisconnectNote(0, 2);
+    WriteDisconnectNote(D5, HalfBeat * 2);
+    WriteDisconnectNote(0, 3);
+    WriteDisconnectNote(B3, HalfBeat * 4);
+    WriteDisconnectNote(0, 500);
+    last_note_id = write_id - 1;
+    write_id = 1;
 }
