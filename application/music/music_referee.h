@@ -4,6 +4,8 @@
 
 extern void MusicRefereeInit(void);
 
-extern void MusicRefereePlay(uint8_t index);
+extern bool MusicRefereeConncetPlay(void);
+
+extern bool MusicRefereeDisconnectPlay(void);
 
 #endif  // MUSIC_REFEREE_H
