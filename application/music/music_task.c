@@ -10,6 +10,7 @@
 #include "music_start.h"
 #include "music_unity.h"
 #include "music_you.h"
+#include "music_error.h"
 
 #ifndef __weak
 #define __weak __attribute__((weak))
@@ -43,6 +44,7 @@ static void MusicInit(void)
     music_step = STEP_INIT;
     MusicStartInit();
     MusicRefereeInit();
+    MusicErrorInit();
     // MusicYouInit();
     // MusicUnityInit();
     // MusicCanonInit();
@@ -61,6 +63,7 @@ static void MusicPlay(void)
         }
     } else {
         // MusicRefereeDisconnectPlay();
+        // MusicErrorPlay();
         ;
     }
 }

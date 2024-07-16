@@ -3478,6 +3478,11 @@
               <FileType>1</FileType>
               <FilePath>..\application\music\music_referee.c</FilePath>
             </File>
+            <File>
+              <FileName>music_error.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\music\music_error.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
