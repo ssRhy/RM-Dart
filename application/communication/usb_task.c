@@ -109,11 +109,10 @@ void usb_task(void const * argument)
 
     while (1) {
         ModifyDebugDataPackage(0, IMU->yaw, "yaw");
-        ModifyDebugDataPackage(1, SEND_DATA_IMU.time_stamp, "data1");
+        ModifyDebugDataPackage(1, SEND_DATA_IMU.time_stamp % 1000, "data1");
         ModifyDebugDataPackage(2, ROBOT_CMD_DATA.speed_vector.vx, "vx_set");
         ModifyDebugDataPackage(3, ROBOT_CMD_DATA.speed_vector.vy, "vy_set");
         ModifyDebugDataPackage(4, ROBOT_CMD_DATA.gimbal.pitch, "pitch");
-        ModifyDebugDataPackage(5, ROBOT_CMD_DATA.gimbal.yaw, "yaw");
 
         UsbSendData();
         UsbReceiveData();
@@ -193,7 +192,6 @@ static void UsbInit(void)
     append_CRC8_check_sum(  // 添加帧头 CRC8 校验位
         (uint8_t *)(&SEND_DATA_PID.frame_header), sizeof(SEND_DATA_PID.frame_header));
     // 数据部分
-
 }
 
 /**
@@ -234,7 +232,7 @@ static void UsbReceiveData(void)
             sof_address++;
         }
         // 判断是否超出接收数据范围
-        if (sof_address > USB_RX_BUF + USB_RECEIVE_LEN) {
+        if (sof_address > rx_data_end_address) {
             break;  // 退出循环
         }
         // 检查CRC8校验
@@ -257,6 +255,8 @@ static void UsbReceiveData(void)
                 }
             }
             sof_address += (data_len + HEADER_SIZE + 2);
+        } else {  //CRC8校验失败，移动到下一个字节
+            sof_address++;
         }
     }
     // 更新下一次接收数据的起始位置
