@@ -20,20 +20,20 @@
 
 /*-------------------- Send --------------------*/
 
-typedef struct InfoData
-{
-    struct
-    {
-        uint8_t sof;  // 数据帧起始字节，固定值为 0x5A
-        uint8_t len;  // 数据段长度
-        uint8_t id;   // 数据段id = 0x00
-        uint8_t crc;  // 数据帧头的 CRC8 校验
-    } __attribute__((packed)) frame_header;
+// typedef struct InfoData
+// {
+//     struct
+//     {
+//         uint8_t sof;  // 数据帧起始字节，固定值为 0x5A
+//         uint8_t len;  // 数据段长度
+//         uint8_t id;   // 数据段id = 0x00
+//         uint8_t crc;  // 数据帧头的 CRC8 校验
+//     } __attribute__((packed)) frame_header;
 
-    uint16_t type;
+//     uint16_t type;
 
-    uint16_t checksum;
-} __attribute__((packed)) InfoData_s;
+//     uint16_t checksum;
+// } __attribute__((packed)) InfoData_s;
 
 // 串口调试数据包
 typedef struct DebugData
