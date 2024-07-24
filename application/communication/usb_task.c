@@ -48,10 +48,12 @@ static const ChassisSpeedVector_t * FDB_SPEED_VECTOR;
 
 // 数据发送结构体
 // clang-format off
-static DebugSendData_s     SEND_DATA_DEBUG;
-static ImuSendData_s       SEND_DATA_IMU;
-static RobotInfoSendData_s SEND_DATA_ROBOT_INFO;
-static PidDebugSendData_s  SEND_DATA_PID;
+static DebugSendData_s      SEND_DATA_DEBUG;
+static ImuSendData_s        SEND_DATA_IMU;
+static RobotInfoSendData_s  SEND_DATA_ROBOT_INFO;
+static PidDebugSendData_s   SEND_DATA_PID;
+static AllRobotHpSendData_s SEND_DATA_ALL_ROBOT_HP;
+static GameStatusSendData_s SEND_DATA_GAME_STATUS;
 // clang-format on
 
 // 数据接收结构体
@@ -147,7 +149,6 @@ static void UsbInit(void)
     SEND_DATA_DEBUG.frame_header.id = DEBUG_DATA_SEND_ID;
     append_CRC8_check_sum(  // 添加帧头 CRC8 校验位
         (uint8_t *)(&SEND_DATA_DEBUG.frame_header), sizeof(SEND_DATA_DEBUG.frame_header));
-
     // 数据部分
     for (uint8_t i = 0; i < DEBUG_PACKAGE_NUM; i++) {
         SEND_DATA_DEBUG.packages[i].type = 1;
@@ -155,13 +156,11 @@ static void UsbInit(void)
     }
 
     // 2.初始化IMU数据包
-    // 帧头部分
     SEND_DATA_IMU.frame_header.sof = SEND_SOF;
     SEND_DATA_IMU.frame_header.len = (uint8_t)(sizeof(ImuSendData_s) - 6);
     SEND_DATA_IMU.frame_header.id = IMU_DATA_SEND_ID;
     append_CRC8_check_sum(  // 添加帧头 CRC8 校验位
         (uint8_t *)(&SEND_DATA_IMU.frame_header), sizeof(SEND_DATA_IMU.frame_header));
-    // 数据部分
 
     // 3.初始化机器人信息数据包
     // 帧头部分
@@ -185,13 +184,25 @@ static void UsbInit(void)
     // sizeof(RobotCmdData_s);
 
     // 4.初始化pid调参数据
-    // 帧头部分
     SEND_DATA_PID.frame_header.sof = SEND_SOF;
     SEND_DATA_PID.frame_header.len = (uint8_t)(sizeof(PidDebugSendData_s) - 6);
     SEND_DATA_PID.frame_header.id = PID_DEBUG_DATA_SEND_ID;
     append_CRC8_check_sum(  // 添加帧头 CRC8 校验位
         (uint8_t *)(&SEND_DATA_PID.frame_header), sizeof(SEND_DATA_PID.frame_header));
-    // 数据部分
+
+    // 5.初始化所有机器人血量数据
+    SEND_DATA_ALL_ROBOT_HP.frame_header.sof = SEND_SOF;
+    SEND_DATA_ALL_ROBOT_HP.frame_header.len = (uint8_t)(sizeof(AllRobotHpSendData_s) - 6);
+    SEND_DATA_ALL_ROBOT_HP.frame_header.id = ALL_ROBOT_HP_SEND_ID;
+    append_CRC8_check_sum(  // 添加帧头 CRC8 校验位
+        (uint8_t *)(&SEND_DATA_ALL_ROBOT_HP.frame_header), sizeof(SEND_DATA_ALL_ROBOT_HP.frame_header));
+
+    // 6.初始化比赛状态数据
+    SEND_DATA_GAME_STATUS.frame_header.sof = SEND_SOF;
+    SEND_DATA_GAME_STATUS.frame_header.len = (uint8_t)(sizeof(GameStatusSendData_s) - 6);
+    SEND_DATA_GAME_STATUS.frame_header.id = GAME_STATUS_SEND_ID;
+    append_CRC8_check_sum(  // 添加帧头 CRC8 校验位
+        (uint8_t *)(&SEND_DATA_GAME_STATUS.frame_header), sizeof(SEND_DATA_GAME_STATUS.frame_header));
 }
 
 /**
