@@ -129,14 +129,6 @@ typedef struct
             uint8_t reserve : 3;
         } __attribute__((packed)) state;
 
-        /// @brief 机器人运动状态 12 bytes
-        struct
-        {
-            float vx;  // m/s
-            float vy;  // m/s
-            float wz;  // rad/s
-        } __attribute__((packed)) speed_vector;
-
         /// @brief 机器人状态 7 bytes
         struct
         {
