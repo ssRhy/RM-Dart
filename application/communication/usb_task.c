@@ -17,11 +17,12 @@
 
 #include "usb_task.h"
 
+#include <stdbool.h>
+#include <string.h>
+
 #include "CRC8_CRC16.h"
 #include "cmsis_os.h"
 #include "data_exchange.h"
-#include "stdbool.h"
-#include "string.h"
 #include "usb_debug.h"
 #include "usb_device.h"
 #include "usb_typdef.h"
