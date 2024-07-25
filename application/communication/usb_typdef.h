@@ -9,12 +9,13 @@
 #define SEND_SOF    ((uint8_t)0x5A)
 #define RECEIVE_SOF ((uint8_t)0x5A)
 
-#define DEBUG_DATA_SEND_ID      ((uint8_t)0x01)
-#define IMU_DATA_SEND_ID        ((uint8_t)0x02)
-#define ROBOT_INFO_DATA_SEND_ID ((uint8_t)0x03)
-#define PID_DEBUG_DATA_SEND_ID  ((uint8_t)0x04)
-#define ALL_ROBOT_HP_SEND_ID    ((uint8_t)0x05)
-#define GAME_STATUS_SEND_ID     ((uint8_t)0x06)
+#define DEBUG_DATA_SEND_ID        ((uint8_t)0x01)
+#define IMU_DATA_SEND_ID          ((uint8_t)0x02)
+#define ROBOT_INFO_DATA_SEND_ID   ((uint8_t)0x03)
+#define PID_DEBUG_DATA_SEND_ID    ((uint8_t)0x04)
+#define ALL_ROBOT_HP_SEND_ID      ((uint8_t)0x05)
+#define GAME_STATUS_SEND_ID       ((uint8_t)0x06)
+#define ROBOT_MOTION_DATA_SEND_ID ((uint8_t)0x07)
 
 #define ROBOT_CMD_DATA_RECEIVE_ID  ((uint8_t)0x01)
 #define PID_DEBUG_DATA_RECEIVE_ID  ((uint8_t)0x02)
@@ -224,6 +225,33 @@ typedef struct
 
     uint16_t crc;
 } __attribute__((packed)) GameStatusSendData_s;
+
+// 机器人运动数据包
+typedef struct
+{
+    struct
+    {
+        uint8_t sof;  // 数据帧起始字节，固定值为 0x5A
+        uint8_t len;  // 数据段长度
+        uint8_t id;   // 数据段id = 0x07
+        uint8_t crc;  // 数据帧头的 CRC8 校验
+    } __attribute__((packed)) frame_header;
+
+    uint32_t time_stamp;
+
+    struct
+    {
+        struct
+        {
+            float vx;
+            float vy;
+            float wz;
+        } __attribute__((packed)) speed_vector;
+
+    } __attribute__((packed)) data;
+
+    uint16_t crc;
+} __attribute__((packed)) RobotMotionSendData_s;
 
 /*-------------------- Receive --------------------*/
 typedef struct RobotCmdData
