@@ -32,8 +32,8 @@
 
 #define USB_TASK_CONTROL_TIME 1  // ms
 
-#define SEND_DURATION_IMU 1            // ms
-#define SEND_DURATION_DEBUG 1          // ms
+#define SEND_DURATION_IMU 5            // ms
+#define SEND_DURATION_DEBUG 5          // ms
 #define SEND_DURATION_ROBOT_INFO 10    // ms
 #define SEND_DURATION_PID 10           // ms
 #define SEND_DURATION_ALL_ROBOT_HP 10  // ms
