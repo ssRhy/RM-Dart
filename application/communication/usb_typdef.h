@@ -39,7 +39,7 @@
 // } __attribute__((packed)) InfoData_s;
 
 // 串口调试数据包
-typedef struct DebugData
+typedef struct
 {
     struct
     {
@@ -59,7 +59,7 @@ typedef struct DebugData
     } __attribute__((packed)) packages[DEBUG_PACKAGE_NUM];
 
     uint16_t checksum;
-} __attribute__((packed)) DebugSendData_s;
+} __attribute__((packed)) SendDataDebug_s;
 
 // IMU 数据包
 typedef struct
@@ -90,7 +90,7 @@ typedef struct
     } __attribute__((packed)) data;
 
     uint16_t crc;
-} __attribute__((packed)) ImuSendData_s;
+} __attribute__((packed)) SendDataImu_s;
 
 // 机器人信息数据包
 typedef struct
@@ -143,7 +143,7 @@ typedef struct
     } __attribute__((packed)) data;
 
     uint16_t crc;
-} __attribute__((packed)) RobotInfoSendData_s;
+} __attribute__((packed)) SendDataRobotInfo_s;
 
 // PID调参数据包
 typedef struct
@@ -166,7 +166,7 @@ typedef struct
     } __attribute__((packed)) data;
 
     uint16_t crc;
-} __attribute__((packed)) PidDebugSendData_s;
+} __attribute__((packed)) SendDataPidDebug_s;
 
 // 全场机器人hp信息数据包
 typedef struct
@@ -202,7 +202,7 @@ typedef struct
     } __attribute__((packed)) data;
 
     uint16_t crc;
-} __attribute__((packed)) AllRobotHpSendData_s;
+} __attribute__((packed)) SendDataAllRobotHp_s;
 
 // 比赛信息数据包
 typedef struct
@@ -224,7 +224,7 @@ typedef struct
     } __attribute__((packed)) data;
 
     uint16_t crc;
-} __attribute__((packed)) GameStatusSendData_s;
+} __attribute__((packed)) SendDataGameStatus_s;
 
 // 机器人运动数据包
 typedef struct
@@ -251,7 +251,7 @@ typedef struct
     } __attribute__((packed)) data;
 
     uint16_t crc;
-} __attribute__((packed)) RobotMotionSendData_s;
+} __attribute__((packed)) SendDataRobotMotion_s;
 
 /*-------------------- Receive --------------------*/
 typedef struct RobotCmdData
@@ -298,7 +298,7 @@ typedef struct RobotCmdData
     } __attribute__((packed)) data;
 
     uint16_t checksum;
-} __attribute__((packed)) RobotCmdReceiveData_s;
+} __attribute__((packed)) ReceiveDataRobotCmd_s;
 
 // PID调参数据包
 typedef struct
@@ -323,5 +323,5 @@ typedef struct
     } __attribute__((packed)) data;
 
     uint16_t crc;
-} __attribute__((packed)) PidDebugReceiveData_s;
+} __attribute__((packed)) ReceiveDataPidDebug_s;
 #endif  // USB_TYPEDEF_H
