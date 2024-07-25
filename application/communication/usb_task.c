@@ -12,8 +12,6 @@
 
   =================================================================================
   @endverbatim
-  @todo
-        1.上下位机建立稳定连接后再进行通信
   ****************************(C) COPYRIGHT 2024 Polarbear*************************
 */
 
@@ -201,14 +199,6 @@ static void UsbInit(void)
     SEND_DATA_ROBOT_INFO.data.type.shoot = SHOOT_TYPE;
     SEND_DATA_ROBOT_INFO.data.type.arm = MECHANICAL_ARM_TYPE;
 
-    // SEND_DATA_ROBOT_INFO.data.type.chassis = 1;
-    // SEND_DATA_ROBOT_INFO.data.type.gimbal = 2;
-    // SEND_DATA_ROBOT_INFO.data.type.shoot = 3;
-    // SEND_DATA_ROBOT_INFO.data.type.arm = 4;
-    // SEND_DATA_ROBOT_INFO.data.type.custom_controller = 5;
-
-    // sizeof(RobotCmdData_s);
-
     // 4.初始化pid调参数据
     SEND_DATA_PID.frame_header.sof = SEND_SOF;
     SEND_DATA_PID.frame_header.len = (uint8_t)(sizeof(SendDataPidDebug_s) - 6);
@@ -325,20 +315,6 @@ static void UsbReceiveData(void)
     }
 }
 
-/**
- * @brief      判断是否到达发送周期
- * @param      last_time: 上次发送时间
- * @param      duration: 发送周期
- * @retval     是否到达发送周期
- */
-// static bool ReachDuration(uint32_t * last_time, uint32_t duration)
-// {
-//     if (HAL_GetTick() - *last_time >= duration) {
-//         return true;
-//     }
-//     return false;
-// }
-
 /*******************************************************************************/
 /* Send Function                                                               */
 /*******************************************************************************/
@@ -444,8 +420,7 @@ static void UsbSendGameStatusData(void)
  */
 static void UsbSendRobotMotionData(void)
 {
-    if(FDB_SPEED_VECTOR == NULL)
-    {
+    if (FDB_SPEED_VECTOR == NULL) {
         return;
     }
 
