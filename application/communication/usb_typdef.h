@@ -137,6 +137,16 @@ typedef struct
             float wz;  // rad/s
         } __attribute__((packed)) speed_vector;
 
+        /// @brief 机器人状态 7 bytes
+        struct
+        {
+            uint8_t id;
+            uint16_t current_hp;
+            uint16_t shooter_heat;
+            bool color;  // 0-red 1-blue
+            bool is_attacked;
+        } __attribute__((packed)) status;
+
     } __attribute__((packed)) data;
 
     uint16_t crc;
