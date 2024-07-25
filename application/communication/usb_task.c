@@ -32,13 +32,15 @@
 
 #define USB_TASK_CONTROL_TIME 1  // ms
 
-#define SEND_DURATION_IMU 5            // ms
-#define SEND_DURATION_DEBUG 5          // ms
-#define SEND_DURATION_ROBOT_INFO 10    // ms
-#define SEND_DURATION_PID 10           // ms
+// clang-format off
+#define SEND_DURATION_IMU          5   // ms
+#define SEND_DURATION_DEBUG        5   // ms
+#define SEND_DURATION_ROBOT_INFO   10  // ms
+#define SEND_DURATION_PID          10  // ms
 #define SEND_DURATION_ALL_ROBOT_HP 10  // ms
-#define SEND_DURATION_GAME_STATUS 10   // ms
+#define SEND_DURATION_GAME_STATUS  10  // ms
 #define SEND_DURATION_ROBOT_MOTION 10  // ms
+// clang-format on
 
 #define USB_RX_DATA_SIZE 256  // byte
 #define USB_RECEIVE_LEN 150   // byte
