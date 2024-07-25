@@ -32,10 +32,10 @@
 
 #define USB_TASK_CONTROL_TIME 1  // ms
 
-#define SEND_DURATION_IMU 1          // ms
-#define SEND_DURATION_DEBUG 1        // ms
-#define SEND_DURATION_ROBOT_INFO 10  // ms
-#define SEND_DURATION_PID 10         // ms
+#define SEND_DURATION_IMU 1            // ms
+#define SEND_DURATION_DEBUG 1          // ms
+#define SEND_DURATION_ROBOT_INFO 10    // ms
+#define SEND_DURATION_PID 10           // ms
 #define SEND_DURATION_ALL_ROBOT_HP 10  // ms
 #define SEND_DURATION_GAME_STATUS 10   // ms
 
@@ -358,9 +358,9 @@ static void UsbSendRobotInfoData(uint8_t duration)
 
     SEND_DATA_ROBOT_INFO.time_stamp = HAL_GetTick();
 
-    SEND_DATA_ROBOT_INFO.data.speed_vector.vx = FDB_SPEED_VECTOR->vx;
-    SEND_DATA_ROBOT_INFO.data.speed_vector.vy = FDB_SPEED_VECTOR->vy;
-    SEND_DATA_ROBOT_INFO.data.speed_vector.wz = FDB_SPEED_VECTOR->wz;
+    SEND_DATA_ROBOT_INFO.data.status.id = 1;
+    SEND_DATA_ROBOT_INFO.data.status.current_hp = 2;
+    SEND_DATA_ROBOT_INFO.data.status.shooter_heat = 3;
 
     append_CRC16_check_sum((uint8_t *)&SEND_DATA_ROBOT_INFO, sizeof(RobotInfoSendData_s));
     USB_Transmit((uint8_t *)&SEND_DATA_ROBOT_INFO, sizeof(RobotInfoSendData_s));
