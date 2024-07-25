@@ -370,9 +370,9 @@ static void UsbSendRobotInfoData(uint8_t duration)
 
     SEND_DATA_ROBOT_INFO.time_stamp = HAL_GetTick();
 
-    SEND_DATA_ROBOT_INFO.data.status.id = 1;
-    SEND_DATA_ROBOT_INFO.data.status.current_hp = 2;
-    SEND_DATA_ROBOT_INFO.data.status.shooter_heat = 3;
+    SEND_DATA_ROBOT_INFO.data.referee.id = 1;
+    SEND_DATA_ROBOT_INFO.data.referee.hp = 2;
+    SEND_DATA_ROBOT_INFO.data.referee.heat = 3;
 
     append_CRC16_check_sum((uint8_t *)&SEND_DATA_ROBOT_INFO, sizeof(RobotInfoSendData_s));
     USB_Transmit((uint8_t *)&SEND_DATA_ROBOT_INFO, sizeof(RobotInfoSendData_s));

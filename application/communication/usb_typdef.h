@@ -130,15 +130,15 @@ typedef struct
             uint8_t reserve : 3;
         } __attribute__((packed)) state;
 
-        /// @brief 机器人状态 7 bytes
+        /// @brief 机器人裁判系统信息 7 bytes
         struct
         {
             uint8_t id;
-            uint16_t current_hp;
-            uint16_t shooter_heat;
-            bool color;  // 0-red 1-blue
-            bool is_attacked;
-        } __attribute__((packed)) status;
+            uint8_t color;  // 0-red 1-blue 2-unknown
+            bool attacked;
+            uint16_t hp;
+            uint16_t heat;
+        } __attribute__((packed)) referee;
 
     } __attribute__((packed)) data;
 
