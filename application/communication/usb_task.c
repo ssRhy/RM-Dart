@@ -444,6 +444,11 @@ static void UsbSendGameStatusData(void)
  */
 static void UsbSendRobotMotionData(void)
 {
+    if(FDB_SPEED_VECTOR == NULL)
+    {
+        return;
+    }
+
     SEND_ROBOT_MOTION_DATA.time_stamp = HAL_GetTick();
 
     SEND_ROBOT_MOTION_DATA.data.speed_vector.vx = FDB_SPEED_VECTOR->vx;
