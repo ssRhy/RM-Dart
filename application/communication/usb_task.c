@@ -35,6 +35,9 @@
 #define SEND_DURATION_IMU 1          // ms
 #define SEND_DURATION_DEBUG 1        // ms
 #define SEND_DURATION_ROBOT_INFO 10  // ms
+#define SEND_DURATION_PID 10         // ms
+#define SEND_DURATION_ALL_ROBOT_HP 10  // ms
+#define SEND_DURATION_GAME_STATUS 10   // ms
 
 #define USB_RX_DATA_SIZE 256  // byte
 #define USB_RECEIVE_LEN 150   // byte
@@ -87,6 +90,8 @@ static void UsbInit(void);
 static void UsbSendImuData(uint8_t duration);
 static void UsbSendDebugData(uint8_t duration);
 static void UsbSendRobotInfoData(uint8_t duration);
+static void UsbSendAllRobotHpData(uint8_t duration);
+static void UsbSendGameStatusData(uint8_t duration);
 
 /*******************************************************************************/
 /* Receive Function                                                            */
@@ -195,14 +200,16 @@ static void UsbInit(void)
     SEND_DATA_ALL_ROBOT_HP.frame_header.len = (uint8_t)(sizeof(AllRobotHpSendData_s) - 6);
     SEND_DATA_ALL_ROBOT_HP.frame_header.id = ALL_ROBOT_HP_SEND_ID;
     append_CRC8_check_sum(  // 添加帧头 CRC8 校验位
-        (uint8_t *)(&SEND_DATA_ALL_ROBOT_HP.frame_header), sizeof(SEND_DATA_ALL_ROBOT_HP.frame_header));
+        (uint8_t *)(&SEND_DATA_ALL_ROBOT_HP.frame_header),
+        sizeof(SEND_DATA_ALL_ROBOT_HP.frame_header));
 
     // 6.初始化比赛状态数据
     SEND_DATA_GAME_STATUS.frame_header.sof = SEND_SOF;
     SEND_DATA_GAME_STATUS.frame_header.len = (uint8_t)(sizeof(GameStatusSendData_s) - 6);
     SEND_DATA_GAME_STATUS.frame_header.id = GAME_STATUS_SEND_ID;
     append_CRC8_check_sum(  // 添加帧头 CRC8 校验位
-        (uint8_t *)(&SEND_DATA_GAME_STATUS.frame_header), sizeof(SEND_DATA_GAME_STATUS.frame_header));
+        (uint8_t *)(&SEND_DATA_GAME_STATUS.frame_header),
+        sizeof(SEND_DATA_GAME_STATUS.frame_header));
 }
 
 /**
@@ -218,6 +225,10 @@ static void UsbSendData(void)
     UsbSendDebugData(SEND_DURATION_DEBUG);
     // 发送机器人信息数据
     UsbSendRobotInfoData(SEND_DURATION_ROBOT_INFO);
+    // 发送全场机器人hp信息数据
+    UsbSendAllRobotHpData(SEND_DURATION_ALL_ROBOT_HP);
+    // 发送比赛状态数据
+    UsbSendGameStatusData(SEND_DURATION_GAME_STATUS);
 }
 
 /**
@@ -353,6 +364,62 @@ static void UsbSendRobotInfoData(uint8_t duration)
 
     append_CRC16_check_sum((uint8_t *)&SEND_DATA_ROBOT_INFO, sizeof(RobotInfoSendData_s));
     USB_Transmit((uint8_t *)&SEND_DATA_ROBOT_INFO, sizeof(RobotInfoSendData_s));
+}
+
+/**
+ * @brief 发送全场机器人hp信息数据
+ * @param duration 发送周期
+ */
+static void UsbSendAllRobotHpData(uint8_t duration)
+{
+    DURATION.robot_info++;
+    if (DURATION.robot_info < duration) {
+        return;
+    }
+    DURATION.robot_info = 0;
+
+    SEND_DATA_ALL_ROBOT_HP.time_stamp = HAL_GetTick();
+
+    SEND_DATA_ALL_ROBOT_HP.data.red_1_robot_hp = 1;
+    SEND_DATA_ALL_ROBOT_HP.data.red_2_robot_hp = 2;
+    SEND_DATA_ALL_ROBOT_HP.data.red_3_robot_hp = 3;
+    SEND_DATA_ALL_ROBOT_HP.data.red_4_robot_hp = 4;
+    SEND_DATA_ALL_ROBOT_HP.data.red_5_robot_hp = 5;
+    SEND_DATA_ALL_ROBOT_HP.data.red_7_robot_hp = 7;
+    SEND_DATA_ALL_ROBOT_HP.data.red_outpost_hp = 8;
+    SEND_DATA_ALL_ROBOT_HP.data.red_base_hp = 9;
+    SEND_DATA_ALL_ROBOT_HP.data.blue_1_robot_hp = 1;
+    SEND_DATA_ALL_ROBOT_HP.data.blue_2_robot_hp = 2;
+    SEND_DATA_ALL_ROBOT_HP.data.blue_3_robot_hp = 3;
+    SEND_DATA_ALL_ROBOT_HP.data.blue_4_robot_hp = 4;
+    SEND_DATA_ALL_ROBOT_HP.data.blue_5_robot_hp = 5;
+    SEND_DATA_ALL_ROBOT_HP.data.blue_7_robot_hp = 7;
+    SEND_DATA_ALL_ROBOT_HP.data.blue_outpost_hp = 8;
+    SEND_DATA_ALL_ROBOT_HP.data.blue_base_hp = 9;
+
+    append_CRC16_check_sum((uint8_t *)&SEND_DATA_ALL_ROBOT_HP, sizeof(AllRobotHpSendData_s));
+    USB_Transmit((uint8_t *)&SEND_DATA_ALL_ROBOT_HP, sizeof(AllRobotHpSendData_s));
+}
+
+/**
+ * @brief 发送比赛状态数据
+ * @param duration 发送周期
+ */
+static void UsbSendGameStatusData(uint8_t duration)
+{
+    DURATION.robot_info++;
+    if (DURATION.robot_info < duration) {
+        return;
+    }
+    DURATION.robot_info = 0;
+
+    SEND_DATA_GAME_STATUS.time_stamp = HAL_GetTick();
+
+    SEND_DATA_GAME_STATUS.data.game_progress = 1;
+    SEND_DATA_GAME_STATUS.data.stage_remain_time = 100;
+
+    append_CRC16_check_sum((uint8_t *)&SEND_DATA_GAME_STATUS, sizeof(GameStatusSendData_s));
+    USB_Transmit((uint8_t *)&SEND_DATA_GAME_STATUS, sizeof(GameStatusSendData_s));
 }
 
 /*******************************************************************************/
