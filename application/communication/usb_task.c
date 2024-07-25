@@ -33,25 +33,25 @@
 #define USB_TASK_CONTROL_TIME 1  // ms
 
 // clang-format off
-#define SEND_DURATION_IMU          5   // ms
-#define SEND_DURATION_DEBUG        5   // ms
-#define SEND_DURATION_ROBOT_INFO   10  // ms
-#define SEND_DURATION_PID          10  // ms
-#define SEND_DURATION_ALL_ROBOT_HP 10  // ms
-#define SEND_DURATION_GAME_STATUS  10  // ms
-#define SEND_DURATION_ROBOT_MOTION 10  // ms
+#define SEND_DURATION_Imu         5   // ms
+#define SEND_DURATION_Debug       5   // ms
+#define SEND_DURATION_RobotInfo   10  // ms
+#define SEND_DURATION_Pid         10  // ms
+#define SEND_DURATION_AllRobotHp  10  // ms
+#define SEND_DURATION_GameStatus  10  // ms
+#define SEND_DURATION_RobotMotion 10  // ms
 // clang-format on
 
 #define USB_RX_DATA_SIZE 256  // byte
 #define USB_RECEIVE_LEN 150   // byte
 #define HEADER_SIZE 4         // byte
 
-#define CheckDurationAndSend(send_name, duration)                              \
-    do {                                                                \
-        if ((HAL_GetTick() - LAST_SEND_TIME.##send_name) >= duration) { \
-            LAST_SEND_TIME.##send_name = HAL_GetTick();                 \
-            UsbSend##send_name##Data();                                 \
-        }                                                               \
+#define CheckDurationAndSend(send_name)                                                  \
+    do {                                                                                 \
+        if ((HAL_GetTick() - LAST_SEND_TIME.##send_name) >= SEND_DURATION_##send_name) { \
+            LAST_SEND_TIME.##send_name = HAL_GetTick();                                  \
+            UsbSend##send_name##Data();                                                  \
+        }                                                                                \
     } while (0)
 
 // Variable Declarations
@@ -249,17 +249,17 @@ static void UsbInit(void)
 static void UsbSendData(void)
 {
     // 发送Imu数据
-    CheckDurationAndSend(Imu, SEND_DURATION_IMU);
+    CheckDurationAndSend(Imu);
     // 发送Debug数据
-    CheckDurationAndSend(Debug, SEND_DURATION_DEBUG);
+    CheckDurationAndSend(Debug);
     // 发送RobotInfo数据
-    CheckDurationAndSend(RobotInfo, SEND_DURATION_ROBOT_INFO);
+    CheckDurationAndSend(RobotInfo);
     // 发送AllRobotHp数据
-    CheckDurationAndSend(AllRobotHp, SEND_DURATION_ALL_ROBOT_HP);
+    CheckDurationAndSend(AllRobotHp);
     // 发送GameStatus数据
-    CheckDurationAndSend(GameStatus, SEND_DURATION_GAME_STATUS);
+    CheckDurationAndSend(GameStatus);
     // 发送RobotMotion数据
-    CheckDurationAndSend(RobotMotion, SEND_DURATION_ROBOT_MOTION);
+    CheckDurationAndSend(RobotMotion);
 }
 
 /**
