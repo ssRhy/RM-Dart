@@ -74,6 +74,10 @@ typedef struct
     uint8_t imu;
     uint8_t debug;
     uint8_t robot_info;
+    uint8_t pid;
+    uint8_t all_robot_hp;
+    uint8_t game_status;
+    uint8_t robot_motion;
 } Duration_t;
 static Duration_t DURATION;
 
@@ -384,11 +388,11 @@ static void UsbSendRobotInfoData(uint8_t duration)
  */
 static void UsbSendAllRobotHpData(uint8_t duration)
 {
-    DURATION.robot_info++;
-    if (DURATION.robot_info < duration) {
+    DURATION.all_robot_hp++;
+    if (DURATION.all_robot_hp < duration) {
         return;
     }
-    DURATION.robot_info = 0;
+    DURATION.all_robot_hp = 0;
 
     SEND_DATA_ALL_ROBOT_HP.time_stamp = HAL_GetTick();
 
@@ -419,11 +423,11 @@ static void UsbSendAllRobotHpData(uint8_t duration)
  */
 static void UsbSendGameStatusData(uint8_t duration)
 {
-    DURATION.robot_info++;
-    if (DURATION.robot_info < duration) {
+    DURATION.game_status++;
+    if (DURATION.game_status < duration) {
         return;
     }
-    DURATION.robot_info = 0;
+    DURATION.game_status = 0;
 
     SEND_DATA_GAME_STATUS.time_stamp = HAL_GetTick();
 
@@ -440,11 +444,11 @@ static void UsbSendGameStatusData(uint8_t duration)
  */
 static void UsbSendRobotMotionData(uint8_t duration)
 {
-    DURATION.robot_info++;
-    if (DURATION.robot_info < duration) {
+    DURATION.robot_motion++;
+    if (DURATION.robot_motion < duration) {
         return;
     }
-    DURATION.robot_info = 0;
+    DURATION.robot_motion = 0;
 
     SEND_ROBOT_MOTION_DATA.time_stamp = HAL_GetTick();
 
