@@ -9,10 +9,13 @@
 #define SEND_SOF    ((uint8_t)0x5A)
 #define RECEIVE_SOF ((uint8_t)0x5A)
 
-#define DEBUG_DATA_SEND_ID      ((uint8_t)0x01)
-#define IMU_DATA_SEND_ID        ((uint8_t)0x02)
-#define ROBOT_INFO_DATA_SEND_ID ((uint8_t)0x03)
-#define PID_DEBUG_DATA_SEND_ID  ((uint8_t)0x04)
+#define DEBUG_DATA_SEND_ID        ((uint8_t)0x01)
+#define IMU_DATA_SEND_ID          ((uint8_t)0x02)
+#define ROBOT_INFO_DATA_SEND_ID   ((uint8_t)0x03)
+#define PID_DEBUG_DATA_SEND_ID    ((uint8_t)0x04)
+#define ALL_ROBOT_HP_SEND_ID      ((uint8_t)0x05)
+#define GAME_STATUS_SEND_ID       ((uint8_t)0x06)
+#define ROBOT_MOTION_DATA_SEND_ID ((uint8_t)0x07)
 
 #define ROBOT_CMD_DATA_RECEIVE_ID  ((uint8_t)0x01)
 #define PID_DEBUG_DATA_RECEIVE_ID  ((uint8_t)0x02)
@@ -36,7 +39,7 @@
 // } __attribute__((packed)) InfoData_s;
 
 // 串口调试数据包
-typedef struct DebugData
+typedef struct
 {
     struct
     {
@@ -56,7 +59,7 @@ typedef struct DebugData
     } __attribute__((packed)) packages[DEBUG_PACKAGE_NUM];
 
     uint16_t checksum;
-} __attribute__((packed)) DebugSendData_s;
+} __attribute__((packed)) SendDataDebug_s;
 
 // IMU 数据包
 typedef struct
@@ -87,7 +90,7 @@ typedef struct
     } __attribute__((packed)) data;
 
     uint16_t crc;
-} __attribute__((packed)) ImuSendData_s;
+} __attribute__((packed)) SendDataImu_s;
 
 // 机器人信息数据包
 typedef struct
@@ -127,18 +130,20 @@ typedef struct
             uint8_t reserve : 3;
         } __attribute__((packed)) state;
 
-        /// @brief 机器人运动状态 12 bytes
+        /// @brief 机器人裁判系统信息 7 bytes
         struct
         {
-            float vx;  // m/s
-            float vy;  // m/s
-            float wz;  // rad/s
-        } __attribute__((packed)) speed_vector;
+            uint8_t id;
+            uint8_t color;  // 0-red 1-blue 2-unknown
+            bool attacked;
+            uint16_t hp;
+            uint16_t heat;
+        } __attribute__((packed)) referee;
 
     } __attribute__((packed)) data;
 
     uint16_t crc;
-} __attribute__((packed)) RobotInfoSendData_s;
+} __attribute__((packed)) SendDataRobotInfo_s;
 
 // PID调参数据包
 typedef struct
@@ -161,7 +166,92 @@ typedef struct
     } __attribute__((packed)) data;
 
     uint16_t crc;
-} __attribute__((packed)) PidDebugSendData_s;
+} __attribute__((packed)) SendDataPidDebug_s;
+
+// 全场机器人hp信息数据包
+typedef struct
+{
+    struct
+    {
+        uint8_t sof;  // 数据帧起始字节，固定值为 0x5A
+        uint8_t len;  // 数据段长度
+        uint8_t id;   // 数据段id = 0x05
+        uint8_t crc;  // 数据帧头的 CRC8 校验
+    } __attribute__((packed)) frame_header;
+
+    uint32_t time_stamp;
+
+    struct
+    {
+        uint16_t red_1_robot_hp;
+        uint16_t red_2_robot_hp;
+        uint16_t red_3_robot_hp;
+        uint16_t red_4_robot_hp;
+        uint16_t red_5_robot_hp;
+        uint16_t red_7_robot_hp;
+        uint16_t red_outpost_hp;
+        uint16_t red_base_hp;
+        uint16_t blue_1_robot_hp;
+        uint16_t blue_2_robot_hp;
+        uint16_t blue_3_robot_hp;
+        uint16_t blue_4_robot_hp;
+        uint16_t blue_5_robot_hp;
+        uint16_t blue_7_robot_hp;
+        uint16_t blue_outpost_hp;
+        uint16_t blue_base_hp;
+    } __attribute__((packed)) data;
+
+    uint16_t crc;
+} __attribute__((packed)) SendDataAllRobotHp_s;
+
+// 比赛信息数据包
+typedef struct
+{
+    struct
+    {
+        uint8_t sof;  // 数据帧起始字节，固定值为 0x5A
+        uint8_t len;  // 数据段长度
+        uint8_t id;   // 数据段id = 0x06
+        uint8_t crc;  // 数据帧头的 CRC8 校验
+    } __attribute__((packed)) frame_header;
+
+    uint32_t time_stamp;
+
+    struct
+    {
+        uint8_t game_progress;
+        uint16_t stage_remain_time;
+    } __attribute__((packed)) data;
+
+    uint16_t crc;
+} __attribute__((packed)) SendDataGameStatus_s;
+
+// 机器人运动数据包
+typedef struct
+{
+    struct
+    {
+        uint8_t sof;  // 数据帧起始字节，固定值为 0x5A
+        uint8_t len;  // 数据段长度
+        uint8_t id;   // 数据段id = 0x07
+        uint8_t crc;  // 数据帧头的 CRC8 校验
+    } __attribute__((packed)) frame_header;
+
+    uint32_t time_stamp;
+
+    struct
+    {
+        struct
+        {
+            float vx;
+            float vy;
+            float wz;
+        } __attribute__((packed)) speed_vector;
+
+    } __attribute__((packed)) data;
+
+    uint16_t crc;
+} __attribute__((packed)) SendDataRobotMotion_s;
 
 /*-------------------- Receive --------------------*/
 typedef struct RobotCmdData
@@ -208,7 +298,7 @@ typedef struct RobotCmdData
     } __attribute__((packed)) data;
 
     uint16_t checksum;
-} __attribute__((packed)) RobotCmdReceiveData_s;
+} __attribute__((packed)) ReceiveDataRobotCmd_s;
 
 // PID调参数据包
 typedef struct
@@ -233,5 +323,5 @@ typedef struct
     } __attribute__((packed)) data;
 
     uint16_t crc;
-} __attribute__((packed)) PidDebugReceiveData_s;
+} __attribute__((packed)) ReceiveDataPidDebug_s;
 #endif  // USB_TYPEDEF_H
