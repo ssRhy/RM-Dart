@@ -59,13 +59,14 @@
 // Variable Declarations
 static uint8_t USB_RX_BUF[USB_RX_DATA_SIZE];
 
+static const Imu_t * IMU;
+static const ChassisSpeedVector_t * FDB_SPEED_VECTOR;
+
+// 判断USB连接状态用到的一些变量
 static bool USB_OFFLINE = true;
 static uint32_t RECEIVE_TIME = 0;
 static uint32_t LATEST_RX_TIMESTAMP = 0;
 static uint32_t CONTINUE_RECEIVE_CNT = 0;
-
-static const Imu_t * IMU;
-static const ChassisSpeedVector_t * FDB_SPEED_VECTOR;
 
 // 数据发送结构体
 // clang-format off
