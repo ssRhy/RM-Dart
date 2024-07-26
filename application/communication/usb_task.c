@@ -31,6 +31,9 @@
 
 #define USB_TASK_CONTROL_TIME 1  // ms
 
+#define USB_OFFLINE_THRESHOLD 100  // ms
+#define USB_CONNECT_CNT 10
+
 // clang-format off
 #define SEND_DURATION_Imu         5   // ms
 #define SEND_DURATION_Debug       5   // ms
@@ -58,6 +61,12 @@ static uint8_t USB_RX_BUF[USB_RX_DATA_SIZE];
 
 static const Imu_t * IMU;
 static const ChassisSpeedVector_t * FDB_SPEED_VECTOR;
+
+// 判断USB连接状态用到的一些变量
+static bool USB_OFFLINE = true;
+static uint32_t RECEIVE_TIME = 0;
+static uint32_t LATEST_RX_TIMESTAMP = 0;
+static uint32_t CONTINUE_RECEIVE_CNT = 0;
 
 // 数据发送结构体
 // clang-format off
@@ -129,6 +138,7 @@ void usb_task(void const * argument)
     MX_USB_DEVICE_Init();
 
     Publish(&ROBOT_CMD_DATA, "ROBOT_CMD_DATA");
+    Publish(&USB_OFFLINE, "usb_offline");
 
     vTaskDelay(10);  //等待USB设备初始化完成
 
@@ -136,7 +146,7 @@ void usb_task(void const * argument)
 
     while (1) {
         ModifyDebugDataPackage(0, IMU->yaw, "yaw");
-        ModifyDebugDataPackage(1, SEND_DATA_IMU.time_stamp % 1000, "data1");
+        ModifyDebugDataPackage(1, (SEND_DATA_IMU.time_stamp/10) % 1000, "data1");
         ModifyDebugDataPackage(2, ROBOT_CMD_DATA.speed_vector.vx, "vx_set");
         ModifyDebugDataPackage(3, ROBOT_CMD_DATA.speed_vector.vy, "vy_set");
         ModifyDebugDataPackage(4, ROBOT_CMD_DATA.gimbal.pitch, "pitch");
@@ -144,6 +154,15 @@ void usb_task(void const * argument)
         UsbSendData();
         UsbReceiveData();
         GetCmdData();
+
+        if (HAL_GetTick() - RECEIVE_TIME > USB_OFFLINE_THRESHOLD) {
+            USB_OFFLINE = true;
+            CONTINUE_RECEIVE_CNT = 0;
+        } else if (CONTINUE_RECEIVE_CNT > USB_CONNECT_CNT) {
+            USB_OFFLINE = false;
+        } else {
+            CONTINUE_RECEIVE_CNT++;
+        }
 
         vTaskDelay(USB_TASK_CONTROL_TIME);
     }
@@ -296,6 +315,10 @@ static void UsbReceiveData(void)
                     } break;
                     default:
                         break;
+                }
+                if (*((uint32_t *)(&sof_address[4])) > LATEST_RX_TIMESTAMP) {
+                    LATEST_RX_TIMESTAMP = *((uint32_t *)(&sof_address[4]));
+                    RECEIVE_TIME = HAL_GetTick();
                 }
             }
             sof_address += (data_len + HEADER_SIZE + 2);
