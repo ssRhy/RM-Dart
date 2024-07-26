@@ -31,6 +31,9 @@
 
 #define USB_TASK_CONTROL_TIME 1  // ms
 
+#define USB_OFFLINE_THRESHOLD 100  // ms
+#define USB_CONNECT_CNT 10
+
 // clang-format off
 #define SEND_DURATION_Imu         5   // ms
 #define SEND_DURATION_Debug       5   // ms
@@ -55,6 +58,11 @@
 
 // Variable Declarations
 static uint8_t USB_RX_BUF[USB_RX_DATA_SIZE];
+
+static bool USB_OFFLINE = true;
+static uint32_t RECEIVE_TIME = 0;
+static uint32_t LATEST_RX_TIMESTAMP = 0;
+static uint32_t CONTINUE_RECEIVE_CNT = 0;
 
 static const Imu_t * IMU;
 static const ChassisSpeedVector_t * FDB_SPEED_VECTOR;
@@ -129,6 +137,7 @@ void usb_task(void const * argument)
     MX_USB_DEVICE_Init();
 
     Publish(&ROBOT_CMD_DATA, "ROBOT_CMD_DATA");
+    Publish(&USB_OFFLINE, "usb_offline");
 
     vTaskDelay(10);  //等待USB设备初始化完成
 
@@ -144,6 +153,15 @@ void usb_task(void const * argument)
         UsbSendData();
         UsbReceiveData();
         GetCmdData();
+
+        if (HAL_GetTick() - RECEIVE_TIME > USB_OFFLINE_THRESHOLD) {
+            USB_OFFLINE = true;
+            CONTINUE_RECEIVE_CNT = 0;
+        } else if (CONTINUE_RECEIVE_CNT > USB_CONNECT_CNT) {
+            USB_OFFLINE = false;
+        } else {
+            CONTINUE_RECEIVE_CNT++;
+        }
 
         vTaskDelay(USB_TASK_CONTROL_TIME);
     }
@@ -296,6 +314,10 @@ static void UsbReceiveData(void)
                     } break;
                     default:
                         break;
+                }
+                if (*((uint32_t *)(&sof_address[4])) > LATEST_RX_TIMESTAMP) {
+                    LATEST_RX_TIMESTAMP = *((uint32_t *)(&sof_address[4]));
+                    RECEIVE_TIME = HAL_GetTick();
                 }
             }
             sof_address += (data_len + HEADER_SIZE + 2);
