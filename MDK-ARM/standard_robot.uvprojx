@@ -3303,6 +3303,11 @@
               <FileType>1</FileType>
               <FilePath>..\application\calibrate\calibrate_task.c</FilePath>
             </File>
+            <File>
+              <FileName>calibrate.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\calibrate\calibrate.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
