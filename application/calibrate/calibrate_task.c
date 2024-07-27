@@ -229,7 +229,7 @@ static void RC_cmd_to_calibrate(void)
         cali_state_flag > FLAG_NONE && rc_action_flag == FLAG_CHASSIS &&
         rc_cmd_time > RC_CMD_LONG_TIME) {
         // 切换为底盘校准模式
-        cali_state_flag = FLAG_IMU;
+        cali_state_flag = FLAG_CHASSIS;
         rc_cmd_time = 0;
         //send CAN reset ID cmd to M3508
         //发送CAN重设ID命令到3508
