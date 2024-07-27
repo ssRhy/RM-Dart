@@ -69,6 +69,13 @@
 #define FLASH_WRITE_BUF_LENGHT \
     (sizeof(head_cali_t) + sizeof(gimbal_cali_t) + sizeof(imu_cali_t) * 3 + CALI_LIST_LENGHT * 4)
 
+#define CheckRcCaliValue(sign0, sign1, sign2, sign3)                                   \
+    (switch_is_down(calibrate_RC->rc.s[0]) && switch_is_down(calibrate_RC->rc.s[1]) && \
+     calibrate_RC->rc.ch[0] sign0 RC_CALI_VALUE_HOLE &&                                \
+     calibrate_RC->rc.ch[1] sign1 RC_CALI_VALUE_HOLE &&                                \
+     calibrate_RC->rc.ch[2] sign2 RC_CALI_VALUE_HOLE &&                                \
+     calibrate_RC->rc.ch[3] sign3 RC_CALI_VALUE_HOLE)
+
 /*------------------------------ Variable Definition ------------------------------*/
 
 static const RC_ctrl_t * calibrate_RC;  //remote control point
@@ -242,39 +249,20 @@ static void RC_cmd_to_calibrate(void)
     //*********************************************************
     //* 根据遥控器摇杆的位置，判断rc的动作
     //*********************************************************
-    if (switch_is_down(calibrate_RC->rc.s[0]) && switch_is_down(calibrate_RC->rc.s[1]) &&
-        calibrate_RC->rc.ch[0] < -RC_CALI_VALUE_HOLE &&
-        calibrate_RC->rc.ch[1] < -RC_CALI_VALUE_HOLE &&
-        calibrate_RC->rc.ch[2] > RC_CALI_VALUE_HOLE &&
-        calibrate_RC->rc.ch[3] < -RC_CALI_VALUE_HOLE &&
+    if (CheckRcCaliValue(< -, <-, >, < -) &&
         (cali_state_flag == FLAG_NONE || cali_state_flag == FLAG_BEGIN)) {
         // 两个摇杆打成 \../,保持2s,切换校准模式(进入/退出)
         rc_action_flag = FLAG_TOGGLE;
         rc_cmd_time++;
-    } else if (
-        switch_is_down(calibrate_RC->rc.s[0]) && switch_is_down(calibrate_RC->rc.s[1]) &&
-        calibrate_RC->rc.ch[0] > RC_CALI_VALUE_HOLE &&
-        calibrate_RC->rc.ch[1] > RC_CALI_VALUE_HOLE &&
-        calibrate_RC->rc.ch[2] < -RC_CALI_VALUE_HOLE &&
-        calibrate_RC->rc.ch[3] > RC_CALI_VALUE_HOLE && cali_state_flag > FLAG_NONE) {
+    } else if (CheckRcCaliValue(>, >, <-, >) && cali_state_flag > FLAG_NONE) {
         // 在校准模式中,两个摇杆打成'\/',保持2s,进入云台校准
         rc_cmd_time++;
         rc_action_flag = FLAG_GIMBAL;
-    } else if (
-        switch_is_down(calibrate_RC->rc.s[0]) && switch_is_down(calibrate_RC->rc.s[1]) &&
-        calibrate_RC->rc.ch[0] > RC_CALI_VALUE_HOLE &&
-        calibrate_RC->rc.ch[1] < -RC_CALI_VALUE_HOLE &&
-        calibrate_RC->rc.ch[2] < -RC_CALI_VALUE_HOLE &&
-        calibrate_RC->rc.ch[3] < -RC_CALI_VALUE_HOLE && cali_state_flag > FLAG_NONE) {
+    } else if (CheckRcCaliValue(>, < -, < -, < -) && cali_state_flag > FLAG_NONE) {
         // 在校准模式中,两个摇杆打成./\.,保持2s,进入陀螺仪校准
         rc_cmd_time++;
         rc_action_flag = FLAG_IMU;
-    } else if (
-        switch_is_down(calibrate_RC->rc.s[0]) && switch_is_down(calibrate_RC->rc.s[1]) &&
-        calibrate_RC->rc.ch[0] < -RC_CALI_VALUE_HOLE &&
-        calibrate_RC->rc.ch[1] > RC_CALI_VALUE_HOLE &&
-        calibrate_RC->rc.ch[2] > RC_CALI_VALUE_HOLE &&
-        calibrate_RC->rc.ch[3] > RC_CALI_VALUE_HOLE && cali_state_flag > FLAG_NONE) {
+    } else if (CheckRcCaliValue(<-, >, >, >) && cali_state_flag > FLAG_NONE) {
         // 在校准模式中,两个摇杆打成/''\,保持2s,进入底盘校准
         rc_cmd_time++;
         rc_action_flag = FLAG_CHASSIS;
