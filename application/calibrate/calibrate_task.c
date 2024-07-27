@@ -427,7 +427,16 @@ void cali_param_init(void)
     }
 }
 
-int8_t get_control_temperature(void) { return 30.0f; }
+/**
+  * @brief          获取imu控制温度, 单位℃
+  * @param[in]      none
+  * @retval         imu控制温度
+  */
+int8_t get_control_temperature(void)
+{
+
+    return head_cali.temperature;
+}
 
 void unused_cali_func(void)
 {
