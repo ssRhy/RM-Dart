@@ -1,5 +1,5 @@
-#ifndef CALIBRATE_TASK_H
-#define CALIBRATE_TASK_H
+#ifndef CALIBRATE_H
+#define CALIBRATE_H
 
 #include "struct_typedef.h"
 
@@ -7,6 +7,8 @@
 #define GYRO_CONST_MAX_TEMP 45.0f            // 最大陀螺仪控制温度
 #define CALIED_FLAG 0x55                     // means it has been calibrated
 #define GYRO_CALIBRATE_TIME 20000            //gyro calibrate time,陀螺仪校准时间
+
+#define CALI_SENSOR_HEAD_LEGHT 1
 
 // Macro functions
 
@@ -35,7 +37,8 @@
 
 //cali device name
 typedef enum {
-    CALI_GIMBAL = 0,
+    CALI_HEAD = 0,
+    CALI_GIMBAL,
     CALI_GYRO,
     CALI_ACC,
     CALI_MAG,
@@ -53,7 +56,16 @@ typedef struct
     bool_t (*cali_hook)(uint32_t * point, bool_t cmd);  //cali function
 } __attribute__((packed)) cali_sensor_t;
 
-//gimbal device
+//header device (固件信息)
+typedef struct
+{
+    uint8_t self_id;            // the "SELF_ID"
+    uint16_t firmware_version;  // set to the "FIRMWARE_VERSION"
+    //'temperature'不应该在head_cali,因为不想创建一个新的设备就放这了
+    int8_t temperature;  // imu control temperature
+} __attribute__((packed)) head_cali_t;
+
+//gimbal device (云台设备)
 typedef struct
 {
     fp32 yaw_offset;
@@ -62,7 +74,7 @@ typedef struct
     fp32 pitch_min_angle;
 } __attribute__((packed)) gimbal_cali_t;
 
-//gyro, accel, mag device
+//gyro, accel, mag device (陀螺仪,加速度计,磁力计设备)
 typedef struct
 {
     fp32 offset[3];  //x,y,z

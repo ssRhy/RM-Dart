@@ -18,10 +18,14 @@
 #ifndef CALIBRATE_TASK_H
 #define CALIBRATE_TASK_H
 
+#include "struct_typedef.h"
+
 extern void cali_param_init(void);
 
 extern int8_t get_control_temperature(void);
 
 extern void calibrate_task(void const *pvParameters);
+
+extern void unused_cali_func(void);
 
 #endif // CALIBRATE_TASK_H
