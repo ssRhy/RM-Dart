@@ -6,9 +6,13 @@
 #define FLASH_USER_ADDR ADDR_FLASH_SECTOR_9  // 保存的flash页地址,page 9
 #define GYRO_CONST_MAX_TEMP 45.0f            // 最大陀螺仪控制温度
 #define CALIED_FLAG 0x55                     // means it has been calibrated
-#define GYRO_CALIBRATE_TIME 20000            //gyro calibrate time,陀螺仪校准时间
+
+#define GYRO_CALIBRATE_TIME 20000  // (ms)gyro calibrate time,陀螺仪校准时间
+#define RC_CMD_LONG_TIME 2000      // (ms)遥控器长按时间（达到时间后切换校准状态）
 
 #define CALI_SENSOR_HEAD_LEGHT 1
+
+#define RC_CALI_VALUE_HOLE 600  // 遥控器阈值，遥控器通道的最大值为660。
 
 // Macro functions
 
