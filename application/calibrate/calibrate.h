@@ -3,6 +3,9 @@
 
 #include "struct_typedef.h"
 
+#define CALI_FUNC_CMD_ON 1    // 设置校准
+#define CALI_FUNC_CMD_INIT 0  // 已经校准过，设置校准值
+
 #define FLASH_USER_ADDR ADDR_FLASH_SECTOR_9  // 保存的flash页地址,page 9
 #define GYRO_CONST_MAX_TEMP 45.0f            // 最大陀螺仪控制温度
 #define CALIED_FLAG 0x55                     // means it has been calibrated

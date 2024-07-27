@@ -111,7 +111,7 @@ static uint8_t cali_sensor_size[CALI_LIST_LENGHT] = {
     // clang-format on
 };
 // void *cali_hook_fun[CALI_LIST_LENGHT] = {cali_gimbal_hook, cali_gyro_hook, NULL, NULL};
-void * cali_hook_fun[CALI_LIST_LENGHT] = {NULL, NULL, NULL, NULL};
+void * cali_hook_fun[CALI_LIST_LENGHT] = {NULL, NULL, NULL, NULL, NULL};
 
 static uint32_t calibrate_systemTick;
 
@@ -144,10 +144,36 @@ static void cali_data_write(void);
   */
 void calibrate_task(void const * pvParameters)
 {
+   static uint8_t i = 0;
+
     calibrate_RC = get_remote_control_point();
 
     while (1) {
         RC_cmd_to_calibrate();
+
+        for (i = 0; i < CALI_LIST_LENGHT; i++)
+        {
+            if (cali_sensor[i].cali_cmd)
+            {
+                if (cali_sensor[i].cali_hook != NULL)
+                {
+
+                    if (cali_sensor[i].cali_hook(cali_sensor_buf[i], CALI_FUNC_CMD_ON))
+                    {
+                        //done
+                        cali_sensor[i].name[0] = cali_name[i][0];
+                        cali_sensor[i].name[1] = cali_name[i][1];
+                        cali_sensor[i].name[2] = cali_name[i][2];
+                        //set 0x55
+                        cali_sensor[i].cali_done = CALIED_FLAG;
+
+                        cali_sensor[i].cali_cmd = 0;
+                        //write
+                        cali_data_write();
+                    }
+                }
+            }
+        }
 
         vTaskDelay(CALIBRATE_CONTROL_TIME);
     }
@@ -374,7 +400,32 @@ static void cali_data_write(void)
 /*******************************************************************************/
 /* Public Function                                                             */
 /*******************************************************************************/
-void cali_param_init(void) { ; }
+
+void cali_param_init(void)
+{
+    uint8_t i = 0;
+
+    for (i = 0; i < CALI_LIST_LENGHT; i++)
+    {
+        cali_sensor[i].flash_len = cali_sensor_size[i];
+        cali_sensor[i].flash_buf = cali_sensor_buf[i];
+        cali_sensor[i].cali_hook = (bool_t(*)(uint32_t *, bool_t))cali_hook_fun[i];
+    }
+
+    cali_data_read();
+
+    for (i = 0; i < CALI_LIST_LENGHT; i++)
+    {
+        if (cali_sensor[i].cali_done == CALIED_FLAG)
+        {
+            if (cali_sensor[i].cali_hook != NULL)
+            {
+                //if has been calibrated, set to init 
+                cali_sensor[i].cali_hook(cali_sensor_buf[i], CALI_FUNC_CMD_INIT);
+            }
+        }
+    }
+}
 
 int8_t get_control_temperature(void) { return 30.0f; }
 
