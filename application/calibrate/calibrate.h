@@ -99,7 +99,7 @@ typedef struct
     fp32 pitch_offset;
     fp32 pitch_max_angle;
     fp32 pitch_min_angle;
-} __attribute__((packed)) gimbal_cali_t;
+} gimbal_cali_t;
 
 //gyro, accel, mag device (陀螺仪,加速度计,磁力计设备)
 typedef struct

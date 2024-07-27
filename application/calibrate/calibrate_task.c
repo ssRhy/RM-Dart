@@ -144,22 +144,17 @@ static void cali_data_write(void);
   */
 void calibrate_task(void const * pvParameters)
 {
-   static uint8_t i = 0;
+    static uint8_t i = 0;
 
     calibrate_RC = get_remote_control_point();
 
     while (1) {
         RC_cmd_to_calibrate();
 
-        for (i = 0; i < CALI_LIST_LENGHT; i++)
-        {
-            if (cali_sensor[i].cali_cmd)
-            {
-                if (cali_sensor[i].cali_hook != NULL)
-                {
-
-                    if (cali_sensor[i].cali_hook(cali_sensor_buf[i], CALI_FUNC_CMD_ON))
-                    {
+        for (i = 0; i < CALI_LIST_LENGHT; i++) {
+            if (cali_sensor[i].cali_cmd) {
+                if (cali_sensor[i].cali_hook != NULL) {
+                    if (cali_sensor[i].cali_hook(cali_sensor_buf[i], CALI_FUNC_CMD_ON)) {
                         //done
                         cali_sensor[i].name[0] = cali_name[i][0];
                         cali_sensor[i].name[1] = cali_name[i][1];
@@ -405,8 +400,7 @@ void cali_param_init(void)
 {
     uint8_t i = 0;
 
-    for (i = 0; i < CALI_LIST_LENGHT; i++)
-    {
+    for (i = 0; i < CALI_LIST_LENGHT; i++) {
         cali_sensor[i].flash_len = cali_sensor_size[i];
         cali_sensor[i].flash_buf = cali_sensor_buf[i];
         cali_sensor[i].cali_hook = (bool_t(*)(uint32_t *, bool_t))cali_hook_fun[i];
@@ -414,13 +408,10 @@ void cali_param_init(void)
 
     cali_data_read();
 
-    for (i = 0; i < CALI_LIST_LENGHT; i++)
-    {
-        if (cali_sensor[i].cali_done == CALIED_FLAG)
-        {
-            if (cali_sensor[i].cali_hook != NULL)
-            {
-                //if has been calibrated, set to init 
+    for (i = 0; i < CALI_LIST_LENGHT; i++) {
+        if (cali_sensor[i].cali_done == CALIED_FLAG) {
+            if (cali_sensor[i].cali_hook != NULL) {
+                //if has been calibrated, set to init
                 cali_sensor[i].cali_hook(cali_sensor_buf[i], CALI_FUNC_CMD_INIT);
             }
         }
@@ -432,11 +423,7 @@ void cali_param_init(void)
   * @param[in]      none
   * @retval         imu控制温度
   */
-int8_t get_control_temperature(void)
-{
-
-    return head_cali.temperature;
-}
+int8_t get_control_temperature(void) { return head_cali.temperature; }
 
 void unused_cali_func(void)
 {
