@@ -197,14 +197,14 @@ static void RC_cmd_to_calibrate(void)
         rc_action_flag = FLAG_NONE;
         rc_cmd_time = 0;
     } else if (
-        cali_state_flag == FLAG_BEGIN && rc_action_flag == FLAG_TOGGLE &&
+        cali_state_flag > FLAG_NONE && rc_action_flag == FLAG_TOGGLE &&
         rc_cmd_time > RC_CMD_LONG_TIME) {
         // 退出校准模式
         cali_state_flag = FLAG_NONE;
         rc_action_flag = FLAG_NONE;
         rc_cmd_time = 0;
     } else if (
-        cali_state_flag == FLAG_BEGIN && rc_action_flag == FLAG_GIMBAL &&
+        cali_state_flag > FLAG_NONE && rc_action_flag == FLAG_GIMBAL &&
         rc_cmd_time > RC_CMD_LONG_TIME) {
         // 切换为云台校准模式
         cali_state_flag = FLAG_GIMBAL;
@@ -213,7 +213,7 @@ static void RC_cmd_to_calibrate(void)
         cali_sensor[CALI_GIMBAL].cali_cmd = 1;
         cali_buzzer_off();
     } else if (
-        cali_state_flag == FLAG_BEGIN && rc_action_flag == FLAG_IMU &&
+        cali_state_flag > FLAG_NONE && rc_action_flag == FLAG_IMU &&
         rc_cmd_time > RC_CMD_LONG_TIME) {
         // 切换为imu校准模式
         cali_state_flag = FLAG_IMU;
@@ -227,7 +227,7 @@ static void RC_cmd_to_calibrate(void)
         }
         cali_buzzer_off();
     } else if (
-        cali_state_flag == FLAG_BEGIN && rc_action_flag == FLAG_CHASSIS &&
+        cali_state_flag > FLAG_NONE && rc_action_flag == FLAG_CHASSIS &&
         rc_cmd_time > RC_CMD_LONG_TIME) {
         // 切换为底盘校准模式
         cali_state_flag = FLAG_IMU;
