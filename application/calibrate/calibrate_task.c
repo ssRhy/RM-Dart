@@ -181,7 +181,7 @@ static void RC_cmd_to_calibrate(void)
         if (cali_sensor[i].cali_cmd) {
             buzzer_time = 0;
             rc_cmd_time = 0;
-            rc_action_flag = 0;
+            rc_action_flag = FLAG_NONE;
 
             return;
         }
