@@ -29,13 +29,14 @@
 #include "bsp_spi.h"
 #include "calibrate_task.h"
 #include "cmsis_os.h"
+#include "data_exchange.h"
 #include "detect_task.h"
 #include "ist8310driver.h"
 #include "main.h"
 #include "math.h"
 #include "pid.h"
+#include "robot_param.h"
 #include "usb_debug.h"
-#include "data_exchange.h"
 
 // clang-format off
 #define IMU_temp_PWM(pwm)  imu_pwm_set(pwm)                    //pwm给定
@@ -448,7 +449,12 @@ static void imu_temp_control(fp32 temp)
 {
     uint16_t tempPWM;
     static uint8_t temp_constant_time = 0;
-    if (first_temperate)
+    
+    if (!__HEAT_IMU)
+    {
+        return;
+    }
+    else if (first_temperate)
     {
         PID_calc(&imu_temp_pid, temp, get_control_temperature());
         if (imu_temp_pid.out < 0.0f)

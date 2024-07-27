@@ -31,6 +31,7 @@
 #define __MUSIC_ON 0               // 开启音乐
 #define __TUNING_MODE TUNING_NONE  // 调参模式
 #define __SELF_BOARD_ID 1          // 本板ID
+#define __HEAT_IMU 0  // IMU加热，设置为0则不加热(防止Debug时因断点导致pid失效产生过热，烧坏IMU)
 
 // USB通信的部分选项
 #define __USING_OLD_USB 0   // 使用旧版USB通信
