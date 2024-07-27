@@ -106,6 +106,8 @@ static uint8_t cali_sensor_size[CALI_LIST_LENGHT] = {
 // void *cali_hook_fun[CALI_LIST_LENGHT] = {cali_gimbal_hook, cali_gyro_hook, NULL, NULL};
 void * cali_hook_fun[CALI_LIST_LENGHT] = {NULL, NULL, NULL, NULL};
 
+static uint32_t calibrate_systemTick;
+
 /*------------------------------ Function Declaration ------------------------------*/
 
 /*******************************************************************************/
@@ -197,12 +199,14 @@ static void RC_cmd_to_calibrate(void)
         rc_action_flag = FLAG_NONE;
         rc_cmd_time = 0;
     } else if (
-        cali_state_flag > FLAG_NONE && rc_action_flag == FLAG_TOGGLE &&
-        rc_cmd_time > RC_CMD_LONG_TIME) {
+        rc_action_flag == FLAG_NONE ||
+        (cali_state_flag > FLAG_NONE && rc_action_flag == FLAG_TOGGLE &&
+         rc_cmd_time > RC_CMD_LONG_TIME)) {
         // 退出校准模式
         cali_state_flag = FLAG_NONE;
         rc_action_flag = FLAG_NONE;
         rc_cmd_time = 0;
+        cali_buzzer_off();
     } else if (
         cali_state_flag > FLAG_NONE && rc_action_flag == FLAG_GIMBAL &&
         rc_cmd_time > RC_CMD_LONG_TIME) {
@@ -240,6 +244,7 @@ static void RC_cmd_to_calibrate(void)
         // CAN_cmd_chassis_reset_ID();
         cali_buzzer_off();
     }
+
     //*********************************************************
     //* 根据遥控器摇杆的位置，判断rc的动作
     //*********************************************************
@@ -281,6 +286,37 @@ static void RC_cmd_to_calibrate(void)
         rc_action_flag = FLAG_CHASSIS;
     } else {
         rc_cmd_time = 0;
+    }
+
+    //*********************************************************
+    //* 根据校准进行的时间，判断是否需要停止校准，以及是否需要蜂鸣器提示
+    //*********************************************************
+    calibrate_systemTick = xTaskGetTickCount();
+    if (calibrate_systemTick - rc_cmd_systemTick > CALIBRATE_END_TIME) {
+        //超过20s,停止校准
+        rc_action_flag = FLAG_NONE;
+        return;
+    } else if (
+        calibrate_systemTick - rc_cmd_systemTick > RC_CALI_BUZZER_MIDDLE_TIME &&
+        rc_cmd_systemTick != 0 && cali_state_flag > FLAG_NONE) {
+        rc_cali_buzzer_middle_on();
+    } else if (
+        calibrate_systemTick - rc_cmd_systemTick > 0 && rc_cmd_systemTick != 0 &&
+        cali_state_flag > FLAG_NONE) {
+        rc_cali_buzzer_start_on();
+    }
+
+    //*********************************************************
+    //* 蜂鸣器计时循环
+    //*********************************************************
+    if (cali_state_flag > FLAG_NONE) {
+        buzzer_time++;
+    }
+    if (buzzer_time > RC_CALI_BUZZER_CYCLE_TIME && cali_state_flag > FLAG_NONE) {
+        buzzer_time = 0;
+    }
+    if (buzzer_time > RC_CALI_BUZZER_PAUSE_TIME && cali_state_flag > FLAG_NONE) {
+        cali_buzzer_off();
     }
 }
 

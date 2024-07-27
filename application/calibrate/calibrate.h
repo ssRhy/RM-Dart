@@ -7,8 +7,14 @@
 #define GYRO_CONST_MAX_TEMP 45.0f            // 最大陀螺仪控制温度
 #define CALIED_FLAG 0x55                     // means it has been calibrated
 
+#define CALIBRATE_END_TIME 20000          // (ms)有20s可以用遥控器进行校准
+#define RC_CALI_BUZZER_MIDDLE_TIME 10000  // (ms)当10s的时候,蜂鸣器切成高频声音
+
+#define RC_CALI_BUZZER_CYCLE_TIME 400  // (ms)
+#define RC_CALI_BUZZER_PAUSE_TIME 200  // (ms)
+
 #define GYRO_CALIBRATE_TIME 20000  // (ms)gyro calibrate time,陀螺仪校准时间
-#define RC_CMD_LONG_TIME 2000      // (ms)遥控器长按时间（达到时间后切换校准状态）
+#define RC_CMD_LONG_TIME 2000  // (ms)遥控器长按时间（达到时间后切换校准状态）
 
 #define CALI_SENSOR_HEAD_LEGHT 1
 
@@ -19,6 +25,9 @@
 #define imu_start_buzzer() buzzer_on(95, 10000)  // 当imu在校准,蜂鸣器的设置频率和强度
 #define gimbal_start_buzzer() buzzer_on(31, 19999)  // 当云台在校准,蜂鸣器的设置频率和强度
 #define cali_buzzer_off() buzzer_off()              // buzzer off，关闭蜂鸣器
+
+#define rc_cali_buzzer_middle_on() gimbal_start_buzzer()
+#define rc_cali_buzzer_start_on() imu_start_buzzer()
 
 #define cali_get_mcu_temperature() get_temprate()  // 获取stm32片内温度，计算imu的控制温度
 
