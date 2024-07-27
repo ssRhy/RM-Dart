@@ -183,7 +183,6 @@ static void RC_cmd_to_calibrate(void)
         if (cali_sensor[i].cali_cmd) {
             buzzer_time = 0;
             rc_cmd_time = 0;
-            rc_action_flag = FLAG_NONE;
 
             return;
         }
@@ -196,7 +195,6 @@ static void RC_cmd_to_calibrate(void)
         // 进入校准模式
         rc_cmd_systemTick = xTaskGetTickCount();
         cali_state_flag = FLAG_BEGIN;
-        rc_action_flag = FLAG_NONE;
         rc_cmd_time = 0;
     } else if (
         rc_action_flag == FLAG_NONE ||
@@ -204,7 +202,6 @@ static void RC_cmd_to_calibrate(void)
          rc_cmd_time > RC_CMD_LONG_TIME)) {
         // 退出校准模式
         cali_state_flag = FLAG_NONE;
-        rc_action_flag = FLAG_NONE;
         rc_cmd_time = 0;
         cali_buzzer_off();
     } else if (
@@ -212,7 +209,6 @@ static void RC_cmd_to_calibrate(void)
         rc_cmd_time > RC_CMD_LONG_TIME) {
         // 切换为云台校准模式
         cali_state_flag = FLAG_GIMBAL;
-        rc_action_flag = FLAG_NONE;
         rc_cmd_time = 0;
         cali_sensor[CALI_GIMBAL].cali_cmd = 1;
         cali_buzzer_off();
@@ -221,7 +217,6 @@ static void RC_cmd_to_calibrate(void)
         rc_cmd_time > RC_CMD_LONG_TIME) {
         // 切换为imu校准模式
         cali_state_flag = FLAG_IMU;
-        rc_action_flag = FLAG_NONE;
         rc_cmd_time = 0;
         cali_sensor[CALI_GYRO].cali_cmd = 1;
         //update control temperature
@@ -235,7 +230,6 @@ static void RC_cmd_to_calibrate(void)
         rc_cmd_time > RC_CMD_LONG_TIME) {
         // 切换为底盘校准模式
         cali_state_flag = FLAG_IMU;
-        rc_action_flag = FLAG_NONE;
         rc_cmd_time = 0;
         //send CAN reset ID cmd to M3508
         //发送CAN重设ID命令到3508
