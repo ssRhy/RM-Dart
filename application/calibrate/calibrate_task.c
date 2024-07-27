@@ -210,7 +210,7 @@ static void RC_cmd_to_calibrate(void)
         // 退出校准模式
         cali_state_flag = FLAG_NONE;
         rc_cmd_time = 0;
-        cali_buzzer_off();
+        // cali_buzzer_off();
     } else if (
         cali_state_flag > FLAG_NONE && rc_action_flag == FLAG_GIMBAL &&
         rc_cmd_time > RC_CMD_LONG_TIME) {
