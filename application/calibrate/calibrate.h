@@ -3,6 +3,13 @@
 
 #include "struct_typedef.h"
 
+#define SELF_ID 0x01                // self id
+#define FIRMWARE_VERSION_X 1        // firmware version x.y.z-release-beta
+#define FIRMWARE_VERSION_Y 4        // firmware version x.y.z-release-beta
+#define FIRMWARE_VERSION_Z 8        // firmware version x.y.z-release-beta
+#define FIRMWARE_VERSION_RELEASE 1  // firmware version x.y.z-release-beta
+#define FIRMWARE_VERSION_BETA 1     // firmware version x.y.z-release-beta
+
 #define CALI_FUNC_CMD_ON 1    // 设置校准
 #define CALI_FUNC_CMD_INIT 0  // 已经校准过，设置校准值
 
@@ -75,8 +82,12 @@ typedef struct
 //header device (固件信息)
 typedef struct
 {
-    uint8_t self_id;            // the "SELF_ID"
-    uint16_t firmware_version;  // set to the "FIRMWARE_VERSION"
+    uint8_t self_id;                    // the "SELF_ID"
+    uint16_t firmware_version_x;        // set to the "FIRMWARE_VERSION"
+    uint16_t firmware_version_y;        // set to the "FIRMWARE_VERSION"
+    uint16_t firmware_version_z;        // set to the "FIRMWARE_VERSION"
+    uint16_t firmware_version_release;  // set to the "FIRMWARE_VERSION"
+    uint16_t firmware_version_beta;     // set to the "FIRMWARE_VERSION"
     //'temperature'不应该在head_cali,因为不想创建一个新的设备就放这了
     int8_t temperature;  // imu control temperature
 } __attribute__((packed)) head_cali_t;
@@ -96,5 +107,9 @@ typedef struct
     fp32 offset[3];  //x,y,z
     fp32 scale[3];   //x,y,z
 } imu_cali_t;
+
+extern bool_t cali_head_hook(uint32_t * cali, bool_t cmd);
+extern bool_t cali_gimbal_hook(uint32_t * cali, bool_t cmd);
+extern bool_t cali_gyro_hook(uint32_t * cali, bool_t cmd);
 
 #endif  // CALIBRATE_TASK_H
