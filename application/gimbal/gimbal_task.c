@@ -149,10 +149,10 @@ __weak void GimbalSetCaliData(
 
 /**
   * @brief          云台校准计算，将校准记录的中值,最大 最小值返回
-  * @param[in]      yaw_middle:yaw 中值
-  * @param[in]      pitch_horizontal:pitch 水平值
-  * @param[in]      max_yaw:pitch 最大角度
-  * @param[in]      min_yaw:pitch 最小角度
+  * @param[out]      yaw_middle:yaw 中值 指针
+  * @param[out]      pitch_horizontal:pitch 水平值 指针
+  * @param[out]      max_yaw:pitch 最大角度 指针
+  * @param[out]      min_yaw:pitch 最小角度 指针
   * @retval         返回空
   * @note           云台任务内部调用的函数
   */
@@ -182,10 +182,10 @@ void set_cali_gimbal_hook(
 
 /**
   * @brief          云台校准计算，将校准记录的中值,最大 最小值返回
-  * @param[out]     yaw_middle 中值 指针
-  * @param[out]     pitch_horizontal 中值 指针
-  * @param[out]     pitch 最大相对角度 指针
-  * @param[out]     pitch 最小相对角度 指针
+  * @param[out]     yaw_middle:yaw 中值 指针
+  * @param[out]     pitch_horizontal:pitch 水平值 指针
+  * @param[out]     max_yaw:pitch 最大角度 指针
+  * @param[out]     min_yaw:pitch 最小角度 指针
   * @retval         返回1 代表成功校准完毕， 返回0 代表未校准完
   * @note           提供给校准任务调用的钩子函数
   */
