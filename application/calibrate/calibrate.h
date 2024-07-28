@@ -88,8 +88,8 @@ typedef struct
 //gimbal device (云台设备)
 typedef struct
 {
-    fp32 yaw_offset;
-    fp32 pitch_offset;
+    fp32 yaw_middle;
+    fp32 pitch_horizontal;
     fp32 pitch_max_angle;
     fp32 pitch_min_angle;
 } gimbal_cali_t;
