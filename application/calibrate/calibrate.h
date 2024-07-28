@@ -58,6 +58,7 @@ typedef enum {
     CALI_GYRO,
     CALI_ACC,
     CALI_MAG,
+    CALI_CHASSIS,
     //add more...
     CALI_LIST_LENGHT,
 } cali_id_e;
@@ -100,6 +101,12 @@ typedef struct
     fp32 offset[3];  //x,y,z
     fp32 scale[3];   //x,y,z
 } imu_cali_t;
+
+//chassis device (底盘设备)
+typedef struct
+{
+    fp32 motor_middle[4];  // 电机中值
+} chassis_cali_t;
 
 extern bool_t cali_head_hook(uint32_t * cali, bool_t cmd);
 extern bool_t cali_gimbal_hook(uint32_t * cali, bool_t cmd);

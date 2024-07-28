@@ -28,11 +28,11 @@
 
 #ifndef CHASSIS_TASK_INIT_TIME
 #define CHASSIS_TASK_INIT_TIME 357
-#endif // CHASSIS_TASK_INIT_TIME
+#endif  // CHASSIS_TASK_INIT_TIME
 
 #ifndef CHASSIS_CONTROL_TIME_MS
 #define CHASSIS_CONTROL_TIME_MS 2
-#endif // CHASSIS_CONTROL_TIME_MS
+#endif  // CHASSIS_CONTROL_TIME_MS
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
 uint32_t chassis_high_water;
@@ -134,3 +134,50 @@ __weak void ChassisSendCmd(void)
      NOTE : 在其他文件中定义具体内容
     */
 }
+
+/*------------------------------ Calibrate Function ------------------------------*/
+
+/**
+  * @brief          设置底盘校准值，将底盘的校准数据设置为传入的校准值
+  * @param[in]      motor_middle:电机中值
+  * @retval         返回空
+  * @note           底盘任务内部调用的函数
+  */
+__weak void ChassisSetCaliData(const fp32 motor_middle[4])
+{
+    /* 
+     NOTE : 在其他文件中定义具体内容
+    */
+}
+
+/**
+  * @brief          底盘校准计算，将校准记录的中值,最大 最小值返回
+  * @param[out]     motor_middle:电机中值
+  * @retval         返回空
+  * @note           底盘任务内部调用的函数
+  */
+__weak bool_t ChassisCmdCali(fp32 motor_middle[4])
+{
+    /* 
+     NOTE : 在其他文件中定义具体内容
+    */
+    return 1;
+}
+
+/**
+  * @brief          底盘校准设置，将校准的底盘中值以及最小最大机械相对角度
+  * @param[in]      motor_middle:电机中值
+  * @retval         返回空
+  * @note           提供给校准任务调用的钩子函数
+  */
+void set_cali_chassis_hook(const fp32 motor_middle[4]) { ChassisSetCaliData(motor_middle); }
+
+/**
+  * @brief          底盘校准计算，将校准记录的中值,最大 最小值返回
+  * @param[out]     motor_middle:电机中值
+  * @retval         返回1 代表成功校准完毕， 返回0 代表未校准完
+  * @note           提供给校准任务调用的钩子函数
+  */
+bool_t cmd_cali_chassis_hook(fp32 motor_middle[4]) { return ChassisCmdCali(motor_middle); }
+
+/*------------------------------ End of File ------------------------------*/
