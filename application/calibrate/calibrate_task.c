@@ -118,7 +118,7 @@ static uint32_t calibrate_systemTick;
 /*------------------------------ Function Declaration ------------------------------*/
 
 /*******************************************************************************/
-/* xxx Function                                                    */
+/* RC Cmd Function                                                             */
 /*******************************************************************************/
 
 /**
@@ -177,7 +177,7 @@ void calibrate_task(void const * pvParameters)
 /*------------------------------ Function Definition ------------------------------*/
 
 /*******************************************************************************/
-/* xxx Function                                                    */
+/* RC Cmd Function                                                             */
 /*******************************************************************************/
 
 /**
@@ -396,6 +396,11 @@ static void cali_data_write(void)
 /* Public Function                                                             */
 /*******************************************************************************/
 
+/**
+  * @brief          校准任务参数初始化
+  * @param[in]      none
+  * @retval         none
+  */
 void cali_param_init(void)
 {
     uint8_t i = 0;
@@ -424,20 +429,5 @@ void cali_param_init(void)
   * @retval         imu控制温度
   */
 int8_t get_control_temperature(void) { return head_cali.temperature; }
-
-void unused_cali_func(void)
-{
-    // clang-format off
-    uint8_t flag = 
-        *cali_sensor_size != 0 && 
-        *cali_sensor_buf != 0 && 
-        calibrate_RC != NULL &&
-        *cali_name != 0;
-    // clang-format on
-    if (flag) {
-        cali_data_read();
-        cali_data_write();
-    }
-}
 
 /*------------------------------ End of File ------------------------------*/

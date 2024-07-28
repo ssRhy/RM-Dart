@@ -26,6 +26,4 @@ extern int8_t get_control_temperature(void);
 
 extern void calibrate_task(void const *pvParameters);
 
-extern void unused_cali_func(void);
-
 #endif // CALIBRATE_TASK_H
