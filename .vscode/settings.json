@@ -109,7 +109,8 @@
         "list": "c",
         "unordered_map": "c",
         "vector": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "music_error.h": "c"
     },
     "C_Cpp.codeAnalysis.clangTidy.enabled": true,
     "[cpp]": {

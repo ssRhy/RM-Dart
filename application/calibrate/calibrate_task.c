@@ -63,6 +63,7 @@
 #include "bsp_flash.h"
 #include "calibrate.h"
 #include "cmsis_os.h"
+#include "data_exchange.h"
 #include "remote_control.h"
 
 //include head,gimbal,gyro,accel,mag. gyro,accel and mag have the same data struct. total 5(CALI_LIST_LENGHT) devices, need data lenght + 5 * 4 bytes(name[3]+cali)
@@ -115,6 +116,8 @@ void * cali_hook_fun[CALI_LIST_LENGHT] = {NULL, NULL, NULL, NULL, NULL};
 
 static uint32_t calibrate_systemTick;
 
+static CaliBuzzerState_e cali_buzzer_state = CALI_BUZZER_OFF;
+
 /*------------------------------ Function Declaration ------------------------------*/
 
 /*******************************************************************************/
@@ -145,6 +148,8 @@ static void cali_data_write(void);
 void calibrate_task(void const * pvParameters)
 {
     static uint8_t i = 0;
+
+    Publish(&cali_buzzer_state, "CaliBuzzerState");
 
     calibrate_RC = get_remote_control_point();
 
@@ -231,7 +236,7 @@ static void RC_cmd_to_calibrate(void)
         // 退出校准模式
         cali_state_flag = FLAG_NONE;
         rc_cmd_time = 0;
-        // cali_buzzer_off();
+        cali_buzzer_state = CALI_BUZZER_OFF;
     } else if (
         cali_state_flag > FLAG_NONE && rc_action_flag == FLAG_GIMBAL &&
         rc_cmd_time > RC_CMD_LONG_TIME) {
@@ -239,7 +244,7 @@ static void RC_cmd_to_calibrate(void)
         cali_state_flag = FLAG_GIMBAL;
         rc_cmd_time = 0;
         cali_sensor[CALI_GIMBAL].cali_cmd = 1;
-        cali_buzzer_off();
+        cali_buzzer_state = CALI_BUZZER_OFF;
     } else if (
         cali_state_flag > FLAG_NONE && rc_action_flag == FLAG_IMU &&
         rc_cmd_time > RC_CMD_LONG_TIME) {
@@ -252,7 +257,7 @@ static void RC_cmd_to_calibrate(void)
         if (head_cali.temperature > (int8_t)(GYRO_CONST_MAX_TEMP)) {
             head_cali.temperature = (int8_t)(GYRO_CONST_MAX_TEMP);
         }
-        cali_buzzer_off();
+        cali_buzzer_state = CALI_BUZZER_OFF;
     } else if (
         cali_state_flag > FLAG_NONE && rc_action_flag == FLAG_CHASSIS &&
         rc_cmd_time > RC_CMD_LONG_TIME) {
@@ -264,7 +269,7 @@ static void RC_cmd_to_calibrate(void)
         // CAN_cmd_chassis_reset_ID();
         // CAN_cmd_chassis_reset_ID();
         // CAN_cmd_chassis_reset_ID();
-        cali_buzzer_off();
+        cali_buzzer_state = CALI_BUZZER_OFF;
     }
 
     //*********************************************************
@@ -302,11 +307,11 @@ static void RC_cmd_to_calibrate(void)
     } else if (
         calibrate_systemTick - rc_cmd_systemTick > RC_CALI_BUZZER_MIDDLE_TIME &&
         rc_cmd_systemTick != 0 && cali_state_flag > FLAG_NONE) {
-        rc_cali_buzzer_middle_on();
+        cali_buzzer_state = CALI_BUZZER_MIDDLE_TIME;
     } else if (
         calibrate_systemTick - rc_cmd_systemTick > 0 && rc_cmd_systemTick != 0 &&
         cali_state_flag > FLAG_NONE) {
-        rc_cali_buzzer_start_on();
+        cali_buzzer_state = CALI_BUZZER_BEGIN;
     }
 
     //*********************************************************
@@ -319,7 +324,7 @@ static void RC_cmd_to_calibrate(void)
         buzzer_time = 0;
     }
     if (buzzer_time > RC_CALI_BUZZER_PAUSE_TIME && cali_state_flag > FLAG_NONE) {
-        cali_buzzer_off();
+        cali_buzzer_state = CALI_BUZZER_OFF;
     }
 }
 

@@ -3,6 +3,16 @@
 
 #include "stdbool.h"
 
+typedef enum
+{
+    CALI_BUZZER_OFF = 0,
+    CALI_BUZZER_BEGIN,
+    CALI_BUZZER_MIDDLE_TIME,
+    CALI_BUZZER_GIMBAL,
+    CALI_BUZZER_IMU,
+    CALI_BUZZER_CHASSIS,
+} CaliBuzzerState_e;
+
 typedef struct __Imu
 {
     float yaw, pitch, roll;              // rad
