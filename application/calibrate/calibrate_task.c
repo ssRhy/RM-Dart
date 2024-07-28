@@ -480,10 +480,6 @@ static void cali_data_read(void)
         cali_sensor[i].cali_done = flash_read_buf[3];
 
         offset += CALI_SENSOR_HEAD_LEGHT * 4;
-
-        if (cali_sensor[i].cali_done != CALIED_FLAG && cali_sensor[i].cali_hook != NULL) {
-            cali_sensor[i].cali_cmd = 1;
-        }
     }
 }
 
