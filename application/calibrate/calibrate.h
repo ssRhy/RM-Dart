@@ -32,13 +32,6 @@
 
 // Macro functions
 
-#define imu_start_buzzer() buzzer_on(95, 10000)  // 当imu在校准,蜂鸣器的设置频率和强度
-#define gimbal_start_buzzer() buzzer_on(31, 19999)  // 当云台在校准,蜂鸣器的设置频率和强度
-#define cali_buzzer_off() buzzer_off()              // buzzer off，关闭蜂鸣器
-
-#define rc_cali_buzzer_middle_on() gimbal_start_buzzer()
-#define rc_cali_buzzer_start_on() imu_start_buzzer()
-
 #define cali_get_mcu_temperature() get_temprate()  // 获取stm32片内温度，计算imu的控制温度
 
 // clang-format off
