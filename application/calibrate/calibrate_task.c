@@ -369,10 +369,7 @@ static void RC_cmd_to_calibrate(void)
         rc_cmd_systemTick = xTaskGetTickCount();
         cali_state_flag = FLAG_BEGIN;
         rc_cmd_time = 0;
-    } else if (
-        rc_action_flag == FLAG_NONE ||
-        (cali_state_flag > FLAG_NONE && rc_action_flag == FLAG_TOGGLE &&
-         rc_cmd_time > RC_CMD_LONG_TIME)) {
+    } else if (rc_action_flag == FLAG_NONE) {
         // 退出校准模式
         cali_state_flag = FLAG_NONE;
         rc_cmd_time = 0;
