@@ -2,6 +2,7 @@
 #define USB_TYPEDEF_H
 
 #include "struct_typedef.h"
+#include "attribute_typedef.h"
 
 #define DEBUG_PACKAGE_NUM 10
 
@@ -31,12 +32,12 @@
 //         uint8_t len;  // 数据段长度
 //         uint8_t id;   // 数据段id = 0x00
 //         uint8_t crc;  // 数据帧头的 CRC8 校验
-//     } __attribute__((packed)) frame_header;
+//     } __packed__ frame_header;
 
 //     uint16_t type;
 
 //     uint16_t checksum;
-// } __attribute__((packed)) InfoData_s;
+// } __packed__ InfoData_s;
 
 // 串口调试数据包
 typedef struct
@@ -47,7 +48,7 @@ typedef struct
         uint8_t len;  // 数据段长度
         uint8_t id;   // 数据段id = 0x01
         uint8_t crc;  // 数据帧头的 CRC8 校验
-    } __attribute__((packed)) frame_header;
+    } __packed__ frame_header;
 
     uint32_t time_stamp;
 
@@ -56,10 +57,10 @@ typedef struct
         uint8_t name[10];
         uint8_t type;
         float data;
-    } __attribute__((packed)) packages[DEBUG_PACKAGE_NUM];
+    } __packed__ packages[DEBUG_PACKAGE_NUM];
 
     uint16_t checksum;
-} __attribute__((packed)) SendDataDebug_s;
+} __packed__ SendDataDebug_s;
 
 // IMU 数据包
 typedef struct
@@ -70,7 +71,7 @@ typedef struct
         uint8_t len;  // 数据段长度
         uint8_t id;   // 数据段id = 0x02
         uint8_t crc;  // 数据帧头的 CRC8 校验
-    } __attribute__((packed)) frame_header;
+    } __packed__ frame_header;
 
     uint32_t time_stamp;
 
@@ -87,10 +88,10 @@ typedef struct
         // float x_accel;  // m/s^2
         // float y_accel;  // m/s^2
         // float z_accel;  // m/s^2
-    } __attribute__((packed)) data;
+    } __packed__ data;
 
     uint16_t crc;
-} __attribute__((packed)) SendDataImu_s;
+} __packed__ SendDataImu_s;
 
 // 机器人信息数据包
 typedef struct
@@ -101,7 +102,7 @@ typedef struct
         uint8_t len;  // 数据段长度
         uint8_t id;   // 数据段id = 0x03
         uint8_t crc;  // 数据帧头的 CRC8 校验
-    } __attribute__((packed)) frame_header;
+    } __packed__ frame_header;
 
     uint32_t time_stamp;
 
@@ -116,7 +117,7 @@ typedef struct
             uint16_t arm : 3;
             uint16_t custom_controller : 3;
             uint16_t reserve : 1;
-        } __attribute__((packed)) type;
+        } __packed__ type;
 
         /// @brief 机器人部位状态 1 byte
         /// @note 0: 正常，1: 错误
@@ -128,7 +129,7 @@ typedef struct
             uint8_t arm : 1;
             uint8_t custom_controller : 1;
             uint8_t reserve : 3;
-        } __attribute__((packed)) state;
+        } __packed__ state;
 
         /// @brief 机器人裁判系统信息 7 bytes
         struct
@@ -138,12 +139,12 @@ typedef struct
             bool attacked;
             uint16_t hp;
             uint16_t heat;
-        } __attribute__((packed)) referee;
+        } __packed__ referee;
 
-    } __attribute__((packed)) data;
+    } __packed__ data;
 
     uint16_t crc;
-} __attribute__((packed)) SendDataRobotInfo_s;
+} __packed__ SendDataRobotInfo_s;
 
 // PID调参数据包
 typedef struct
@@ -154,7 +155,7 @@ typedef struct
         uint8_t len;  // 数据段长度
         uint8_t id;   // 数据段id = 0x04
         uint8_t crc;  // 数据帧头的 CRC8 校验
-    } __attribute__((packed)) frame_header;
+    } __packed__ frame_header;
 
     uint32_t time_stamp;
 
@@ -163,10 +164,10 @@ typedef struct
         float fdb;
         float ref;
         float pid_out;
-    } __attribute__((packed)) data;
+    } __packed__ data;
 
     uint16_t crc;
-} __attribute__((packed)) SendDataPidDebug_s;
+} __packed__ SendDataPidDebug_s;
 
 // 全场机器人hp信息数据包
 typedef struct
@@ -177,7 +178,7 @@ typedef struct
         uint8_t len;  // 数据段长度
         uint8_t id;   // 数据段id = 0x05
         uint8_t crc;  // 数据帧头的 CRC8 校验
-    } __attribute__((packed)) frame_header;
+    } __packed__ frame_header;
 
     uint32_t time_stamp;
 
@@ -199,10 +200,10 @@ typedef struct
         uint16_t blue_7_robot_hp;
         uint16_t blue_outpost_hp;
         uint16_t blue_base_hp;
-    } __attribute__((packed)) data;
+    } __packed__ data;
 
     uint16_t crc;
-} __attribute__((packed)) SendDataAllRobotHp_s;
+} __packed__ SendDataAllRobotHp_s;
 
 // 比赛信息数据包
 typedef struct
@@ -213,7 +214,7 @@ typedef struct
         uint8_t len;  // 数据段长度
         uint8_t id;   // 数据段id = 0x06
         uint8_t crc;  // 数据帧头的 CRC8 校验
-    } __attribute__((packed)) frame_header;
+    } __packed__ frame_header;
 
     uint32_t time_stamp;
 
@@ -221,10 +222,10 @@ typedef struct
     {
         uint8_t game_progress;
         uint16_t stage_remain_time;
-    } __attribute__((packed)) data;
+    } __packed__ data;
 
     uint16_t crc;
-} __attribute__((packed)) SendDataGameStatus_s;
+} __packed__ SendDataGameStatus_s;
 
 // 机器人运动数据包
 typedef struct
@@ -235,7 +236,7 @@ typedef struct
         uint8_t len;  // 数据段长度
         uint8_t id;   // 数据段id = 0x07
         uint8_t crc;  // 数据帧头的 CRC8 校验
-    } __attribute__((packed)) frame_header;
+    } __packed__ frame_header;
 
     uint32_t time_stamp;
 
@@ -246,12 +247,12 @@ typedef struct
             float vx;
             float vy;
             float wz;
-        } __attribute__((packed)) speed_vector;
+        } __packed__ speed_vector;
 
-    } __attribute__((packed)) data;
+    } __packed__ data;
 
     uint16_t crc;
-} __attribute__((packed)) SendDataRobotMotion_s;
+} __packed__ SendDataRobotMotion_s;
 
 /*-------------------- Receive --------------------*/
 typedef struct RobotCmdData
@@ -262,7 +263,7 @@ typedef struct RobotCmdData
         uint8_t len;  // 数据段长度
         uint8_t id;   // 数据段id = 0x01
         uint8_t crc;  // 数据帧头的 CRC8 校验
-    } __attribute__((packed)) frame_header;
+    } __packed__ frame_header;
 
     uint32_t time_stamp;
 
@@ -273,7 +274,7 @@ typedef struct RobotCmdData
             float vx;
             float vy;
             float wz;
-        } __attribute__((packed)) speed_vector;
+        } __packed__ speed_vector;
 
         struct
         {
@@ -281,24 +282,24 @@ typedef struct RobotCmdData
             float pitch;
             float yaw;
             float leg_lenth;
-        } __attribute__((packed)) chassis;
+        } __packed__ chassis;
 
         struct
         {
             float pitch;
             float yaw;
-        } __attribute__((packed)) gimbal;
+        } __packed__ gimbal;
 
         struct
         {
             uint8_t fire;
             uint8_t fric_on;
-        } __attribute__((packed)) shoot;
+        } __packed__ shoot;
 
-    } __attribute__((packed)) data;
+    } __packed__ data;
 
     uint16_t checksum;
-} __attribute__((packed)) ReceiveDataRobotCmd_s;
+} __packed__ ReceiveDataRobotCmd_s;
 
 // PID调参数据包
 typedef struct
@@ -309,7 +310,7 @@ typedef struct
         uint8_t len;  // 数据段长度
         uint8_t id;   // 数据段id = 0x02
         uint8_t crc;  // 数据帧头的 CRC8 校验
-    } __attribute__((packed)) frame_header;
+    } __packed__ frame_header;
 
     uint32_t time_stamp;
 
@@ -320,8 +321,8 @@ typedef struct
         float kd;
         float max_out;
         float max_iout;
-    } __attribute__((packed)) data;
+    } __packed__ data;
 
     uint16_t crc;
-} __attribute__((packed)) ReceiveDataPidDebug_s;
+} __packed__ ReceiveDataPidDebug_s;
 #endif  // USB_TYPEDEF_H

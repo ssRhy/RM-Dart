@@ -17,6 +17,7 @@
 
 #include "mechanical_arm_task.h"
 
+#include "attribute_typedef.h"
 #include "cmsis_os.h"
 #include "mechanical_arm.h"
 #include "mechanical_arm_penguin_mini.h"
@@ -24,10 +25,6 @@
 #if INCLUDE_uxTaskGetStackHighWaterMark
 uint32_t mechanical_arm_high_water;
 #endif
-
-#ifndef __weak
-#define __weak __attribute__((weak))
-#endif /* __weak */
 
 __weak void MechanicalArmPublish(void);
 __weak void MechanicalArmInit(void);

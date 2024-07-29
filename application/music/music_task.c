@@ -15,10 +15,6 @@
 #include "music_unity.h"
 #include "music_you.h"
 
-#ifndef __weak
-#define __weak __attribute__((weak))
-#endif /* __weak */
-
 #define STEP_INIT 1
 #define STEP_NORMAL 2
 

@@ -19,6 +19,7 @@
 
 #include "gimbal_task.h"
 
+#include "attribute_typedef.h"
 #include "cmsis_os.h"
 #include "gimbal.h"
 #include "gimbal_yaw_pitch_direct.h"
@@ -26,10 +27,6 @@
 #if INCLUDE_uxTaskGetStackHighWaterMark
 uint32_t gimbal_high_water;
 #endif
-
-#ifndef __weak
-#define __weak __attribute__((weak))
-#endif /* __weak */
 
 __weak void GimbalPublish(void);
 __weak void GimbalInit(void);

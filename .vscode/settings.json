@@ -111,7 +111,8 @@
         "vector": "c",
         "stdlib.h": "c",
         "music_error.h": "c",
-        "calibrate.h": "c"
+        "calibrate.h": "c",
+        "attribute_typedef.h": "c"
     },
     "C_Cpp.codeAnalysis.clangTidy.enabled": true,
     "[cpp]": {
