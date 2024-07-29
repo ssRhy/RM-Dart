@@ -42,7 +42,11 @@
 #define TUNING_CHASSIS  1
 #define TUNING_GIMBAL   2
 #define TUNING_SHOOT    3
-// clang-format on
+
+// 校准数据来源
+#define CALI_FROM_FLASH 1
+#define CALI_FROM_USB   2
+#define CALI_FROM_CODE  3
 
 // 可用电机类型
 typedef enum __MotorType {
@@ -53,5 +57,7 @@ typedef enum __MotorType {
     DM_8009,
     MF_9025,
 } MotorType_e;
+// clang-format on
 
 #endif /* ROBOT_TYPEDEF_H */
+/*------------------------------ End of File ------------------------------*/
