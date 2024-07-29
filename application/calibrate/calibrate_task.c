@@ -63,13 +63,16 @@
 #include "bsp_buzzer.h"
 #include "bsp_flash.h"
 #include "calibrate.h"
+#include "chassis_task.h"
 #include "cmsis_os.h"
 #include "data_exchange.h"
+#include "gimbal_task.h"
 #include "remote_control.h"
 
 //include head,gimbal,gyro,accel,mag. gyro,accel and mag have the same data struct. total 5(CALI_LIST_LENGHT) devices, need data lenght + 5 * 4 bytes(name[3]+cali)
-#define FLASH_WRITE_BUF_LENGHT \
-    (sizeof(head_cali_t) + sizeof(gimbal_cali_t) + sizeof(imu_cali_t) * 3 + CALI_LIST_LENGHT * 4)
+#define FLASH_WRITE_BUF_LENGHT                                              \
+    (sizeof(head_cali_t) + sizeof(gimbal_cali_t) + sizeof(imu_cali_t) * 3 + \
+     sizeof(chassis_cali_t) + CALI_LIST_LENGHT * 4)
 
 #define CheckRcCaliValue(sign0, sign1, sign2, sign3)                                   \
     (switch_is_down(calibrate_RC->rc.s[0]) && switch_is_down(calibrate_RC->rc.s[1]) && \
@@ -86,12 +89,13 @@ static gimbal_cali_t gimbal_cali;       //gimbal cali data
 static imu_cali_t accel_cali;           //accel cali data
 static imu_cali_t gyro_cali;            //gyro cali data
 static imu_cali_t mag_cali;             //mag cali data
+static chassis_cali_t chassis_cali;     //chassis cali data
 
 static uint8_t flash_write_buf[FLASH_WRITE_BUF_LENGHT];
 
 cali_sensor_t cali_sensor[CALI_LIST_LENGHT];
 
-static const uint8_t cali_name[CALI_LIST_LENGHT][3] = {"HD", "GM", "GYR", "ACC", "MAG"};
+static const uint8_t cali_name[CALI_LIST_LENGHT][3] = {"HD", "GM", "GYR", "ACC", "MAG", "CHS"};
 
 //cali data address
 static uint32_t * cali_sensor_buf[CALI_LIST_LENGHT] = {
@@ -100,7 +104,8 @@ static uint32_t * cali_sensor_buf[CALI_LIST_LENGHT] = {
     (uint32_t *)&gimbal_cali,
     (uint32_t *)&gyro_cali,
     (uint32_t *)&accel_cali,
-    (uint32_t *)&mag_cali
+    (uint32_t *)&mag_cali,
+    (uint32_t *)&chassis_cali
     // clang-format on
 };
 static uint8_t cali_sensor_size[CALI_LIST_LENGHT] = {
@@ -109,11 +114,12 @@ static uint8_t cali_sensor_size[CALI_LIST_LENGHT] = {
     sizeof(gimbal_cali_t) / 4, 
     sizeof(imu_cali_t) / 4, 
     sizeof(imu_cali_t) / 4,
-    sizeof(imu_cali_t) / 4
+    sizeof(imu_cali_t) / 4,
+    sizeof(chassis_cali_t) / 4
     // clang-format on
 };
-// void *cali_hook_fun[CALI_LIST_LENGHT] = {cali_gimbal_hook, cali_gyro_hook, NULL, NULL};
-void * cali_hook_fun[CALI_LIST_LENGHT] = {NULL, NULL, NULL, NULL, NULL};
+// void *cali_hook_fun[CALI_LIST_LENGHT] = {cali_head_hook, cali_gimbal_hook, cali_gyro_hook, NULL, NULL, cali_chassis_hook};
+void * cali_hook_fun[CALI_LIST_LENGHT] = {NULL, NULL, NULL, NULL, NULL, NULL};
 
 static uint32_t calibrate_systemTick;
 
@@ -128,6 +134,7 @@ static CaliBuzzerState_e cali_buzzer_state = CALI_BUZZER_OFF;
 bool_t cali_head_hook(uint32_t * cali, bool_t cmd);
 bool_t cali_gimbal_hook(uint32_t * cali, bool_t cmd);
 bool_t cali_gyro_hook(uint32_t * cali, bool_t cmd);
+bool_t cali_chassis_hook(uint32_t * cali, bool_t cmd);
 
 /*******************************************************************************/
 /* RC Cmd Function                                                             */
@@ -240,28 +247,17 @@ bool_t cali_head_hook(uint32_t * cali, bool_t cmd)
   */
 bool_t cali_gimbal_hook(uint32_t * cali, bool_t cmd)
 {
-    //gimbal_cali_t *local_cali_t = (gimbal_cali_t *)cali;
+    gimbal_cali_t * local_cali_t = (gimbal_cali_t *)cali;
     if (cmd == CALI_FUNC_CMD_INIT) {
-        // set_cali_gimbal_hook(local_cali_t->yaw_offset, local_cali_t->pitch_offset,
-        //                      local_cali_t->yaw_max_angle, local_cali_t->yaw_min_angle,
-        //                      local_cali_t->pitch_max_angle, local_cali_t->pitch_min_angle);
+        set_cali_gimbal_hook(
+            local_cali_t->yaw_middle, local_cali_t->pitch_horizontal, local_cali_t->pitch_max_angle,
+            local_cali_t->pitch_min_angle);
 
         return 0;
     } else if (cmd == CALI_FUNC_CMD_ON) {
-        // if (cmd_cali_gimbal_hook(&local_cali_t->yaw_offset, &local_cali_t->pitch_offset,
-        //                          &local_cali_t->yaw_max_angle, &local_cali_t->yaw_min_angle,
-        //                          &local_cali_t->pitch_max_angle, &local_cali_t->pitch_min_angle))
-        // {
-        //     cali_buzzer_off();
-
-        //     return 1;
-        // }
-        // else
-        // {
-        //     gimbal_start_buzzer();
-
-        //     return 0;
-        // }
+        return cmd_cali_gimbal_hook(
+            &local_cali_t->yaw_middle, &local_cali_t->pitch_horizontal,
+            &local_cali_t->pitch_max_angle, &local_cali_t->pitch_min_angle);
     }
 
     return 0;
@@ -297,6 +293,29 @@ bool_t cali_gyro_hook(uint32_t * cali, bool_t cmd)
 
             return 0;
         }
+    }
+
+    return 0;
+}
+
+/**
+  * @brief          底盘设备校准
+  * @param[in][out] cali:指针指向底盘数据,当cmd为CALI_FUNC_CMD_INIT, 参数是输入,CALI_FUNC_CMD_ON,参数是输出
+  * @param[in]      cmd: 
+                    CALI_FUNC_CMD_INIT: 代表用校准数据初始化原始数据
+                    CALI_FUNC_CMD_ON: 代表需要校准
+  * @retval         0:校准任务还没有完
+                    1:校准任务已经完成
+  */
+bool_t cali_chassis_hook(uint32_t * cali, bool_t cmd)
+{
+    chassis_cali_t * local_cali_t = (chassis_cali_t *)cali;
+    if (cmd == CALI_FUNC_CMD_INIT) {
+        set_cali_chassis_hook(local_cali_t->motor_middle);
+
+        return 0;
+    } else if (cmd == CALI_FUNC_CMD_ON) {
+        return cmd_cali_chassis_hook(local_cali_t->motor_middle);
     }
 
     return 0;
@@ -350,10 +369,7 @@ static void RC_cmd_to_calibrate(void)
         rc_cmd_systemTick = xTaskGetTickCount();
         cali_state_flag = FLAG_BEGIN;
         rc_cmd_time = 0;
-    } else if (
-        rc_action_flag == FLAG_NONE ||
-        (cali_state_flag > FLAG_NONE && rc_action_flag == FLAG_TOGGLE &&
-         rc_cmd_time > RC_CMD_LONG_TIME)) {
+    } else if (rc_action_flag == FLAG_NONE) {
         // 退出校准模式
         cali_state_flag = FLAG_NONE;
         rc_cmd_time = 0;
@@ -480,10 +496,6 @@ static void cali_data_read(void)
         cali_sensor[i].cali_done = flash_read_buf[3];
 
         offset += CALI_SENSOR_HEAD_LEGHT * 4;
-
-        if (cali_sensor[i].cali_done != CALIED_FLAG && cali_sensor[i].cali_hook != NULL) {
-            cali_sensor[i].cali_cmd = 1;
-        }
     }
 }
 

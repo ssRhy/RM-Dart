@@ -127,3 +127,71 @@ __weak void GimbalSendCmd(void)
      NOTE : 在其他文件中定义具体内容
     */
 }
+
+/*------------------------------ Calibrate Function ------------------------------*/
+
+/**
+  * @brief          设置云台校准值，将云台的校准数据设置为传入的校准值
+  * @param[in]      yaw_middle:yaw 中值
+  * @param[in]      pitch_horizontal:pitch 水平值
+  * @param[in]      max_yaw:pitch 最大角度
+  * @param[in]      min_yaw:pitch 最小角度
+  * @retval         返回空
+  * @note           云台任务内部调用的函数
+  */
+__weak void GimbalSetCaliData(
+    const fp32 yaw_middle, const fp32 pitch_horizontal, const fp32 max_pitch, const fp32 min_pitch)
+{
+    /* 
+     NOTE : 在其他文件中定义具体内容
+    */
+}
+
+/**
+  * @brief          云台校准计算，将校准记录的中值,最大 最小值返回
+  * @param[out]      yaw_middle:yaw 中值 指针
+  * @param[out]      pitch_horizontal:pitch 水平值 指针
+  * @param[out]      max_yaw:pitch 最大角度 指针
+  * @param[out]      min_yaw:pitch 最小角度 指针
+  * @retval         返回空
+  * @note           云台任务内部调用的函数
+  */
+__weak bool_t
+GimbalCmdCali(fp32 * yaw_middle, fp32 * pitch_horizontal, fp32 * max_pitch, fp32 * min_pitch)
+{
+    /* 
+     NOTE : 在其他文件中定义具体内容
+    */
+    return 1;
+}
+
+/**
+  * @brief          云台校准设置，将校准的云台中值以及最小最大机械相对角度
+  * @param[in]      yaw_middle:yaw 中值
+  * @param[in]      pitch_horizontal:pitch 水平值
+  * @param[in]      max_yaw:pitch 最大角度
+  * @param[in]      min_yaw:pitch 最小角度
+  * @retval         返回空
+  * @note           提供给校准任务调用的钩子函数
+  */
+void set_cali_gimbal_hook(
+    const fp32 yaw_middle, const fp32 pitch_horizontal, const fp32 max_pitch, const fp32 min_pitch)
+{
+    GimbalSetCaliData(yaw_middle, pitch_horizontal, max_pitch, min_pitch);
+}
+
+/**
+  * @brief          云台校准计算，将校准记录的中值,最大 最小值返回
+  * @param[out]     yaw_middle:yaw 中值 指针
+  * @param[out]     pitch_horizontal:pitch 水平值 指针
+  * @param[out]     max_yaw:pitch 最大角度 指针
+  * @param[out]     min_yaw:pitch 最小角度 指针
+  * @retval         返回1 代表成功校准完毕， 返回0 代表未校准完
+  * @note           提供给校准任务调用的钩子函数
+  */
+bool_t cmd_cali_gimbal_hook(
+    fp32 * yaw_middle, fp32 * pitch_horizontal, fp32 * max_pitch, fp32 * min_pitch)
+{
+    return GimbalCmdCali(yaw_middle, pitch_horizontal, max_pitch, min_pitch);
+}
+/*------------------------------ End of File ------------------------------*/

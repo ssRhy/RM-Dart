@@ -58,18 +58,19 @@ typedef enum {
     CALI_GYRO,
     CALI_ACC,
     CALI_MAG,
+    CALI_CHASSIS,
     //add more...
     CALI_LIST_LENGHT,
 } cali_id_e;
 
 typedef struct
 {
-    uint8_t name[3];                                    //device name
-    uint8_t cali_done;                                  //0x55 means has been calibrated
-    uint8_t flash_len : 7;                              //buf lenght
-    uint8_t cali_cmd : 1;                               //1 means to run cali hook function,
-    uint32_t * flash_buf;                               //link to device calibration data
-    bool_t (*cali_hook)(uint32_t * point, bool_t cmd);  //cali function
+    uint8_t name[3];                                    // 设备名称
+    uint8_t cali_done;                                  // 0x55 表示已经校准过
+    uint8_t flash_len : 7;                              // 缓冲区长度
+    uint8_t cali_cmd : 1;                               // 1 表示运行校准钩子函数
+    uint32_t * flash_buf;                               // 指向设备校准数据的链接
+    bool_t (*cali_hook)(uint32_t * point, bool_t cmd);  // 校准函数的钩子函数
 } __attribute__((packed)) cali_sensor_t;
 
 //header device (固件信息)
@@ -88,8 +89,8 @@ typedef struct
 //gimbal device (云台设备)
 typedef struct
 {
-    fp32 yaw_offset;
-    fp32 pitch_offset;
+    fp32 yaw_middle;
+    fp32 pitch_horizontal;
     fp32 pitch_max_angle;
     fp32 pitch_min_angle;
 } gimbal_cali_t;
@@ -100,6 +101,12 @@ typedef struct
     fp32 offset[3];  //x,y,z
     fp32 scale[3];   //x,y,z
 } imu_cali_t;
+
+//chassis device (底盘设备)
+typedef struct
+{
+    fp32 motor_middle[4];  // 电机中值
+} chassis_cali_t;
 
 extern bool_t cali_head_hook(uint32_t * cali, bool_t cmd);
 extern bool_t cali_gimbal_hook(uint32_t * cali, bool_t cmd);
