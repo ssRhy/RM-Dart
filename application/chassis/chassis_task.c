@@ -19,6 +19,7 @@
   */
 #include "chassis_task.h"
 
+#include "attribute_typedef.h"
 #include "chassis.h"
 #include "chassis_balance.h"
 #include "chassis_mecanum.h"
@@ -37,10 +38,6 @@
 #if INCLUDE_uxTaskGetStackHighWaterMark
 uint32_t chassis_high_water;
 #endif
-
-#ifndef __weak
-#define __weak __attribute__((weak))
-#endif /* __weak */
 
 __weak void ChassisPublish(void);
 __weak void ChassisInit(void);

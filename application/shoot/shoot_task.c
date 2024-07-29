@@ -21,14 +21,11 @@
 #include "cmsis_os.h"
 #include "shoot.h"
 #include "shoot_fric_trigger.h"
+#include "attribute_typedef.h"
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
 uint32_t shoot_high_water;
 #endif
-
-#ifndef __weak
-#define __weak __attribute__((weak))
-#endif /* __weak */
 
 __weak void ShootPublish(void);
 __weak void ShootInit(void);

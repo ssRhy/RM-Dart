@@ -3,10 +3,10 @@
 
 // 定义一些常用的属性宏，用于定义函数、变量、结构体等的属性。
 
-#ifndef __packed
+#ifndef __packed__
 /// @brief 取消结构体成员之间的对齐，使结构体紧凑排列。
 /// @note 注意和ARMCC编译器中自带的`__packed`关键字使用方法不太一样。
-#define __packed __attribute__((packed))
+#define __packed__ __attribute__((packed))
 #endif
 
 #ifndef __aligned

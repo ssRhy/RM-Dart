@@ -18,10 +18,7 @@
 
 #include "cmsis_os.h"
 #include "custom_controller.h"
-
-#ifndef __weak
-#define __weak __attribute__((weak))
-#endif /* __weak */
+#include "attribute_typedef.h"
 
 __weak void CustomControllerPublish(void);
 __weak void CustomControllerInit(void);
