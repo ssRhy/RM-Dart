@@ -145,11 +145,8 @@ void usb_task(void const * argument)
     UsbInit();
 
     while (1) {
-        ModifyDebugDataPackage(0, IMU->yaw, "yaw");
-        ModifyDebugDataPackage(1, (SEND_DATA_IMU.time_stamp/10) % 1000, "data1");
-        ModifyDebugDataPackage(2, ROBOT_CMD_DATA.speed_vector.vx, "vx_set");
-        ModifyDebugDataPackage(3, ROBOT_CMD_DATA.speed_vector.vy, "vy_set");
-        ModifyDebugDataPackage(4, ROBOT_CMD_DATA.gimbal.pitch, "pitch");
+        ModifyDebugDataPackage(0, ROBOT_CMD_DATA.gimbal.pitch, "pitch");
+
 
         UsbSendData();
         UsbReceiveData();

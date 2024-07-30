@@ -7,6 +7,7 @@
 #include "signal_generator.h"
 #include "usb_debug.h"
 #include "user_lib.h"
+#include "stm32f4xx_hal.h"
 
 const Imu_t * imu;
 
@@ -19,9 +20,8 @@ void develop_task(void const * pvParameters)
 
     while (1) {
         // code here
-        // ModifyDebugDataPackage(0, imu->yaw, "yaw");
-        // ModifyDebugDataPackage(1, imu->pitch, "pitch");
-        // ModifyDebugDataPackage(2, imu->pitch, "roll");
+        ModifyDebugDataPackage(1, imu->yaw, "yaw");
+        ModifyDebugDataPackage(2, (HAL_GetTick()/10) % 1000, "data1");
 
         vTaskDelay(1);
     }
