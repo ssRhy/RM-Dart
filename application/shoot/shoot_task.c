@@ -18,10 +18,10 @@
 
 #include "shoot_task.h"
 
+#include "attribute_typedef.h"
 #include "cmsis_os.h"
 #include "shoot.h"
 #include "shoot_fric_trigger.h"
-#include "attribute_typedef.h"
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
 uint32_t shoot_high_water;
@@ -65,6 +65,10 @@ void shoot_task(void const * pvParameters)
 
         // 系统延时
         vTaskDelay(SHOOT_CONTROL_TIME);
+
+#if INCLUDE_uxTaskGetStackHighWaterMark
+        shoot_high_water = uxTaskGetStackHighWaterMark(NULL);
+#endif
     }
 }
 

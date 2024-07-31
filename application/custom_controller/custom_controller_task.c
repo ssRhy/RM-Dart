@@ -16,9 +16,13 @@
   */
 #include "custom_controller_task.h"
 
+#include "attribute_typedef.h"
 #include "cmsis_os.h"
 #include "custom_controller.h"
-#include "attribute_typedef.h"
+
+#if INCLUDE_uxTaskGetStackHighWaterMark
+uint32_t custom_controller_high_water;
+#endif
 
 __weak void CustomControllerPublish(void);
 __weak void CustomControllerInit(void);
@@ -57,6 +61,10 @@ void custom_controller_task(void const * pvParameters)
 
         // 系统延时
         vTaskDelay(CUSTOM_CONTROLLER_CONTROL_TIME);
+
+#if INCLUDE_uxTaskGetStackHighWaterMark
+        custom_controller_high_water = uxTaskGetStackHighWaterMark(NULL);
+#endif
     }
 }
 

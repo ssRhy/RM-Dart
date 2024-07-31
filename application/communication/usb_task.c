@@ -29,6 +29,10 @@
 #include "usbd_cdc_if.h"
 #include "usbd_conf.h"
 
+#if INCLUDE_uxTaskGetStackHighWaterMark
+uint32_t usb_high_water;
+#endif
+
 #define USB_TASK_CONTROL_TIME 1  // ms
 
 #define USB_OFFLINE_THRESHOLD 100  // ms
@@ -145,11 +149,7 @@ void usb_task(void const * argument)
     UsbInit();
 
     while (1) {
-        ModifyDebugDataPackage(0, IMU->yaw, "yaw");
-        ModifyDebugDataPackage(1, (SEND_DATA_IMU.time_stamp/10) % 1000, "data1");
-        ModifyDebugDataPackage(2, ROBOT_CMD_DATA.speed_vector.vx, "vx_set");
-        ModifyDebugDataPackage(3, ROBOT_CMD_DATA.speed_vector.vy, "vy_set");
-        ModifyDebugDataPackage(4, ROBOT_CMD_DATA.gimbal.pitch, "pitch");
+        ModifyDebugDataPackage(0, ROBOT_CMD_DATA.gimbal.pitch, "pitch");
 
         UsbSendData();
         UsbReceiveData();
@@ -165,6 +165,10 @@ void usb_task(void const * argument)
         }
 
         vTaskDelay(USB_TASK_CONTROL_TIME);
+
+#if INCLUDE_uxTaskGetStackHighWaterMark
+        usb_high_water = uxTaskGetStackHighWaterMark(NULL);
+#endif
     }
 }
 

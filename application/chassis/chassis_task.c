@@ -26,6 +26,7 @@
 #include "chassis_omni.h"
 #include "chassis_steering.h"
 #include "cmsis_os.h"
+#include "usb_debug.h"
 
 #ifndef CHASSIS_TASK_INIT_TIME
 #define CHASSIS_TASK_INIT_TIME 357
@@ -79,6 +80,7 @@ void chassis_task(void const * pvParameters)
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
         chassis_high_water = uxTaskGetStackHighWaterMark(NULL);
+        ModifyDebugDataPackage(3, chassis_high_water, "ch_stack");
 #endif
     }
 }

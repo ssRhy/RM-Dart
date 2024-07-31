@@ -69,6 +69,10 @@
 #include "gimbal_task.h"
 #include "remote_control.h"
 
+#if INCLUDE_uxTaskGetStackHighWaterMark
+uint32_t calibrate_high_water;
+#endif
+
 //include head,gimbal,gyro,accel,mag. gyro,accel and mag have the same data struct. total 5(CALI_LIST_LENGHT) devices, need data lenght + 5 * 4 bytes(name[3]+cali)
 #define FLASH_WRITE_BUF_LENGHT                                              \
     (sizeof(head_cali_t) + sizeof(gimbal_cali_t) + sizeof(imu_cali_t) * 3 + \
@@ -192,6 +196,10 @@ void calibrate_task(void const * pvParameters)
         }
 
         vTaskDelay(CALIBRATE_CONTROL_TIME);
+
+#if INCLUDE_uxTaskGetStackHighWaterMark
+        calibrate_high_water = uxTaskGetStackHighWaterMark(NULL);
+#endif
     }
 }
 

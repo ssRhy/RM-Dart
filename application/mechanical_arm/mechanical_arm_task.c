@@ -63,6 +63,10 @@ void mechanical_arm_task(void const * pvParameters)
 
         // 系统延时
         vTaskDelay(MECHANICAL_ARM_CONTROL_TIME);
+
+#if INCLUDE_uxTaskGetStackHighWaterMark
+        mechanical_arm_high_water = uxTaskGetStackHighWaterMark(NULL);
+#endif
     }
 }
 
