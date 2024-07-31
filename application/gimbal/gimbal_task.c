@@ -66,6 +66,10 @@ void gimbal_task(void const * pvParameters)
         GimbalSendCmd();
         // 系统延时
         vTaskDelay(GIMBAL_CONTROL_TIME);
+
+#if INCLUDE_uxTaskGetStackHighWaterMark
+        gimbal_high_water = uxTaskGetStackHighWaterMark(NULL);
+#endif
     }
 }
 
