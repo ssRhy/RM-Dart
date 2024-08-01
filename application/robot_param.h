@@ -40,4 +40,25 @@
 #define __USB_SEND_RC 1     // 发送遥控器数据
 #define __USB_SEND_DEBUG 1  // 发送DEBUG数据
 
+// 模块检查
+#ifndef CHASSIS_TYPE
+#define CHASSIS_TYPE CHASSIS_NONE
+#endif
+
+#ifndef GIMBAL_TYPE
+#define GIMBAL_TYPE GIMBAL_NONE
+#endif
+
+#ifndef SHOOT_TYPE
+#define SHOOT_TYPE SHOOT_NONE
+#endif
+
+#ifndef MECHANICAL_ARM_TYPE
+#define MECHANICAL_ARM_TYPE MECHANICAL_ARM_NONE
+#endif
+
+#ifndef CUSTOM_CONTROLLER_TYPE
+#define CUSTOM_CONTROLLER_TYPE CUSTOM_CONTROLLER_NONE
+#endif
+
 #endif /* ROBOT_PARAM_H */
