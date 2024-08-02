@@ -3,6 +3,7 @@
 
 #include "struct_typedef.h"
 #include "attribute_typedef.h"
+#include "remote_control.h"
 
 #define DEBUG_PACKAGE_NUM 10
 
@@ -325,4 +326,22 @@ typedef struct
 
     uint16_t crc;
 } __packed__ ReceiveDataPidDebug_s;
+
+// 虚拟遥控器数据包
+typedef struct
+{
+    struct
+    {
+        uint8_t sof;  // 数据帧起始字节，固定值为 0x5A
+        uint8_t len;  // 数据段长度
+        uint8_t id;   // 数据段id = 0x03
+        uint8_t crc;  // 数据帧头的 CRC8 校验
+    } __packed__ frame_header;
+
+    uint32_t time_stamp;
+
+    RC_ctrl_t data;
+
+    uint16_t crc;
+} __packed__ ReceiveDataVirtualRc_s;
 #endif  // USB_TYPEDEF_H
