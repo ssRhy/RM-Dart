@@ -7,6 +7,8 @@
 
 #define DEBUG_PACKAGE_NUM 10
 
+#define DATA_DOMAIN_OFFSET 0x08
+
 // clang-format off
 #define SEND_SOF    ((uint8_t)0x5A)
 #define RECEIVE_SOF ((uint8_t)0x5A)
@@ -21,6 +23,7 @@
 
 #define ROBOT_CMD_DATA_RECEIVE_ID  ((uint8_t)0x01)
 #define PID_DEBUG_DATA_RECEIVE_ID  ((uint8_t)0x02)
+#define VIRTUAL_RC_DATA_RECEIVE_ID ((uint8_t)0x03)
 // clang-format on
 
 /*-------------------- Send --------------------*/

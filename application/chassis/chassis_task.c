@@ -80,7 +80,6 @@ void chassis_task(void const * pvParameters)
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
         chassis_high_water = uxTaskGetStackHighWaterMark(NULL);
-        ModifyDebugDataPackage(3, chassis_high_water, "ch_stack");
 #endif
     }
 }

@@ -24,8 +24,8 @@ void develop_task(void const * pvParameters)
 
     while (1) {
         // code here
-        ModifyDebugDataPackage(1, imu->yaw, "yaw");
-        ModifyDebugDataPackage(2, (HAL_GetTick() / 10) % 1000, "data1");
+        // ModifyDebugDataPackage(1, imu->yaw, "yaw");
+        // ModifyDebugDataPackage(2, (HAL_GetTick() / 10) % 1000, "data1");
 
         vTaskDelay(1);
 

@@ -86,9 +86,11 @@ static SendDataRobotMotion_s SEND_ROBOT_MOTION_DATA;
 // 数据接收结构体
 static ReceiveDataRobotCmd_s RECEIVE_ROBOT_CMD_DATA;
 static ReceiveDataPidDebug_s RECEIVE_PID_DEBUG_DATA;
+static ReceiveDataVirtualRc_s RECEIVE_VIRTUAL_RC_DATA;
 
 // 机器人控制指令数据
 static RobotCmdData_t ROBOT_CMD_DATA;
+static RC_ctrl_t VIRTUAL_RC_CTRL;
 
 // 发送数据间隔时间
 typedef struct
@@ -127,6 +129,7 @@ static void UsbSendRobotMotionData(void);
 /*******************************************************************************/
 
 static void GetCmdData(void);
+static void GetVirtualRcCtrlData(void);
 
 /******************************************************************/
 /* Task                                                           */
@@ -143,6 +146,7 @@ void usb_task(void const * argument)
 
     Publish(&ROBOT_CMD_DATA, "ROBOT_CMD_DATA");
     Publish(&USB_OFFLINE, "usb_offline");
+    Publish(&VIRTUAL_RC_CTRL, "virtual_rc_ctrl");
 
     vTaskDelay(10);  //等待USB设备初始化完成
 
@@ -151,9 +155,18 @@ void usb_task(void const * argument)
     while (1) {
         ModifyDebugDataPackage(0, ROBOT_CMD_DATA.gimbal.pitch, "pitch");
 
+        ModifyDebugDataPackage(1, VIRTUAL_RC_CTRL.rc.ch[0], "ch0");
+        ModifyDebugDataPackage(2, VIRTUAL_RC_CTRL.rc.ch[1], "ch1");
+        ModifyDebugDataPackage(3, VIRTUAL_RC_CTRL.rc.ch[2], "ch2");
+        ModifyDebugDataPackage(4, VIRTUAL_RC_CTRL.rc.ch[3], "ch3");
+        ModifyDebugDataPackage(5, VIRTUAL_RC_CTRL.rc.ch[4], "ch4");
+        ModifyDebugDataPackage(6, VIRTUAL_RC_CTRL.rc.s[0], "s0");
+        ModifyDebugDataPackage(7, VIRTUAL_RC_CTRL.rc.s[1], "s1");
+
         UsbSendData();
         UsbReceiveData();
         GetCmdData();
+        GetVirtualRcCtrlData();
 
         if (HAL_GetTick() - RECEIVE_TIME > USB_OFFLINE_THRESHOLD) {
             USB_OFFLINE = true;
@@ -189,6 +202,11 @@ static void UsbInit(void)
 
     // 数据置零
     memset(&LAST_SEND_TIME, 0, sizeof(LastSendTime_t));
+    memset(&RECEIVE_ROBOT_CMD_DATA, 0, sizeof(ReceiveDataRobotCmd_s));
+    memset(&RECEIVE_PID_DEBUG_DATA, 0, sizeof(ReceiveDataPidDebug_s));
+    memset(&RECEIVE_VIRTUAL_RC_DATA, 0, sizeof(ReceiveDataVirtualRc_s));
+    memset(&ROBOT_CMD_DATA, 0, sizeof(RobotCmdData_t));
+    memset(&VIRTUAL_RC_CTRL, 0, sizeof(RC_ctrl_t));
 
     // 1.初始化调试数据包
     // 帧头部分
@@ -316,6 +334,10 @@ static void UsbReceiveData(void)
                     } break;
                     case PID_DEBUG_DATA_RECEIVE_ID: {
                         memcpy(&RECEIVE_PID_DEBUG_DATA, sof_address, sizeof(ReceiveDataPidDebug_s));
+                    } break;
+                    case VIRTUAL_RC_DATA_RECEIVE_ID: {
+                        memcpy(
+                            &RECEIVE_VIRTUAL_RC_DATA, sof_address, sizeof(ReceiveDataVirtualRc_s));
                     } break;
                     default:
                         break;
@@ -484,6 +506,11 @@ static void GetCmdData(void)
     ROBOT_CMD_DATA.shoot.fric_on = RECEIVE_ROBOT_CMD_DATA.data.shoot.fric_on;
 }
 
+static void GetVirtualRcCtrlData(void)
+{
+    memcpy(&VIRTUAL_RC_CTRL, &RECEIVE_VIRTUAL_RC_DATA.data, sizeof(RC_ctrl_t));
+}
+
 /*******************************************************************************/
 /* Public Function                                                             */
 /*******************************************************************************/
@@ -497,7 +524,10 @@ static void GetCmdData(void)
 void ModifyDebugDataPackage(uint8_t index, float data, const char * name)
 {
     SEND_DATA_DEBUG.packages[index].data = data;
-    SEND_DATA_DEBUG.packages[index].type = 1;
+
+    if(SEND_DATA_DEBUG.packages[index].name[0] != '\0') {
+        return;
+    }
 
     uint8_t i = 0;
     while (name[i] != '\0' && i < 10) {
