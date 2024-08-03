@@ -35,9 +35,6 @@
 #define __CALI_DATA_FROM CALI_FROM_FLASH  // 校准数据来源(部分flash损坏的C板需要采用其他数据源)
 
 // USB通信的部分选项
-#define __USING_OLD_USB 0   // 使用旧版USB通信
-#define __USB_SEND_IMU 1    // 发送IMU数据
-#define __USB_SEND_RC 1     // 发送遥控器数据
 #define __USB_SEND_DEBUG 1  // 发送DEBUG数据
 
 // 模块检查

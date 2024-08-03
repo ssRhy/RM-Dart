@@ -80,7 +80,6 @@ void chassis_task(void const * pvParameters)
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
         chassis_high_water = uxTaskGetStackHighWaterMark(NULL);
-        ModifyDebugDataPackage(3, chassis_high_water, "ch_stack");
 #endif
     }
 }
@@ -160,7 +159,18 @@ __weak bool_t ChassisCmdCali(fp32 motor_middle[4])
     /* 
      NOTE : 在其他文件中定义具体内容
     */
-    return 1;
+    static uint32_t cnt = 0;
+    cnt++;
+    if (cnt > 1000) {
+        motor_middle[0] = 0.0f;
+        motor_middle[1] = 0.0f;
+        motor_middle[2] = 0.0f;
+        motor_middle[3] = 0.0f;
+        cnt = 0;
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 /**

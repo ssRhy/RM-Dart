@@ -223,7 +223,7 @@ static Imu_t IMU_DATA = {
 void IMU_task(void const * pvParameters)
 {
     // 发布IMU数据
-    Publish(&IMU_DATA, "imu_data");
+    Publish(&IMU_DATA, IMU_NAME);
 
     // clang-format off
     //wait a time
@@ -485,22 +485,14 @@ static void imu_temp_control(fp32 temp)
 }
 
 /**
-  * @brief          calculate gyro zero drift
-  * @param[out]     gyro_offset:zero drift
-  * @param[in]      gyro:gyro data
-  * @param[out]     offset_time_count: +1 auto
-  * @retval         none
-  */
-/**
   * @brief          计算陀螺仪零漂
   * @param[out]     gyro_offset:计算零漂
   * @param[in]      gyro:角速度数据
-  * @param[out]     offset_time_count: 自动加1
   * @retval         none
   */
-void gyro_offset_calc(fp32 gyro_offset[3], fp32 gyro[3], uint16_t *offset_time_count)
+void gyro_offset_calc(fp32 gyro_offset[3], fp32 gyro[3])
 {
-    if (gyro_offset == NULL || gyro == NULL || offset_time_count == NULL)
+    if (gyro_offset == NULL || gyro == NULL)
     {
         return;
     }
@@ -508,24 +500,16 @@ void gyro_offset_calc(fp32 gyro_offset[3], fp32 gyro[3], uint16_t *offset_time_c
         gyro_offset[0] = gyro_offset[0] - 0.0003f * gyro[0];
         gyro_offset[1] = gyro_offset[1] - 0.0003f * gyro[1];
         gyro_offset[2] = gyro_offset[2] - 0.0003f * gyro[2];
-        (*offset_time_count)++;
 }
 
-/**
-  * @brief          calculate gyro zero drift
-  * @param[out]     cali_scale:scale, default 1.0
-  * @param[out]     cali_offset:zero drift, collect the gyro ouput when in still
-  * @param[out]     time_count: time, when call gyro_offset_calc 
-  * @retval         none
-  */
 /**
   * @brief          校准陀螺仪
   * @param[out]     陀螺仪的比例因子，1.0f为默认值，不修改
   * @param[out]     陀螺仪的零漂，采集陀螺仪的静止的输出作为offset
-  * @param[out]     陀螺仪的时刻，每次在gyro_offset调用会加1,
+  * @param[out]     陀螺仪的时刻
   * @retval         none
   */
-void INS_cali_gyro(fp32 cali_scale[3], fp32 cali_offset[3], uint16_t *time_count)
+void INS_cali_gyro(fp32 cali_scale[3], fp32 cali_offset[3], uint32_t *time_count)
 {
         if( *time_count == 0)
         {
@@ -533,7 +517,7 @@ void INS_cali_gyro(fp32 cali_scale[3], fp32 cali_offset[3], uint16_t *time_count
             gyro_offset[1] = gyro_cali_offset[1];
             gyro_offset[2] = gyro_cali_offset[2];
         }
-        gyro_offset_calc(gyro_offset, INS_gyro, time_count);
+        gyro_offset_calc(gyro_offset, INS_gyro);
 
         cali_offset[0] = gyro_offset[0];
         cali_offset[1] = gyro_offset[1];

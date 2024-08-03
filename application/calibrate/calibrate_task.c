@@ -22,7 +22,7 @@
   *             0x080A0008: 名字name[0]
   *             0x080A0009: 名字name[1]
   *             0x080A000A: 名字name[2]
-  *             0x080A000B: 校准标志位 cali_flag,当校准标志位为0x55,意味着head_cali已经校准了
+  *             0x080A000B: 校准标志位 cali_flag,当校准标志位为0xAA,意味着head_cali已经校准了
   *
   *         添加新设备
   *             1.添加设备名在calibrate_task.h的cali_id_e, 像
@@ -68,6 +68,7 @@
 #include "data_exchange.h"
 #include "gimbal_task.h"
 #include "remote_control.h"
+#include "usb_debug.h"
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
 uint32_t calibrate_high_water;
@@ -122,23 +123,22 @@ static uint8_t cali_sensor_size[CALI_LIST_LENGHT] = {
     sizeof(chassis_cali_t) / 4
     // clang-format on
 };
-// void *cali_hook_fun[CALI_LIST_LENGHT] = {cali_head_hook, cali_gimbal_hook, cali_gyro_hook, NULL, NULL, cali_chassis_hook};
-void * cali_hook_fun[CALI_LIST_LENGHT] = {NULL, NULL, NULL, NULL, NULL, NULL};
+// clang-format off
+void * cali_hook_fun[CALI_LIST_LENGHT] = {cali_head_hook,
+                                          cali_gimbal_hook,
+                                          cali_gyro_hook,
+                                          NULL,
+                                          NULL,
+                                          cali_chassis_hook};
+// clang-format on
 
 static uint32_t calibrate_systemTick;
+static uint32_t deltaTick = 0;
+static uint32_t lastTick = 0;
 
 static CaliBuzzerState_e cali_buzzer_state = CALI_BUZZER_OFF;
 
 /*------------------------------ Function Declaration ------------------------------*/
-
-/*******************************************************************************/
-/* Hook Function                                                               */
-/*******************************************************************************/
-
-bool_t cali_head_hook(uint32_t * cali, bool_t cmd);
-bool_t cali_gimbal_hook(uint32_t * cali, bool_t cmd);
-bool_t cali_gyro_hook(uint32_t * cali, bool_t cmd);
-bool_t cali_chassis_hook(uint32_t * cali, bool_t cmd);
 
 /*******************************************************************************/
 /* RC Cmd Function                                                             */
@@ -169,11 +169,16 @@ void calibrate_task(void const * pvParameters)
 {
     static uint8_t i = 0;
 
-    Publish(&cali_buzzer_state, "CaliBuzzerState");
+    Publish(&cali_buzzer_state, CALI_BUZZER_STATE_NAME);
 
     calibrate_RC = get_remote_control_point();
+    // vTaskDelay(10);
+    // calibrate_RC = Subscribe("virtual_rc_ctrl");
 
     while (1) {
+        deltaTick = xTaskGetTickCount() - lastTick;
+        lastTick = xTaskGetTickCount();
+
         RC_cmd_to_calibrate();
 
         for (i = 0; i < CALI_LIST_LENGHT; i++) {
@@ -184,12 +189,13 @@ void calibrate_task(void const * pvParameters)
                         cali_sensor[i].name[0] = cali_name[i][0];
                         cali_sensor[i].name[1] = cali_name[i][1];
                         cali_sensor[i].name[2] = cali_name[i][2];
-                        //set 0x55
+                        //set CALIED_FLAG
                         cali_sensor[i].cali_done = CALIED_FLAG;
-
                         cali_sensor[i].cali_cmd = 0;
                         //write
                         cali_data_write();
+                        // 用更新后的数据设置设备相关参数
+                        cali_sensor[i].cali_hook(cali_sensor_buf[i], CALI_FUNC_CMD_INIT);
                     }
                 }
             }
@@ -222,7 +228,7 @@ bool_t cali_head_hook(uint32_t * cali, bool_t cmd)
 {
     head_cali_t * local_cali_t = (head_cali_t *)cali;
     if (cmd == CALI_FUNC_CMD_INIT) {
-        //        memcpy(&head_cali, local_cali_t, sizeof(head_cali_t));
+        memcpy(&head_cali, local_cali_t, sizeof(head_cali_t));
 
         return 1;
     }
@@ -285,20 +291,17 @@ bool_t cali_gyro_hook(uint32_t * cali, bool_t cmd)
     imu_cali_t * local_cali_t = (imu_cali_t *)cali;
     if (cmd == CALI_FUNC_CMD_INIT) {
         gyro_set_cali(local_cali_t->scale, local_cali_t->offset);
-
         return 0;
     } else if (cmd == CALI_FUNC_CMD_ON) {
-        static uint16_t count_time = 0;
+        static uint32_t count_time = 0;
         gyro_cali_fun(local_cali_t->scale, local_cali_t->offset, &count_time);
+        count_time += deltaTick;
         if (count_time > GYRO_CALIBRATE_TIME) {
             count_time = 0;
-            // cali_buzzer_off();
             gyro_cali_enable_control();
             return 1;
         } else {
             gyro_cali_disable_control();  //disable the remote control to make robot no move
-            // imu_start_buzzer();
-
             return 0;
         }
     }
@@ -358,7 +361,6 @@ static void RC_cmd_to_calibrate(void)
     // clang-format on
 
     static uint8_t i;
-
     //如果已经在校准，就返回
     for (i = 0; i < CALI_LIST_LENGHT; i++) {
         if (cali_sensor[i].cali_cmd) {
@@ -368,6 +370,7 @@ static void RC_cmd_to_calibrate(void)
             return;
         }
     }
+
     //*********************************************************
     //* 根据rc的动作，选择进入的校准模式
     //*********************************************************
@@ -389,7 +392,8 @@ static void RC_cmd_to_calibrate(void)
         cali_state_flag = FLAG_GIMBAL;
         rc_cmd_time = 0;
         cali_sensor[CALI_GIMBAL].cali_cmd = 1;
-        cali_buzzer_state = CALI_BUZZER_OFF;
+        cali_buzzer_state = CALI_BUZZER_GIMBAL;
+        return;
     } else if (
         cali_state_flag > FLAG_NONE && rc_action_flag == FLAG_IMU &&
         rc_cmd_time > RC_CMD_LONG_TIME) {
@@ -402,19 +406,17 @@ static void RC_cmd_to_calibrate(void)
         if (head_cali.temperature > (int8_t)(GYRO_CONST_MAX_TEMP)) {
             head_cali.temperature = (int8_t)(GYRO_CONST_MAX_TEMP);
         }
-        cali_buzzer_state = CALI_BUZZER_OFF;
+        cali_buzzer_state = CALI_BUZZER_IMU;
+        return;
     } else if (
         cali_state_flag > FLAG_NONE && rc_action_flag == FLAG_CHASSIS &&
         rc_cmd_time > RC_CMD_LONG_TIME) {
         // 切换为底盘校准模式
         cali_state_flag = FLAG_CHASSIS;
         rc_cmd_time = 0;
-        //send CAN reset ID cmd to M3508
-        //发送CAN重设ID命令到3508
-        // CAN_cmd_chassis_reset_ID();
-        // CAN_cmd_chassis_reset_ID();
-        // CAN_cmd_chassis_reset_ID();
-        cali_buzzer_state = CALI_BUZZER_OFF;
+        cali_sensor[CALI_CHASSIS].cali_cmd = 1;
+        cali_buzzer_state = CALI_BUZZER_CHASSIS;
+        return;
     }
 
     //*********************************************************
@@ -424,18 +426,18 @@ static void RC_cmd_to_calibrate(void)
         (cali_state_flag == FLAG_NONE || cali_state_flag == FLAG_BEGIN)) {
         // 两个摇杆打成 \../,保持2s,切换校准模式(进入/退出)
         rc_action_flag = FLAG_TOGGLE;
-        rc_cmd_time++;
+        rc_cmd_time += deltaTick;
     } else if (CheckRcCaliValue(>, >, <-, >) && cali_state_flag > FLAG_NONE) {
         // 在校准模式中,两个摇杆打成'\/',保持2s,进入云台校准
-        rc_cmd_time++;
+        rc_cmd_time += deltaTick;
         rc_action_flag = FLAG_GIMBAL;
     } else if (CheckRcCaliValue(>, < -, < -, < -) && cali_state_flag > FLAG_NONE) {
         // 在校准模式中,两个摇杆打成./\.,保持2s,进入陀螺仪校准
-        rc_cmd_time++;
+        rc_cmd_time += deltaTick;
         rc_action_flag = FLAG_IMU;
     } else if (CheckRcCaliValue(<-, >, >, >) && cali_state_flag > FLAG_NONE) {
         // 在校准模式中,两个摇杆打成/''\,保持2s,进入底盘校准
-        rc_cmd_time++;
+        rc_cmd_time += deltaTick;
         rc_action_flag = FLAG_CHASSIS;
     } else {
         rc_cmd_time = 0;
@@ -445,7 +447,10 @@ static void RC_cmd_to_calibrate(void)
     //* 根据校准进行的时间，判断是否需要停止校准，以及是否需要蜂鸣器提示
     //*********************************************************
     calibrate_systemTick = xTaskGetTickCount();
-    if (calibrate_systemTick - rc_cmd_systemTick > CALIBRATE_END_TIME) {
+    if (cali_state_flag == FLAG_NONE) {
+        // 无需改变状态
+        return;
+    } else if (calibrate_systemTick - rc_cmd_systemTick > CALIBRATE_END_TIME) {
         //超过20s,停止校准
         rc_action_flag = FLAG_NONE;
         return;
@@ -565,6 +570,9 @@ void cali_param_init(void)
                 //if has been calibrated, set to init
                 cali_sensor[i].cali_hook(cali_sensor_buf[i], CALI_FUNC_CMD_INIT);
             }
+        } else if (i == CALI_HEAD) {
+            //if head has not been calibrated, set to cali
+            cali_sensor[i].cali_cmd = 1;
         }
     }
 }

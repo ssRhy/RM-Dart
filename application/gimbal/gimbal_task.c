@@ -23,6 +23,7 @@
 #include "cmsis_os.h"
 #include "gimbal.h"
 #include "gimbal_yaw_pitch_direct.h"
+#include "usb_debug.h"
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
 uint32_t gimbal_high_water;
@@ -163,7 +164,18 @@ GimbalCmdCali(fp32 * yaw_middle, fp32 * pitch_horizontal, fp32 * max_pitch, fp32
     /* 
      NOTE : 在其他文件中定义具体内容
     */
-    return 1;
+    static uint32_t cnt = 0;
+    cnt++;
+    if (cnt > 1000) {
+        cnt = 0;
+        *yaw_middle = 0.0f;
+        *pitch_horizontal = 0.0f;
+        *max_pitch = 0.0f;
+        *min_pitch = 0.0f;
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 /**

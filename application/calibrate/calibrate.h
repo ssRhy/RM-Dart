@@ -15,7 +15,7 @@
 
 #define FLASH_USER_ADDR ADDR_FLASH_SECTOR_9  // 保存的flash页地址,page 9
 #define GYRO_CONST_MAX_TEMP 45.0f            // 最大陀螺仪控制温度
-#define CALIED_FLAG 0x55                     // means it has been calibrated
+#define CALIED_FLAG 0xAA                     // means it has been calibrated
 
 #define CALIBRATE_END_TIME 20000          // (ms)有20s可以用遥控器进行校准
 #define RC_CALI_BUZZER_MIDDLE_TIME 10000  // (ms)当10s的时候,蜂鸣器切成高频声音
@@ -111,5 +111,6 @@ typedef struct
 extern bool_t cali_head_hook(uint32_t * cali, bool_t cmd);
 extern bool_t cali_gimbal_hook(uint32_t * cali, bool_t cmd);
 extern bool_t cali_gyro_hook(uint32_t * cali, bool_t cmd);
+extern bool_t cali_chassis_hook(uint32_t * cali, bool_t cmd);
 
 #endif  // CALIBRATE_TASK_H
