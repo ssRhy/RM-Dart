@@ -189,18 +189,15 @@ void calibrate_task(void const * pvParameters)
                         cali_sensor[i].name[0] = cali_name[i][0];
                         cali_sensor[i].name[1] = cali_name[i][1];
                         cali_sensor[i].name[2] = cali_name[i][2];
-                        //set 0x55
+                        //set CALIED_FLAG
                         cali_sensor[i].cali_done = CALIED_FLAG;
-
                         cali_sensor[i].cali_cmd = 0;
                         //write
                         cali_data_write();
+                        // 用更新后的数据设置设备相关参数
+                        cali_sensor[i].cali_hook(cali_sensor_buf[i], CALI_FUNC_CMD_INIT);
                     }
                 }
-                //  else {
-                //     //error
-                //     cali_sensor[i].cali_cmd = 0;
-                // }
             }
         }
 
