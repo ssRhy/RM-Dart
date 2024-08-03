@@ -171,9 +171,9 @@ void calibrate_task(void const * pvParameters)
 
     Publish(&cali_buzzer_state, "CaliBuzzerState");
 
-    // calibrate_RC = get_remote_control_point();
-    vTaskDelay(10);
-    calibrate_RC = Subscribe("virtual_rc_ctrl");
+    calibrate_RC = get_remote_control_point();
+    // vTaskDelay(10);
+    // calibrate_RC = Subscribe("virtual_rc_ctrl");
 
     while (1) {
         deltaTick = xTaskGetTickCount() - lastTick;
