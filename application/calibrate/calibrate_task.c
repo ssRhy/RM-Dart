@@ -363,17 +363,6 @@ static void RC_cmd_to_calibrate(void)
     static CaliFlag_e  cali_state_flag   = FLAG_NONE; //当前执行的校准状态标志
     // clang-format on
 
-    ModifyDebugDataPackage(1, rc_action_flag, "action");
-    ModifyDebugDataPackage(2, cali_state_flag, "stage");
-    ModifyDebugDataPackage(3, cali_buzzer_state, "buzzer");
-    ModifyDebugDataPackage(4, buzzer_time, "buz_time");
-    // ModifyDebugDataPackage(5, rc_cmd_time, "cmd_time");
-
-    ModifyDebugDataPackage(6, calibrate_RC->rc.ch[0], "ch0");
-    ModifyDebugDataPackage(7, calibrate_RC->rc.ch[1], "ch1");
-    ModifyDebugDataPackage(8, calibrate_RC->rc.ch[2], "ch2");
-    ModifyDebugDataPackage(9, calibrate_RC->rc.ch[3], "ch3");
-
     static uint8_t i;
     //如果已经在校准，就返回
     for (i = 0; i < CALI_LIST_LENGHT; i++) {
