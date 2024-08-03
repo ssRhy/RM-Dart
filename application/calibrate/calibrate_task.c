@@ -22,7 +22,7 @@
   *             0x080A0008: 名字name[0]
   *             0x080A0009: 名字name[1]
   *             0x080A000A: 名字name[2]
-  *             0x080A000B: 校准标志位 cali_flag,当校准标志位为0x55,意味着head_cali已经校准了
+  *             0x080A000B: 校准标志位 cali_flag,当校准标志位为0xAA,意味着head_cali已经校准了
   *
   *         添加新设备
   *             1.添加设备名在calibrate_task.h的cali_id_e, 像
