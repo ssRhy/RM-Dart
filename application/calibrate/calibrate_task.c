@@ -231,7 +231,7 @@ bool_t cali_head_hook(uint32_t * cali, bool_t cmd)
 {
     head_cali_t * local_cali_t = (head_cali_t *)cali;
     if (cmd == CALI_FUNC_CMD_INIT) {
-        //        memcpy(&head_cali, local_cali_t, sizeof(head_cali_t));
+        memcpy(&head_cali, local_cali_t, sizeof(head_cali_t));
 
         return 1;
     }
@@ -367,7 +367,7 @@ static void RC_cmd_to_calibrate(void)
     ModifyDebugDataPackage(2, cali_state_flag, "stage");
     ModifyDebugDataPackage(3, cali_buzzer_state, "buzzer");
     ModifyDebugDataPackage(4, buzzer_time, "buz_time");
-    ModifyDebugDataPackage(5, rc_cmd_time, "cmd_time");
+    // ModifyDebugDataPackage(5, rc_cmd_time, "cmd_time");
 
     ModifyDebugDataPackage(6, calibrate_RC->rc.ch[0], "ch0");
     ModifyDebugDataPackage(7, calibrate_RC->rc.ch[1], "ch1");
@@ -584,6 +584,9 @@ void cali_param_init(void)
                 //if has been calibrated, set to init
                 cali_sensor[i].cali_hook(cali_sensor_buf[i], CALI_FUNC_CMD_INIT);
             }
+        } else if (i == CALI_HEAD) {
+            //if head has not been calibrated, set to cali
+            cali_sensor[i].cali_cmd = 1;
         }
     }
 }

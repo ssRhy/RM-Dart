@@ -111,5 +111,6 @@ typedef struct
 extern bool_t cali_head_hook(uint32_t * cali, bool_t cmd);
 extern bool_t cali_gimbal_hook(uint32_t * cali, bool_t cmd);
 extern bool_t cali_gyro_hook(uint32_t * cali, bool_t cmd);
+extern bool_t cali_chassis_hook(uint32_t * cali, bool_t cmd);
 
 #endif  // CALIBRATE_TASK_H
