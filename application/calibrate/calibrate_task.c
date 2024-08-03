@@ -68,6 +68,7 @@
 #include "data_exchange.h"
 #include "gimbal_task.h"
 #include "remote_control.h"
+#include "usb_debug.h"
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
 uint32_t calibrate_high_water;
@@ -171,7 +172,9 @@ void calibrate_task(void const * pvParameters)
 
     Publish(&cali_buzzer_state, "CaliBuzzerState");
 
-    calibrate_RC = get_remote_control_point();
+    // calibrate_RC = get_remote_control_point();
+    vTaskDelay(10);
+    calibrate_RC = Subscribe("virtual_rc_ctrl");
 
     while (1) {
         RC_cmd_to_calibrate();
@@ -192,6 +195,10 @@ void calibrate_task(void const * pvParameters)
                         cali_data_write();
                     }
                 }
+                //  else {
+                //     //error
+                //     cali_sensor[i].cali_cmd = 0;
+                // }
             }
         }
 
@@ -357,8 +364,18 @@ static void RC_cmd_to_calibrate(void)
     static CaliFlag_e  cali_state_flag   = FLAG_NONE; //当前执行的校准状态标志
     // clang-format on
 
-    static uint8_t i;
+    ModifyDebugDataPackage(1, rc_action_flag, "action");
+    ModifyDebugDataPackage(2, cali_state_flag, "stage");
+    ModifyDebugDataPackage(3, cali_buzzer_state, "buzzer");
+    ModifyDebugDataPackage(4, buzzer_time, "buz_time");
+    ModifyDebugDataPackage(5, rc_cmd_time, "cmd_time");
 
+    ModifyDebugDataPackage(6, calibrate_RC->rc.ch[0], "ch0");
+    ModifyDebugDataPackage(7, calibrate_RC->rc.ch[1], "ch1");
+    ModifyDebugDataPackage(8, calibrate_RC->rc.ch[2], "ch2");
+    ModifyDebugDataPackage(9, calibrate_RC->rc.ch[3], "ch3");
+
+    static uint8_t i;
     //如果已经在校准，就返回
     for (i = 0; i < CALI_LIST_LENGHT; i++) {
         if (cali_sensor[i].cali_cmd) {
@@ -368,6 +385,7 @@ static void RC_cmd_to_calibrate(void)
             return;
         }
     }
+
     //*********************************************************
     //* 根据rc的动作，选择进入的校准模式
     //*********************************************************
@@ -389,7 +407,8 @@ static void RC_cmd_to_calibrate(void)
         cali_state_flag = FLAG_GIMBAL;
         rc_cmd_time = 0;
         cali_sensor[CALI_GIMBAL].cali_cmd = 1;
-        cali_buzzer_state = CALI_BUZZER_OFF;
+        cali_buzzer_state = CALI_BUZZER_GIMBAL;
+        return;
     } else if (
         cali_state_flag > FLAG_NONE && rc_action_flag == FLAG_IMU &&
         rc_cmd_time > RC_CMD_LONG_TIME) {
@@ -402,7 +421,8 @@ static void RC_cmd_to_calibrate(void)
         if (head_cali.temperature > (int8_t)(GYRO_CONST_MAX_TEMP)) {
             head_cali.temperature = (int8_t)(GYRO_CONST_MAX_TEMP);
         }
-        cali_buzzer_state = CALI_BUZZER_OFF;
+        cali_buzzer_state = CALI_BUZZER_IMU;
+        return;
     } else if (
         cali_state_flag > FLAG_NONE && rc_action_flag == FLAG_CHASSIS &&
         rc_cmd_time > RC_CMD_LONG_TIME) {
@@ -414,7 +434,9 @@ static void RC_cmd_to_calibrate(void)
         // CAN_cmd_chassis_reset_ID();
         // CAN_cmd_chassis_reset_ID();
         // CAN_cmd_chassis_reset_ID();
-        cali_buzzer_state = CALI_BUZZER_OFF;
+        cali_sensor[CALI_CHASSIS].cali_cmd = 1;
+        cali_buzzer_state = CALI_BUZZER_CHASSIS;
+        return;
     }
 
     //*********************************************************
@@ -445,7 +467,10 @@ static void RC_cmd_to_calibrate(void)
     //* 根据校准进行的时间，判断是否需要停止校准，以及是否需要蜂鸣器提示
     //*********************************************************
     calibrate_systemTick = xTaskGetTickCount();
-    if (calibrate_systemTick - rc_cmd_systemTick > CALIBRATE_END_TIME) {
+    if (cali_state_flag == FLAG_NONE) {
+        // 无需改变状态
+        return;
+    } else if (calibrate_systemTick - rc_cmd_systemTick > CALIBRATE_END_TIME) {
         //超过20s,停止校准
         rc_action_flag = FLAG_NONE;
         return;
