@@ -135,16 +135,6 @@ static CaliBuzzerState_e cali_buzzer_state = CALI_BUZZER_OFF;
 /*------------------------------ Function Declaration ------------------------------*/
 
 /*******************************************************************************/
-/* Hook Function                                                               */
-/*******************************************************************************/
-
-bool_t cali_test_hook(uint32_t * cali, bool_t cmd);
-bool_t cali_head_hook(uint32_t * cali, bool_t cmd);
-bool_t cali_gimbal_hook(uint32_t * cali, bool_t cmd);
-bool_t cali_gyro_hook(uint32_t * cali, bool_t cmd);
-bool_t cali_chassis_hook(uint32_t * cali, bool_t cmd);
-
-/*******************************************************************************/
 /* RC Cmd Function                                                             */
 /*******************************************************************************/
 
@@ -221,27 +211,6 @@ void calibrate_task(void const * pvParameters)
 /*******************************************************************************/
 /* Hook Function                                                               */
 /*******************************************************************************/
-
-/**
-  * @brief          测试用校准函数
-  * @param[in][out] cali:指针指向任意数据,当cmd为CALI_FUNC_CMD_INIT, 参数是输入,CALI_FUNC_CMD_ON,参数是输出
-  * @param[in]      cmd: 
-                    CALI_FUNC_CMD_INIT: 代表用校准数据初始化原始数据
-                    CALI_FUNC_CMD_ON: 代表需要校准
-  * @retval         0:校准任务还没有完
-                    1:校准任务已经完成
-  */
-bool_t cali_test_hook(uint32_t * cali, bool_t cmd)
-{
-    static uint32_t cnt = 0;
-    cnt++;
-    if (cnt > 1000) {
-        cnt = 0;
-        return 1;
-    } else {
-        return 0;
-    }
-}
 
 /**
   * @brief          "head"设备校准
