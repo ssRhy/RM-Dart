@@ -123,8 +123,14 @@ static uint8_t cali_sensor_size[CALI_LIST_LENGHT] = {
     sizeof(chassis_cali_t) / 4
     // clang-format on
 };
-// void *cali_hook_fun[CALI_LIST_LENGHT] = {cali_head_hook, cali_gimbal_hook, cali_gyro_hook, NULL, NULL, cali_chassis_hook};
-void * cali_hook_fun[CALI_LIST_LENGHT] = {NULL, NULL, cali_gyro_hook, NULL, NULL, NULL};
+// clang-format off
+void * cali_hook_fun[CALI_LIST_LENGHT] = {cali_head_hook,
+                                          cali_gimbal_hook,
+                                          cali_gyro_hook,
+                                          NULL,
+                                          NULL,
+                                          cali_chassis_hook};
+// clang-format on
 
 static uint32_t calibrate_systemTick;
 static uint32_t deltaTick = 0;
