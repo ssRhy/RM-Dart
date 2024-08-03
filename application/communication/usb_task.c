@@ -142,9 +142,9 @@ static void GetVirtualRcCtrlData(void);
  */
 void usb_task(void const * argument)
 {
-    Publish(&ROBOT_CMD_DATA, "ROBOT_CMD_DATA");
-    Publish(&USB_OFFLINE, "usb_offline");
-    Publish(&VIRTUAL_RC_CTRL, "virtual_rc_ctrl");
+    Publish(&ROBOT_CMD_DATA, ROBOT_CMD_DATA_NAME);
+    Publish(&USB_OFFLINE, USB_OFFLINE_NAME);
+    Publish(&VIRTUAL_RC_CTRL, VIRTUAL_RC_NAME);
 
     MX_USB_DEVICE_Init();
 
@@ -196,8 +196,8 @@ void usb_task(void const * argument)
 static void UsbInit(void)
 {
     // 订阅数据
-    IMU = Subscribe("imu_data");                        // 获取IMU数据指针
-    FDB_SPEED_VECTOR = Subscribe("chassis_fdb_speed");  // 获取底盘速度矢量指针
+    IMU = Subscribe(IMU_NAME);                        // 获取IMU数据指针
+    FDB_SPEED_VECTOR = Subscribe(CHASSIS_FDB_SPEED_NAME);  // 获取底盘速度矢量指针
 
     // 数据置零
     memset(&LAST_SEND_TIME, 0, sizeof(LastSendTime_t));

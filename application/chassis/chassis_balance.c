@@ -73,7 +73,7 @@ static Chassis_s CHASSIS = {
 
 void ChassisPublish(void)
 {
-    Publish(&CHASSIS.fdb.speed_vector, "chassis_fdb_speed");
+    Publish(&CHASSIS.fdb.speed_vector, CHASSIS_FDB_SPEED_NAME);
 }
 
 /*-------------------- Init --------------------*/
@@ -86,7 +86,7 @@ void ChassisPublish(void)
 void ChassisInit(void)
 {
     CHASSIS.rc = get_remote_control_point();  // 获取遥控器指针
-    CHASSIS.imu = Subscribe("imu_data");      // 获取IMU数据指针
+    CHASSIS.imu = Subscribe(IMU_NAME);      // 获取IMU数据指针
 
     /*-------------------- 初始化底盘电机 --------------------*/
     MotorInit(&CHASSIS.joint_motor[0], 1, JOINT_CAN, DM_8009, J0_DIRECTION, 1, DM_MODE_MIT);

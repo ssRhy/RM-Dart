@@ -223,7 +223,7 @@ static Imu_t IMU_DATA = {
 void IMU_task(void const * pvParameters)
 {
     // 发布IMU数据
-    Publish(&IMU_DATA, "imu_data");
+    Publish(&IMU_DATA, IMU_NAME);
 
     // clang-format off
     //wait a time

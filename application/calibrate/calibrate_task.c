@@ -169,7 +169,7 @@ void calibrate_task(void const * pvParameters)
 {
     static uint8_t i = 0;
 
-    Publish(&cali_buzzer_state, "CaliBuzzerState");
+    Publish(&cali_buzzer_state, CALI_BUZZER_STATE_NAME);
 
     calibrate_RC = get_remote_control_point();
     // vTaskDelay(10);

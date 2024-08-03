@@ -67,7 +67,7 @@ void music_task(void const * pvParameters)
 
 static void MusicInit(void)
 {
-    cali_buzzer_state = Subscribe("CaliBuzzerState");
+    cali_buzzer_state = Subscribe(CALI_BUZZER_STATE_NAME);
 
     music_step = STEP_INIT;
 
