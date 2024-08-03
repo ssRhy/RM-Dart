@@ -233,7 +233,7 @@ bool_t cali_test_hook(uint32_t * cali, bool_t cmd)
     if (cnt > 1000) {
         cnt = 0;
         return 1;
-    }else{
+    } else {
         return 0;
     }
 }
@@ -380,11 +380,16 @@ static void RC_cmd_to_calibrate(void)
     }CaliFlag_e;
 
     static uint32_t rc_cmd_systemTick    = 0;
+    static TickType_t func_lastTick      = 0;
+    static TickType_t func_deltaTick     = 0;
     static uint16_t buzzer_time          = 0;
     static uint16_t rc_cmd_time          = 0;
     static CaliFlag_e  rc_action_flag    = FLAG_NONE; // rc动作标志
     static CaliFlag_e  cali_state_flag   = FLAG_NONE; //当前执行的校准状态标志
     // clang-format on
+
+    func_deltaTick = xTaskGetTickCount() - func_lastTick;
+    func_lastTick = xTaskGetTickCount();
 
     ModifyDebugDataPackage(1, rc_action_flag, "action");
     ModifyDebugDataPackage(2, cali_state_flag, "stage");
@@ -468,18 +473,18 @@ static void RC_cmd_to_calibrate(void)
         (cali_state_flag == FLAG_NONE || cali_state_flag == FLAG_BEGIN)) {
         // 两个摇杆打成 \../,保持2s,切换校准模式(进入/退出)
         rc_action_flag = FLAG_TOGGLE;
-        rc_cmd_time++;
+        rc_cmd_time += func_deltaTick;
     } else if (CheckRcCaliValue(>, >, <-, >) && cali_state_flag > FLAG_NONE) {
         // 在校准模式中,两个摇杆打成'\/',保持2s,进入云台校准
-        rc_cmd_time++;
+        rc_cmd_time += func_deltaTick;
         rc_action_flag = FLAG_GIMBAL;
     } else if (CheckRcCaliValue(>, < -, < -, < -) && cali_state_flag > FLAG_NONE) {
         // 在校准模式中,两个摇杆打成./\.,保持2s,进入陀螺仪校准
-        rc_cmd_time++;
+        rc_cmd_time += func_deltaTick;
         rc_action_flag = FLAG_IMU;
     } else if (CheckRcCaliValue(<-, >, >, >) && cali_state_flag > FLAG_NONE) {
         // 在校准模式中,两个摇杆打成/''\,保持2s,进入底盘校准
-        rc_cmd_time++;
+        rc_cmd_time += func_deltaTick;
         rc_action_flag = FLAG_CHASSIS;
     } else {
         rc_cmd_time = 0;
