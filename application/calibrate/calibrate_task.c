@@ -124,9 +124,11 @@ static uint8_t cali_sensor_size[CALI_LIST_LENGHT] = {
     // clang-format on
 };
 // void *cali_hook_fun[CALI_LIST_LENGHT] = {cali_head_hook, cali_gimbal_hook, cali_gyro_hook, NULL, NULL, cali_chassis_hook};
-void * cali_hook_fun[CALI_LIST_LENGHT] = {NULL, NULL, NULL, NULL, NULL, NULL};
+void * cali_hook_fun[CALI_LIST_LENGHT] = {NULL, NULL, cali_gyro_hook, NULL, NULL, NULL};
 
 static uint32_t calibrate_systemTick;
+static uint32_t deltaTick = 0;
+static uint32_t lastTick = 0;
 
 static CaliBuzzerState_e cali_buzzer_state = CALI_BUZZER_OFF;
 
@@ -178,6 +180,9 @@ void calibrate_task(void const * pvParameters)
     calibrate_RC = Subscribe("virtual_rc_ctrl");
 
     while (1) {
+        deltaTick = xTaskGetTickCount() - lastTick;
+        lastTick = xTaskGetTickCount();
+
         RC_cmd_to_calibrate();
 
         for (i = 0; i < CALI_LIST_LENGHT; i++) {
@@ -314,20 +319,17 @@ bool_t cali_gyro_hook(uint32_t * cali, bool_t cmd)
     imu_cali_t * local_cali_t = (imu_cali_t *)cali;
     if (cmd == CALI_FUNC_CMD_INIT) {
         gyro_set_cali(local_cali_t->scale, local_cali_t->offset);
-
         return 0;
     } else if (cmd == CALI_FUNC_CMD_ON) {
-        static uint16_t count_time = 0;
+        static uint32_t count_time = 0;
         gyro_cali_fun(local_cali_t->scale, local_cali_t->offset, &count_time);
+        count_time += deltaTick;
         if (count_time > GYRO_CALIBRATE_TIME) {
             count_time = 0;
-            // cali_buzzer_off();
             gyro_cali_enable_control();
             return 1;
         } else {
             gyro_cali_disable_control();  //disable the remote control to make robot no move
-            // imu_start_buzzer();
-
             return 0;
         }
     }
@@ -380,16 +382,11 @@ static void RC_cmd_to_calibrate(void)
     }CaliFlag_e;
 
     static uint32_t rc_cmd_systemTick    = 0;
-    static TickType_t func_lastTick      = 0;
-    static TickType_t func_deltaTick     = 0;
     static uint16_t buzzer_time          = 0;
     static uint16_t rc_cmd_time          = 0;
     static CaliFlag_e  rc_action_flag    = FLAG_NONE; // rc动作标志
     static CaliFlag_e  cali_state_flag   = FLAG_NONE; //当前执行的校准状态标志
     // clang-format on
-
-    func_deltaTick = xTaskGetTickCount() - func_lastTick;
-    func_lastTick = xTaskGetTickCount();
 
     ModifyDebugDataPackage(1, rc_action_flag, "action");
     ModifyDebugDataPackage(2, cali_state_flag, "stage");
@@ -473,18 +470,18 @@ static void RC_cmd_to_calibrate(void)
         (cali_state_flag == FLAG_NONE || cali_state_flag == FLAG_BEGIN)) {
         // 两个摇杆打成 \../,保持2s,切换校准模式(进入/退出)
         rc_action_flag = FLAG_TOGGLE;
-        rc_cmd_time += func_deltaTick;
+        rc_cmd_time += deltaTick;
     } else if (CheckRcCaliValue(>, >, <-, >) && cali_state_flag > FLAG_NONE) {
         // 在校准模式中,两个摇杆打成'\/',保持2s,进入云台校准
-        rc_cmd_time += func_deltaTick;
+        rc_cmd_time += deltaTick;
         rc_action_flag = FLAG_GIMBAL;
     } else if (CheckRcCaliValue(>, < -, < -, < -) && cali_state_flag > FLAG_NONE) {
         // 在校准模式中,两个摇杆打成./\.,保持2s,进入陀螺仪校准
-        rc_cmd_time += func_deltaTick;
+        rc_cmd_time += deltaTick;
         rc_action_flag = FLAG_IMU;
     } else if (CheckRcCaliValue(<-, >, >, >) && cali_state_flag > FLAG_NONE) {
         // 在校准模式中,两个摇杆打成/''\,保持2s,进入底盘校准
-        rc_cmd_time += func_deltaTick;
+        rc_cmd_time += deltaTick;
         rc_action_flag = FLAG_CHASSIS;
     } else {
         rc_cmd_time = 0;
