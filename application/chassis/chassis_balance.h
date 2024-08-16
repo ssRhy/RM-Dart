@@ -23,13 +23,14 @@
 #if (CHASSIS_TYPE == CHASSIS_BALANCE)
 #include "IMU_task.h"
 #include "chassis.h"
+#include "custom_typedef.h"
+#include "kalman_filter.h"
 #include "math.h"
 #include "motor.h"
 #include "pid.h"
 #include "remote_control.h"
 #include "struct_typedef.h"
 #include "user_lib.h"
-#include "custom_typedef.h"
 
 // clang-format off
 #define JOINT_ERROR_OFFSET   ((uint8_t)1 << 0)  // 关节电机错误偏移量
@@ -87,6 +88,7 @@ typedef struct Body
 {
     float x;
     float x_dot;
+    float x_accel;
     float phi;
     float phi_dot;
 
@@ -137,7 +139,7 @@ typedef struct
 {
     Body_t body;
     LegState_t leg_state[2];  // 0-左 1-右
-    float rod_L0[2];         // 0-左 1-右
+    float rod_L0[2];          // 0-左 1-右
     ChassisSpeedVector_t speed_vector;
 } Ref_t;
 
@@ -152,7 +154,7 @@ typedef struct Cmd
         } rod;
         struct joint_cmd
         {
-            float T[2];  // N*m
+            float T[2];    // N*m
             float Pos[2];  // rad
         } joint;
         struct wheel_cmd
@@ -247,6 +249,14 @@ typedef struct GroundTouch
 
     bool touch;  //是否触地
 } GroundTouch_s;
+
+typedef struct
+{
+    struct
+    {
+        KalmanFilter_t v_kf;  // 观测车体速度
+    } body;
+} Observer_t;
 
 extern void ChassisInit(void);
 

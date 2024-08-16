@@ -25,13 +25,14 @@
 #include "CAN_communication.h"
 #include "bsp_delay.h"
 #include "chassis_balance_extras.h"
+#include "data_exchange.h"
 #include "detect_task.h"
+#include "kalman_filter.h"
 #include "signal_generator.h"
 #include "stdbool.h"
 #include "string.h"
 #include "usb_debug.h"
 #include "user_lib.h"
-#include "data_exchange.h"
 
 #define CALIBRATE_STOP_VELOCITY 0.05f  // rad/s
 #define CALIBRATE_STOP_TIME 200        // ms
@@ -49,6 +50,8 @@ static GroundTouch_s GROUND_TOUCH = {
     .touch_time = 0,
     .touch = false,
 };
+
+static Observer_t OBSERVER;
 
 static Chassis_s CHASSIS = {
     .mode = CHASSIS_OFF,
@@ -71,10 +74,7 @@ static Chassis_s CHASSIS = {
 
 /*-------------------- Publish --------------------*/
 
-void ChassisPublish(void)
-{
-    Publish(&CHASSIS.fdb.speed_vector, CHASSIS_FDB_SPEED_NAME);
-}
+void ChassisPublish(void) { Publish(&CHASSIS.fdb.speed_vector, CHASSIS_FDB_SPEED_NAME); }
 
 /*-------------------- Init --------------------*/
 
@@ -86,8 +86,7 @@ void ChassisPublish(void)
 void ChassisInit(void)
 {
     CHASSIS.rc = get_remote_control_point();  // 获取遥控器指针
-    CHASSIS.imu = Subscribe(IMU_NAME);      // 获取IMU数据指针
-
+    CHASSIS.imu = Subscribe(IMU_NAME);        // 获取IMU数据指针
     /*-------------------- 初始化底盘电机 --------------------*/
     MotorInit(&CHASSIS.joint_motor[0], 1, JOINT_CAN, DM_8009, J0_DIRECTION, 1, DM_MODE_MIT);
     MotorInit(&CHASSIS.joint_motor[1], 2, JOINT_CAN, DM_8009, J1_DIRECTION, 1, DM_MODE_MIT);
@@ -198,6 +197,31 @@ void ChassisInit(void)
 
     LowPassFilterInit(&CHASSIS.lpf.support_force_filter[0], LEG_SUPPORT_FORCE_LPF_ALPHA);
     LowPassFilterInit(&CHASSIS.lpf.support_force_filter[1], LEG_SUPPORT_FORCE_LPF_ALPHA);
+
+    // 初始化机体速度观测器
+    float dt = 0.005f;  // 5ms(测试得到底盘任务周期为5ms)
+    // clang-format off
+    float F[4] = {1, dt, 
+                  0, 1}; // 状态转移矩阵其余项在滤波器更新时更新
+        
+    float P[4] = {100, 0.1, 
+                  0.1, 100}; // 后验估计协方差初始值
+        
+    float Q[4] = {0.01, 0.00, 
+                  0.00, 0.01}; // Q矩阵初始值
+        
+    float R[4] = {1000, 0, 
+                  0     , 1000}; // R矩阵初始值
+        
+    float H[4] = {1, 0,
+                  0, 1}; // 由于不需要异步量测自适应，这里直接设置矩阵H为常量
+    // clang-format on
+    Kalman_Filter_Init(&OBSERVER.body.v_kf, 2, 0, 2);
+    memcpy(OBSERVER.body.v_kf.F_data, F, sizeof(F));
+    memcpy(OBSERVER.body.v_kf.P_data, P, sizeof(P));
+    memcpy(OBSERVER.body.v_kf.Q_data, Q, sizeof(Q));
+    memcpy(OBSERVER.body.v_kf.R_data, R, sizeof(R));
+    memcpy(OBSERVER.body.v_kf.H_data, H, sizeof(H));
 }
 
 /*-------------------- Handle exception --------------------*/
@@ -372,6 +396,8 @@ static void UpdateLegStatus(void);
 static void UpdateMotorStatus(void);
 static void UpdateCalibrateStatus(void);
 
+static void BodyMotionObserve(void);
+
 /**
  * @brief          更新状态量
  * @param[in]      none
@@ -383,6 +409,8 @@ void ChassisObserver(void)
     UpdateBodyStatus();
     UpdateLegStatus();
     UpdateCalibrateStatus();
+
+    BodyMotionObserve();
 
     // OutputPCData.packets[0].data = CHASSIS.fdb.leg[0].rod.L0;
     // OutputPCData.packets[1].data = CHASSIS.fdb.leg[1].rod.L0;
@@ -450,6 +478,7 @@ static void UpdateBodyStatus(void)
  */
 static void UpdateLegStatus(void)
 {
+    uint8_t i = 0;
     // =====更新关节姿态=====
     CHASSIS.fdb.leg[0].joint.Phi1 =
         theta_transform(CHASSIS.joint_motor[0].fdb.pos, J0_ANGLE_OFFSET, J0_DIRECTION, 1);
@@ -472,7 +501,7 @@ static void UpdateLegStatus(void)
     // =====更新摆杆姿态=====
     float L0_Phi0[2];
     float dL0_dPhi0[2];
-    for (uint8_t i = 0; i < 2; i++) {
+    for (i = 0; i < 2; i++) {
         // 更新位置信息
         GetL0AndPhi0(CHASSIS.fdb.leg[i].joint.Phi1, CHASSIS.fdb.leg[i].joint.Phi4, L0_Phi0);
         CHASSIS.fdb.leg[i].rod.L0 = L0_Phi0[0];
@@ -542,6 +571,19 @@ static void UpdateCalibrateStatus(void)
             }
         }
     }
+}
+
+/**
+ * @brief  机体运动状态观测器
+ * @param  none
+ */
+static void BodyMotionObserve(void)
+{
+    // 更新量测数据
+    OBSERVER.body.v_kf.MeasuredVector[0] = CHASSIS.fdb.body.x_dot;
+    OBSERVER.body.v_kf.MeasuredVector[1] = CHASSIS.fdb.body.x_accel;
+    // 更新滤波器
+    Kalman_Filter_Update(&OBSERVER.body.v_kf);
 }
 
 /*-------------------- Reference --------------------*/
