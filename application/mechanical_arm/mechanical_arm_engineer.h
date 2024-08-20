@@ -74,6 +74,11 @@ typedef struct
         } joint[JOINT_NUM];
     } fdb;
 
+    struct
+    {
+        float pos[6];
+    } transform;
+
     // struct
     // {
     //     struct

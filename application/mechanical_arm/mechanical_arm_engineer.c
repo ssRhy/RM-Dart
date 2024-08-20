@@ -100,6 +100,13 @@ void MechanicalArmInit(void)
     JointPidInit(5);
     // #Initial value setting ---------------------
     MECHANICAL_ARM.mode = MECHANICAL_ARM_SAFE;
+    MECHANICAL_ARM.error_code = 0;
+    MECHANICAL_ARM.transform.pos[J0] = J0_ANGLE_TRANSFORM;
+    MECHANICAL_ARM.transform.pos[J1] = J1_ANGLE_TRANSFORM;
+    MECHANICAL_ARM.transform.pos[J2] = J2_ANGLE_TRANSFORM;
+    MECHANICAL_ARM.transform.pos[J3] = J3_ANGLE_TRANSFORM;
+    MECHANICAL_ARM.transform.pos[J4] = J4_ANGLE_TRANSFORM;
+    MECHANICAL_ARM.transform.pos[J5] = J5_ANGLE_TRANSFORM;
 }
 
 /******************************************************************/
@@ -167,7 +174,8 @@ static void JointStateObserve(void)
 {
     uint8_t i;
     for (i = 0; i < 6; i++) {
-        MECHANICAL_ARM.fdb.joint[i].angle = MECHANICAL_ARM.joint_motor[i].fdb.pos;
+        MECHANICAL_ARM.fdb.joint[i].angle = theta_transform(
+            MECHANICAL_ARM.joint_motor[i].fdb.pos, MECHANICAL_ARM.transform.pos[i], 1, 1);
         MECHANICAL_ARM.fdb.joint[i].velocity = MECHANICAL_ARM.joint_motor[i].fdb.vel;
         MECHANICAL_ARM.fdb.joint[i].torque = MECHANICAL_ARM.joint_motor[i].fdb.tor;
     }
