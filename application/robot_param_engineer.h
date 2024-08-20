@@ -21,6 +21,8 @@
 //PID parameters ---------------------
 
 /*-------------------- Mechanical arm --------------------*/
+#define ARM_DJI_CAN 1
+#define ARM_DM_CAN 2
 //motor type ---------------------
 
 #define JOINT_MOTOR_0_ID 1
@@ -30,12 +32,12 @@
 #define JOINT_MOTOR_4_ID 6
 #define JOINT_MOTOR_5_ID 7
 
-#define JOINT_MOTOR_0_CAN 1
-#define JOINT_MOTOR_1_CAN 2
-#define JOINT_MOTOR_2_CAN 2
-#define JOINT_MOTOR_3_CAN 2
-#define JOINT_MOTOR_4_CAN 1
-#define JOINT_MOTOR_5_CAN 1
+#define JOINT_MOTOR_0_CAN ARM_DJI_CAN
+#define JOINT_MOTOR_1_CAN ARM_DM_CAN
+#define JOINT_MOTOR_2_CAN ARM_DM_CAN
+#define JOINT_MOTOR_3_CAN ARM_DM_CAN
+#define JOINT_MOTOR_4_CAN ARM_DJI_CAN
+#define JOINT_MOTOR_5_CAN ARM_DJI_CAN
 
 #define JOINT_MOTOR_0_TYPE DJI_M6020
 #define JOINT_MOTOR_1_TYPE DM_8009

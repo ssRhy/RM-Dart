@@ -33,6 +33,17 @@
 #define ANGLE_PID 0
 #define VELOCITY_PID 1
 
+#define J0 0
+#define J1 1
+#define J2 2
+#define J3 3
+#define J4 4
+#define J5 5
+
+#define DM_DELAY 250  // (us)dm电机发送延时
+#define DM_KP_FOLLOW 1
+#define DM_KD_FOLLOW 0.5
+
 #define JointMotorInit(index)                                                                    \
     MotorInit(                                                                                   \
         &MECHANICAL_ARM.joint_motor[index], JOINT_MOTOR_##index##_ID, JOINT_MOTOR_##index##_CAN, \
@@ -69,11 +80,8 @@ void MechanicalArmPublish(void) {}
 /******************************************************************/
 /* Init                                                           */
 /*----------------------------------------------------------------*/
-/* main function: MechanicalArmInit                               */
-/* auxiliary function: MechanicalArmReset                         */
+/* main function:      MechanicalArmInit                          */
 /******************************************************************/
-
-void MechanicalArmReset(void);
 
 void MechanicalArmInit(void)
 {
@@ -89,13 +97,8 @@ void MechanicalArmInit(void)
     JointPidInit(0);
     JointPidInit(4);
     JointPidInit(5);
-    // #Low pass filter init ---------------------
-}
-
-void MechanicalArmReset(void)
-{
-    // #PID reset ---------------------
-    // #Low pass filter reset ---------------------
+    // #Initial value setting ---------------------
+    MECHANICAL_ARM.mode = MECHANICAL_ARM_SAFE;
 }
 
 /******************************************************************/
@@ -130,9 +133,67 @@ void MechanicalArmConsole(void) {}
 
 /******************************************************************/
 /* SendCmd                                                        */
+/*----------------------------------------------------------------*/
+/* main function:       MechanicalArmSendCmd                      */
+/* auxiliary function:  ArmSendCmdSafe                            */
+/*                      ArmSendCmdFollow                          */
 /******************************************************************/
 
-void MechanicalArmSendCmd(void) {}
+void ArmSendCmdSafe(void);
+void ArmSendCmdFollow(void);
+
+void MechanicalArmSendCmd(void)
+{
+    uint8_t cnt;
+    for (uint8_t i = 0; i < 4; i++) {
+        if (cnt % 2 == 0) {
+            delay_us(DM_DELAY);
+        }
+        if (MECHANICAL_ARM.joint_motor[i].fdb.state == DM_STATE_DISABLE) {
+            DmEnable(&MECHANICAL_ARM.joint_motor[i]);
+            cnt++;
+        }
+    }
+
+    delay_us(DM_DELAY);
+
+    switch (MECHANICAL_ARM.mode) {
+        case MECHANICAL_ARM_FOLLOW: {
+            ArmSendCmdFollow();
+        }
+        case MECHANICAL_ARM_CALIBRATE:
+        case MECHANICAL_ARM_DEBUG:
+        case MECHANICAL_ARM_CUSTOM:
+        case MECHANICAL_ARM_SAFE:
+        default: {
+            ArmSendCmdSafe();
+        }
+    }
+}
+
+void ArmSendCmdSafe(void)
+{
+    DmMitStop(&MECHANICAL_ARM.joint_motor[J1]);
+    delay_us(DM_DELAY);
+    DmMitStop(&MECHANICAL_ARM.joint_motor[J2]);
+    DmMitStop(&MECHANICAL_ARM.joint_motor[J3]);
+    CanCmdDjiMotor(ARM_DJI_CAN, 0x1FF, 0, 0, 0, 0);  // J0 J4 J5
+}
+
+void ArmSendCmdFollow(void)
+{
+    DmMitCtrl(&MECHANICAL_ARM.joint_motor[J1], DM_KP_FOLLOW, DM_KD_FOLLOW);
+    delay_us(DM_DELAY);
+    DmMitCtrl(&MECHANICAL_ARM.joint_motor[J2], DM_KP_FOLLOW, DM_KD_FOLLOW);
+    DmMitCtrl(&MECHANICAL_ARM.joint_motor[J3], DM_KP_FOLLOW, DM_KD_FOLLOW);
+    // clang-format off
+    CanCmdDjiMotor(
+        ARM_DJI_CAN, 0x1FF, 
+        MECHANICAL_ARM.joint_motor[J0].set.value,
+        MECHANICAL_ARM.joint_motor[J4].set.value, 
+        MECHANICAL_ARM.joint_motor[J5].set.value, 0); // J0 J4 J5
+    // clang-format on
+}
 
 #endif
 /*------------------------------ End of File ------------------------------*/
