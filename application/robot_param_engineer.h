@@ -23,7 +23,11 @@
 /*-------------------- Mechanical arm --------------------*/
 #define ARM_DJI_CAN 1
 #define ARM_DM_CAN 2
-//motor type ---------------------
+//rc parameters ---------------------
+
+#define MECHANICAL_ARM_MODE_CHANNEL 1  // 机械臂模式切换通道
+
+//motor parameters ---------------------
 
 #define JOINT_MOTOR_0_ID 1
 #define JOINT_MOTOR_1_ID 1

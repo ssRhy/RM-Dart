@@ -3438,6 +3438,11 @@
               <FileType>1</FileType>
               <FilePath>..\application\mechanical_arm\mechanical_arm_penguin_mini.c</FilePath>
             </File>
+            <File>
+              <FileName>mechanical_arm_engineer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\mechanical_arm\mechanical_arm_engineer.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

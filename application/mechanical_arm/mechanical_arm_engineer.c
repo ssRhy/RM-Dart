@@ -81,6 +81,7 @@ void MechanicalArmPublish(void) {}
 /* Init                                                           */
 /*----------------------------------------------------------------*/
 /* main function:      MechanicalArmInit                          */
+/* auxiliary function: None                                       */
 /******************************************************************/
 
 void MechanicalArmInit(void)
@@ -109,9 +110,25 @@ void MechanicalArmHandleException(void) {}
 
 /******************************************************************/
 /* SetMode                                                        */
+/*----------------------------------------------------------------*/
+/* main function:       MechanicalArmSetMode                      */
+/* auxiliary function:  None                                      */
 /******************************************************************/
 
-void MechanicalArmSetMode(void) {}
+void MechanicalArmSetMode(void)
+{
+    if (MECHANICAL_ARM.mode == MECHANICAL_ARM_CALIBRATE){
+        return;
+    }
+
+    if (switch_is_up(MECHANICAL_ARM.rc->rc.s[MECHANICAL_ARM_MODE_CHANNEL])) {
+        MECHANICAL_ARM.mode = MECHANICAL_ARM_CUSTOM;
+    } else if (switch_is_mid(MECHANICAL_ARM.rc->rc.s[MECHANICAL_ARM_MODE_CHANNEL])) {
+        MECHANICAL_ARM.mode = MECHANICAL_ARM_DEBUG;
+    } else if (switch_is_down(MECHANICAL_ARM.rc->rc.s[MECHANICAL_ARM_MODE_CHANNEL])) {
+        MECHANICAL_ARM.mode = MECHANICAL_ARM_SAFE;
+    }
+}
 
 /******************************************************************/
 /* Observer                                                       */
