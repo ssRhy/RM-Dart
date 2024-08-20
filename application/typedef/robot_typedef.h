@@ -21,10 +21,12 @@
 // 可用机械臂硬件类型
 #define MECHANICAL_ARM_NONE              0  // 无机械臂
 #define MECHANICAL_ARM_PENGUIN_MINI_ARM  1  // 企鹅mini机械臂
+#define MECHANICAL_ARM_ENGINEER_ARM      2  // 工程机械臂
 
 // 可用自定义控制器硬件类型
-#define CUSTOM_CONTROLLER_NONE 0          // 无自定义控制器
+#define CUSTOM_CONTROLLER_NONE         0  // 无自定义控制器
 #define CUSTOM_CONTROLLER_PENGUIN_MINI 1  // 企鹅mini自定义控制器
+#define CUSTOM_CONTROLLER_ENGINEER     2  // 工程用的自定义控制器
 
 // 控制类型（板间通信时用到）
 #define CHASSIS_ONLY       0  // 只控制底盘
@@ -48,6 +50,10 @@
 #define CALI_FROM_USB   2
 #define CALI_FROM_CODE  3
 
+// 自定义控制器类型
+#define CC_RECEIVER 0  // 接收器
+#define CC_SENDER   1  // 发送器
+
 // 可用电机类型
 typedef enum __MotorType {
     DJI_M2006 = 0,
@@ -55,6 +61,8 @@ typedef enum __MotorType {
     DJI_M6020,
     CYBERGEAR_MOTOR,
     DM_8009,
+    DM_4310,
+    DM_4340,
     MF_9025,
 } MotorType_e;
 // clang-format on
