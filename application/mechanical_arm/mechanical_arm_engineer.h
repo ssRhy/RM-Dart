@@ -59,8 +59,8 @@ typedef struct
     {
         struct
         {
-            float angle;   // (rad)位置
-            float speed;   // (rad/s)速度
+            float angle;  // (rad)位置
+            float speed;  // (rad/s)速度
         } joint[JOINT_NUM];
     } ref;
 
@@ -78,20 +78,24 @@ typedef struct
     {
         struct
         {
-            float angle;   // (rad)位置
-            float speed;   // (rad/s)速度
-            float value;   // 电流值
+            float angle;  // (rad)位置
+            float speed;  // (rad/s)速度
+            float value;  // 电流值
         } joint[JOINT_NUM];
     } cmd;
 
     struct
     {
-        pid_type_def joint;
+        pid_type_def j0[2];
+        pid_type_def j4[2];
+        pid_type_def j5[2];
     } pid;
 
     struct
     {
-        LowPassFilter_t leg_length_accel_filter[2];
+        LowPassFilter_t j0;
+        LowPassFilter_t j4;
+        LowPassFilter_t j5;
     } lpf;
 
 } MechanicalArm_s;

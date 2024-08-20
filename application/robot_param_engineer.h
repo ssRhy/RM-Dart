@@ -22,12 +22,6 @@
 
 /*-------------------- Mechanical arm --------------------*/
 //motor type ---------------------
-#define JOINT_MOTOR_0_TYPE DJI_M6020
-#define JOINT_MOTOR_1_TYPE DM_8009
-#define JOINT_MOTOR_2_TYPE DM_8009
-#define JOINT_MOTOR_3_TYPE DM_4340
-#define JOINT_MOTOR_4_TYPE DJI_M2006
-#define JOINT_MOTOR_5_TYPE DJI_M2006
 
 #define JOINT_MOTOR_0_ID 1
 #define JOINT_MOTOR_1_ID 1
@@ -42,6 +36,13 @@
 #define JOINT_MOTOR_3_CAN 2
 #define JOINT_MOTOR_4_CAN 1
 #define JOINT_MOTOR_5_CAN 1
+
+#define JOINT_MOTOR_0_TYPE DJI_M6020
+#define JOINT_MOTOR_1_TYPE DM_8009
+#define JOINT_MOTOR_2_TYPE DM_8009
+#define JOINT_MOTOR_3_TYPE DM_4340
+#define JOINT_MOTOR_4_TYPE DJI_M2006
+#define JOINT_MOTOR_5_TYPE DJI_M2006
 
 #define JOINT_MOTOR_0_DIRECTION 1
 #define JOINT_MOTOR_1_DIRECTION 1
