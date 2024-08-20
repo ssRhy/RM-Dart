@@ -132,10 +132,14 @@ void MechanicalArmSetMode(void)
 
 /******************************************************************/
 /* Observer                                                       */
+/*----------------------------------------------------------------*/
+/* main function:       MechanicalArmObserver                     */
+/* auxiliary function:  UpdateMotorStatus                         */
+/*                      JointStateObserve                         */
 /******************************************************************/
 
 static void UpdateMotorStatus(void);
-static void JointStateObserve(vodi);
+static void JointStateObserve(void);
 
 void MechanicalArmObserver(void)
 {
@@ -149,7 +153,8 @@ void MechanicalArmObserver(void)
  */
 static void UpdateMotorStatus(void)
 {
-    for (uint8_t i = 0; i < 6; i++) {
+    uint8_t i;
+    for (i = 0; i < 6; i++) {
         GetMotorMeasure(&MECHANICAL_ARM.joint_motor[i]);
     }
 }
@@ -160,7 +165,8 @@ static void UpdateMotorStatus(void)
  */
 static void JointStateObserve(void)
 {
-    for (uint8_t i = 0; i < 6; i++) {
+    uint8_t i;
+    for (i = 0; i < 6; i++) {
         MECHANICAL_ARM.fdb.joint[i].angle = MECHANICAL_ARM.joint_motor[i].fdb.pos;
         MECHANICAL_ARM.fdb.joint[i].velocity = MECHANICAL_ARM.joint_motor[i].fdb.vel;
         MECHANICAL_ARM.fdb.joint[i].torque = MECHANICAL_ARM.joint_motor[i].fdb.tor;
@@ -169,9 +175,33 @@ static void JointStateObserve(void)
 
 /******************************************************************/
 /* Reference                                                      */
+/*----------------------------------------------------------------*/
+/* main function:       MechanicalArmReference                     */
 /******************************************************************/
 
-void MechanicalArmReference(void) {}
+void MechanicalArmReference(void)
+{
+    uint8_t i;
+    switch (MECHANICAL_ARM.mode) {
+        case MECHANICAL_ARM_CUSTOM: {
+            MECHANICAL_ARM.ref.joint[J0].angle = MECHANICAL_ARM.rc->rc.ch[4] * RC_TO_ONE * M_PI;
+            MECHANICAL_ARM.ref.joint[J1].angle = MECHANICAL_ARM.rc->rc.ch[0] * RC_TO_ONE * M_PI;
+            MECHANICAL_ARM.ref.joint[J2].angle = MECHANICAL_ARM.rc->rc.ch[1] * RC_TO_ONE * M_PI;
+            MECHANICAL_ARM.ref.joint[J3].angle = 0;
+            MECHANICAL_ARM.ref.joint[J4].angle = MECHANICAL_ARM.rc->rc.ch[2] * RC_TO_ONE * M_PI;
+            MECHANICAL_ARM.ref.joint[J5].angle = MECHANICAL_ARM.rc->rc.ch[3] * RC_TO_ONE * M_PI;
+        } break;
+        case MECHANICAL_ARM_DEBUG:
+        case MECHANICAL_ARM_FOLLOW:
+        case MECHANICAL_ARM_CALIBRATE:
+        case MECHANICAL_ARM_SAFE:
+        default: {
+            for (i = 0; i < 6; i++) {
+                MECHANICAL_ARM.ref.joint[i].velocity = 0;
+            }
+        }
+    }
+}
 
 /******************************************************************/
 /* Console                                                        */
@@ -208,7 +238,7 @@ void MechanicalArmSendCmd(void)
     switch (MECHANICAL_ARM.mode) {
         case MECHANICAL_ARM_FOLLOW: {
             ArmSendCmdFollow();
-        }
+        } break;
         case MECHANICAL_ARM_CALIBRATE:
         case MECHANICAL_ARM_DEBUG:
         case MECHANICAL_ARM_CUSTOM:
