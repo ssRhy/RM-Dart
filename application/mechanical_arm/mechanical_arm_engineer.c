@@ -117,7 +117,7 @@ void MechanicalArmHandleException(void) {}
 
 void MechanicalArmSetMode(void)
 {
-    if (MECHANICAL_ARM.mode == MECHANICAL_ARM_CALIBRATE){
+    if (MECHANICAL_ARM.mode == MECHANICAL_ARM_CALIBRATE) {
         return;
     }
 
@@ -134,7 +134,38 @@ void MechanicalArmSetMode(void)
 /* Observer                                                       */
 /******************************************************************/
 
-void MechanicalArmObserver(void) {}
+static void UpdateMotorStatus(void);
+static void JointStateObserve(vodi);
+
+void MechanicalArmObserver(void)
+{
+    UpdateMotorStatus();
+    JointStateObserve();
+}
+
+/**
+ * @brief  更新电机数据
+ * @param  none
+ */
+static void UpdateMotorStatus(void)
+{
+    for (uint8_t i = 0; i < 6; i++) {
+        GetMotorMeasure(&MECHANICAL_ARM.joint_motor[i]);
+    }
+}
+
+/**
+ * @brief  关节状态观测
+ * @param  none
+ */
+static void JointStateObserve(void)
+{
+    for (uint8_t i = 0; i < 6; i++) {
+        MECHANICAL_ARM.fdb.joint[i].angle = MECHANICAL_ARM.joint_motor[i].fdb.pos;
+        MECHANICAL_ARM.fdb.joint[i].velocity = MECHANICAL_ARM.joint_motor[i].fdb.vel;
+        MECHANICAL_ARM.fdb.joint[i].torque = MECHANICAL_ARM.joint_motor[i].fdb.tor;
+    }
+}
 
 /******************************************************************/
 /* Reference                                                      */

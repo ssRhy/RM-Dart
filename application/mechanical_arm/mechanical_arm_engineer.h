@@ -59,8 +59,8 @@ typedef struct
     {
         struct
         {
-            float angle;  // (rad)位置
-            float speed;  // (rad/s)速度
+            float angle;     // (rad)位置
+            float velocity;  // (rad/s)速度
         } joint[JOINT_NUM];
     } ref;
 
@@ -68,9 +68,9 @@ typedef struct
     {
         struct
         {
-            float angle;   // (rad)位置
-            float speed;   // (rad/s)速度
-            float torque;  // (N*m)力矩
+            float angle;     // (rad)位置
+            float velocity;  // (rad/s)速度
+            float torque;    // (N*m)力矩
         } joint[JOINT_NUM];
     } fdb;
 
@@ -78,9 +78,9 @@ typedef struct
     {
         struct
         {
-            float angle;  // (rad)位置
-            float speed;  // (rad/s)速度
-            float value;  // 电流值
+            float angle;     // (rad)位置
+            float velocity;  // (rad/s)速度
+            float value;     // 电流值
         } joint[JOINT_NUM];
     } cmd;
 
