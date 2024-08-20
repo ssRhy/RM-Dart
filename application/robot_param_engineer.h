@@ -63,6 +63,13 @@
 #define JOINT_MOTOR_3_MODE DM_MODE_MIT
 #define JOINT_MOTOR_4_MODE 0
 #define JOINT_MOTOR_5_MODE 0
+
+#define J0_ANGLE_TRANSFORM 0.0f
+#define J1_ANGLE_TRANSFORM 0.0f
+#define J2_ANGLE_TRANSFORM 0.0f
+#define J3_ANGLE_TRANSFORM 0.0f
+#define J4_ANGLE_TRANSFORM 0.0f
+#define J5_ANGLE_TRANSFORM 0.0f
 //upper_limit parameters ---------------------
 #define MAX_JOINT_0_POSITION 6.283185f  //2*M_PI
 #define MAX_JOINT_1_POSITION M_PI

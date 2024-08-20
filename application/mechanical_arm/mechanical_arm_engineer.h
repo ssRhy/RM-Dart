@@ -74,15 +74,15 @@ typedef struct
         } joint[JOINT_NUM];
     } fdb;
 
-    struct
-    {
-        struct
-        {
-            float angle;     // (rad)位置
-            float velocity;  // (rad/s)速度
-            float value;     // 电流值
-        } joint[JOINT_NUM];
-    } cmd;
+    // struct
+    // {
+    //     struct
+    //     {
+    //         float angle;     // (rad)位置
+    //         float velocity;  // (rad/s)速度
+    //         float value;     // 电流值
+    //     } joint[JOINT_NUM];
+    // } cmd;
 
     struct
     {

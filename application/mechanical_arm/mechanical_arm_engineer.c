@@ -176,7 +176,7 @@ static void JointStateObserve(void)
 /******************************************************************/
 /* Reference                                                      */
 /*----------------------------------------------------------------*/
-/* main function:       MechanicalArmReference                     */
+/* main function:       MechanicalArmReference                    */
 /******************************************************************/
 
 void MechanicalArmReference(void)
@@ -205,9 +205,64 @@ void MechanicalArmReference(void)
 
 /******************************************************************/
 /* Console                                                        */
+/*----------------------------------------------------------------*/
+/* main function:       MechanicalArmConsole                      */
 /******************************************************************/
 
-void MechanicalArmConsole(void) {}
+void MechanicalArmConsole(void)
+{
+    switch (MECHANICAL_ARM.mode) {
+        case MECHANICAL_ARM_CUSTOM: {
+            // 优先处理dm电机部分
+            // 位置
+            MECHANICAL_ARM.joint_motor[J1].set.pos =
+                theta_transform(MECHANICAL_ARM.ref.joint[J1].angle, -J1_ANGLE_TRANSFORM, 1, 1);
+            MECHANICAL_ARM.joint_motor[J2].set.pos =
+                theta_transform(MECHANICAL_ARM.ref.joint[J2].angle, -J2_ANGLE_TRANSFORM, 1, 1);
+            MECHANICAL_ARM.joint_motor[J3].set.pos =
+                theta_transform(MECHANICAL_ARM.ref.joint[J3].angle, -J3_ANGLE_TRANSFORM, 1, 1);
+            // 速度
+            MECHANICAL_ARM.joint_motor[J1].set.vel = 0;
+            MECHANICAL_ARM.joint_motor[J2].set.vel = 0;
+            MECHANICAL_ARM.joint_motor[J3].set.vel = 0;
+
+            // 然后再处理dji电机部分，涉及到pid计算
+            // J0
+            PID_calc(
+                &MECHANICAL_ARM.pid.j0[ANGLE_PID], MECHANICAL_ARM.fdb.joint[J0].angle,
+                MECHANICAL_ARM.ref.joint[J0].angle);
+            MECHANICAL_ARM.joint_motor[J0].set.value = PID_calc(
+                &MECHANICAL_ARM.pid.j0[VELOCITY_PID], MECHANICAL_ARM.fdb.joint[J0].velocity,
+                MECHANICAL_ARM.pid.j0[ANGLE_PID].out);
+            // J4
+            PID_calc(
+                &MECHANICAL_ARM.pid.j4[ANGLE_PID], MECHANICAL_ARM.fdb.joint[J4].angle,
+                MECHANICAL_ARM.ref.joint[J4].angle);
+            MECHANICAL_ARM.joint_motor[J4].set.value = PID_calc(
+                &MECHANICAL_ARM.pid.j4[VELOCITY_PID], MECHANICAL_ARM.fdb.joint[J4].velocity,
+                MECHANICAL_ARM.pid.j4[ANGLE_PID].out);
+            // J5
+            PID_calc(
+                &MECHANICAL_ARM.pid.j5[ANGLE_PID], MECHANICAL_ARM.fdb.joint[J5].angle,
+                MECHANICAL_ARM.ref.joint[J5].angle);
+            MECHANICAL_ARM.joint_motor[J5].set.value = PID_calc(
+                &MECHANICAL_ARM.pid.j5[VELOCITY_PID], MECHANICAL_ARM.fdb.joint[J5].velocity,
+                MECHANICAL_ARM.pid.j5[ANGLE_PID].out);
+        } break;
+        case MECHANICAL_ARM_DEBUG:
+        case MECHANICAL_ARM_FOLLOW:
+        case MECHANICAL_ARM_CALIBRATE:
+        case MECHANICAL_ARM_SAFE:
+        default: {
+            MECHANICAL_ARM.joint_motor[J0].set.value = 0;
+            MECHANICAL_ARM.joint_motor[J1].set.vel = 0;
+            MECHANICAL_ARM.joint_motor[J2].set.vel = 0;
+            MECHANICAL_ARM.joint_motor[J3].set.vel = 0;
+            MECHANICAL_ARM.joint_motor[J4].set.value = 0;
+            MECHANICAL_ARM.joint_motor[J5].set.value = 0;
+        }
+    }
+}
 
 /******************************************************************/
 /* SendCmd                                                        */
