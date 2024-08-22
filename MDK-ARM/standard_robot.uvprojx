@@ -3388,6 +3388,11 @@
               <FileType>1</FileType>
               <FilePath>..\application\custom_controller\custom_controller_penguin_mini.c</FilePath>
             </File>
+            <File>
+              <FileName>custom_controller_engineer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\custom_controller\custom_controller_engineer.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

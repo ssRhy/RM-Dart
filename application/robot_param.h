@@ -22,7 +22,7 @@
 #include "struct_typedef.h"
 
 //导入具体的机器人参数配置文件
-#include "robot_param_engineer.h"
+#include "robot_param_engineer_controller.h"
 
 // 选择机器人的各种类型
 #define __DEVELOP 1                // 开发模式
@@ -56,6 +56,10 @@
 
 #ifndef CUSTOM_CONTROLLER_TYPE
 #define CUSTOM_CONTROLLER_TYPE CUSTOM_CONTROLLER_NONE
+#endif
+
+#ifndef CUSTOM_CONTROLLER_MODE
+#define CUSTOM_CONTROLLER_MODE CC_RECEIVER
 #endif
 
 #endif /* ROBOT_PARAM_H */

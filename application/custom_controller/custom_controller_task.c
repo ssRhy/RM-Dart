@@ -19,6 +19,7 @@
 #include "attribute_typedef.h"
 #include "cmsis_os.h"
 #include "custom_controller.h"
+#include "custom_controller_engineer.h"
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
 uint32_t custom_controller_high_water;
