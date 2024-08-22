@@ -19,6 +19,8 @@
 
 #if (CUSTOM_CONTROLLER_TYPE == CUSTOM_CONTROLLER_ENGINEER && CUSTOM_CONTROLLER_MODE == CC_SENDER)
 
+CustomController_s CUSTOM_CONTROLLER;
+
 /******************************************************************/
 /* Publish                                                        */
 /*----------------------------------------------------------------*/
