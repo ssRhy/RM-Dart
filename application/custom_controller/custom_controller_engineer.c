@@ -19,7 +19,38 @@
 
 #if (CUSTOM_CONTROLLER_TYPE == CUSTOM_CONTROLLER_ENGINEER && CUSTOM_CONTROLLER_MODE == CC_SENDER)
 
+/*------------------------------ Macro Definition ------------------------------*/
+
+#define J0 0
+#define J1 1
+#define J2 2
+#define J3 3
+#define J4 4
+#define J5 5
+
+#define JointMotorInit(index)                                                                      \
+    MotorInit(                                                                                     \
+        &CUSTOM_CONTROLLER.joint_motor[index], JOINT_MOTOR_##index##_ID,                           \
+        JOINT_MOTOR_##index##_CAN, JOINT_MOTOR_##index##_TYPE, JOINT_MOTOR_##index##_DIRECTION, 1, \
+        JOINT_MOTOR_##index##_MODE)
+
+#define JointPidInit(index)                                                             \
+    {                                                                                   \
+        float j##index##_pid_velocity[3] = {                                            \
+            KP_JOINT_##index##_VELOCITY, KI_JOINT_##index##_VELOCITY,                   \
+            KD_JOINT_##index##_VELOCITY};                                               \
+        PID_init(                                                                       \
+            &CUSTOM_CONTROLLER.pid.joint[index], PID_POSITION, j##index##_pid_velocity, \
+            MAX_OUT_JOINT_##index##_VELOCITY, MAX_IOUT_JOINT_##index##_VELOCITY);       \
+    }
+#define JointLpfInit(index) \
+    LowPassFilterInit(&CUSTOM_CONTROLLER.lpf.joint[index], J##index##_LPF_ALPHA)
+
+/*------------------------------ Variable Definition ------------------------------*/
+
 CustomController_s CUSTOM_CONTROLLER;
+
+/*------------------------------ Function Definition ------------------------------*/
 
 /******************************************************************/
 /* Publish                                                        */
@@ -37,7 +68,39 @@ void CustomControllerPublish(void) {}
 /* auxiliary function: None                                       */
 /******************************************************************/
 
-void CustomControllerInit(void) {}
+void CustomControllerInit(void)
+{
+    // #Motor init ---------------------
+    JointMotorInit(0);
+    JointMotorInit(1);
+    JointMotorInit(2);
+    JointMotorInit(3);
+    JointMotorInit(4);
+    JointMotorInit(5);
+    // #PID init ---------------------
+    JointPidInit(0);
+    JointPidInit(1);
+    JointPidInit(2);
+    JointPidInit(3);
+    JointPidInit(4);
+    JointPidInit(5);
+    // #LPF init ---------------------
+    JointLpfInit(0);
+    JointLpfInit(1);
+    JointLpfInit(2);
+    JointLpfInit(3);
+    JointLpfInit(4);
+    JointLpfInit(5);
+    // #Initial value setting ---------------------
+    CUSTOM_CONTROLLER.mode = CUSTOM_CONTROLLER_DRAGGING;
+    CUSTOM_CONTROLLER.error_code = 0;
+    CUSTOM_CONTROLLER.transform.pos[J0] = J0_ANGLE_TRANSFORM;
+    CUSTOM_CONTROLLER.transform.pos[J1] = J1_ANGLE_TRANSFORM;
+    CUSTOM_CONTROLLER.transform.pos[J2] = J2_ANGLE_TRANSFORM;
+    CUSTOM_CONTROLLER.transform.pos[J3] = J3_ANGLE_TRANSFORM;
+    CUSTOM_CONTROLLER.transform.pos[J4] = J4_ANGLE_TRANSFORM;
+    CUSTOM_CONTROLLER.transform.pos[J5] = J5_ANGLE_TRANSFORM;
+}
 
 /******************************************************************/
 /* HandleException                                                */

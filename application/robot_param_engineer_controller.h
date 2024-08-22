@@ -68,6 +68,13 @@
 #define MIN_JOINT_2_POSITION 0.0f
 #define MIN_JOINT_3_POSITION 0.0f
 #define MIN_JOINT_4_POSITION 0.0f
+//LPF parameters ---------------------
+#define J0_LPF_ALPHA 0.0f
+#define J1_LPF_ALPHA 0.0f
+#define J2_LPF_ALPHA 0.0f
+#define J3_LPF_ALPHA 0.0f
+#define J4_LPF_ALPHA 0.0f
+#define J5_LPF_ALPHA 0.0f
 //PID parameters ---------------------
 //J0速度环PID参数
 #define KP_JOINT_0_VELOCITY 0.0f
