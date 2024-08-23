@@ -9,7 +9,6 @@
 #include "robot_typedef.h"
 
 #define MECHANICAL_ARM_TYPE MECHANICAL_ARM_ENGINEER_ARM    // 选择机械臂类型
-#define CUSTOM_CONTROLLER_TYPE CUSTOM_CONTROLLER_ENGINEER  // 选择自定义控制器类型
 
 // 机器人物理参数
 
