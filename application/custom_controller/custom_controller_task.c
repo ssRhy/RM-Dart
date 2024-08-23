@@ -22,11 +22,14 @@
 #include "attribute_typedef.h"
 #include "cmsis_os.h"
 #include "custom_controller.h"
+#include "custom_controller_connect.h"
 #include "custom_controller_engineer.h"
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
 uint32_t custom_controller_high_water;
 #endif
+
+static uint32_t lastTick = 0;
 
 __weak void CustomControllerPublish(void);
 __weak void CustomControllerInit(void);
@@ -62,6 +65,11 @@ void custom_controller_task(void const * pvParameters)
         CustomControllerConsole();
         // 发送控制量
         CustomControllerSendCmd();
+
+        // 发送数据至操作者电脑
+        if (xTaskGetTickCount() - lastTick > CUSTOM_CONTROLLER_SEND_TIME) {
+            SendDataToPC((uint8_t *)&cc_control_data);
+        }
 
         // 系统延时
         vTaskDelay(CUSTOM_CONTROLLER_CONTROL_TIME);
