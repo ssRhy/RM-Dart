@@ -20,6 +20,7 @@
 #if (CUSTOM_CONTROLLER_TYPE == CUSTOM_CONTROLLER_ENGINEER)
 
 #include "CAN_communication.h"
+#include "custom_controller.h"
 #include "string.h"
 
 /*------------------------------ Macro Definition ------------------------------*/
@@ -139,11 +140,26 @@ void CustomControllerObserver(void)
         GetMotorMeasure(&CUSTOM_CONTROLLER.joint_motor[i]);
     }
     // 获取观测值
+    float pos;
     for (i = 0; i < JOINT_NUM; i++) {
-        CUSTOM_CONTROLLER.fdb.joint[i].pos = theta_transform(
+        pos = theta_transform(
             CUSTOM_CONTROLLER.joint_motor[i].fdb.pos, CUSTOM_CONTROLLER.transform.pos[i], 1, 1);
+        CUSTOM_CONTROLLER.fdb.joint[i].dpos = pos - CUSTOM_CONTROLLER.fdb.joint[i].pos;
+        CUSTOM_CONTROLLER.fdb.joint[i].pos = pos;
         CUSTOM_CONTROLLER.fdb.joint[i].vel = CUSTOM_CONTROLLER.joint_motor[i].fdb.vel;
     }
+
+    // 更新机械臂控制数据
+    cc_control_data.pos[0] = CUSTOM_CONTROLLER.fdb.joint[0].pos;
+    cc_control_data.pos[1] = CUSTOM_CONTROLLER.fdb.joint[1].pos;
+    cc_control_data.pos[2] = CUSTOM_CONTROLLER.fdb.joint[2].pos;
+    cc_control_data.pos[3] = CUSTOM_CONTROLLER.fdb.joint[3].pos;
+
+    cc_control_data.pos[4] += CUSTOM_CONTROLLER.fdb.joint[4].dpos;
+    cc_control_data.pos[5] += CUSTOM_CONTROLLER.fdb.joint[4].dpos;
+
+    cc_control_data.pos[4] += CUSTOM_CONTROLLER.fdb.joint[5].dpos;
+    cc_control_data.pos[5] -= CUSTOM_CONTROLLER.fdb.joint[5].dpos;
 }
 
 /******************************************************************/

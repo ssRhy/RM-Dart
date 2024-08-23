@@ -59,8 +59,9 @@ typedef struct
     {
         struct
         {
-            float pos;  // (rad)位置
-            float vel;  // (rad/s)速度
+            float pos;   // (rad)位置
+            float dpos;  // (rad)位置差
+            float vel;   // (rad/s)速度
         } joint[JOINT_NUM];
     } fdb;
 
