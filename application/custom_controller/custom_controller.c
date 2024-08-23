@@ -3,6 +3,6 @@
 #include <stdlib.h>
 
 CustomControllerApi_t custom_controller = {
-    .CustomControllerPublish = NULL,
+    .Blank = NULL,
 };
 /*------------------------------ End of File ------------------------------*/

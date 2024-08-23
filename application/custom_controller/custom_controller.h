@@ -7,7 +7,7 @@
 
 typedef struct 
 {
-    void (*CustomControllerPublish)(void);
+    void (*Blank)(void);
 }CustomControllerApi_t;
 
 extern CustomControllerApi_t custom_controller;

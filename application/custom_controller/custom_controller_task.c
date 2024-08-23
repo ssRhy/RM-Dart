@@ -7,6 +7,8 @@
   *  Version    Date            Author          Modification
   *  V1.0.0     May-27-2024     Penguin         1. 完成基本框架
   *  V1.0.1     Aug-23-2024     Penguin         1. 将接收和发送模式分开
+  *  V1.0.2     Aug-23-2024     Penguin         1. 定义了自定义控制器的统一控制协议，
+  *                                                无需再区分发送和接收模式了
   *
   @verbatim
   ==============================================================================
@@ -28,16 +30,12 @@ uint32_t custom_controller_high_water;
 
 __weak void CustomControllerPublish(void);
 __weak void CustomControllerInit(void);
-#if CUSTOM_CONTROLLER_MODE == CC_SENDER
 __weak void CustomControllerHandleException(void);
 __weak void CustomControllerSetMode(void);
 __weak void CustomControllerObserver(void);
 __weak void CustomControllerReference(void);
 __weak void CustomControllerConsole(void);
 __weak void CustomControllerSendCmd(void);
-#elif CUSTOM_CONTROLLER_MODE == CC_RECEIVER
-__weak void CustomControllerGetCmd(void);
-#endif // CUSTOM_CONTROLLER_MODE
 
 /**
  * @brief          自定义控制器任务
@@ -52,7 +50,6 @@ void custom_controller_task(void const * pvParameters)
     CustomControllerInit();
 
     while (1) {
-#if CUSTOM_CONTROLLER_MODE == CC_SENDER
         // 更新状态量
         CustomControllerObserver();
         // 处理异常
@@ -65,10 +62,6 @@ void custom_controller_task(void const * pvParameters)
         CustomControllerConsole();
         // 发送控制量
         CustomControllerSendCmd();
-#elif CUSTOM_CONTROLLER_MODE == CC_RECEIVER
-        // 获取自定义控制器链路控制信息
-        CustomControllerGetCmd();
-#endif // CUSTOM_CONTROLLER_MODE
 
         // 系统延时
         vTaskDelay(CUSTOM_CONTROLLER_CONTROL_TIME);
@@ -92,7 +85,6 @@ __weak void CustomControllerInit(void)
     */
 }
 
-#if CUSTOM_CONTROLLER_MODE == CC_SENDER
 __weak void CustomControllerHandleException(void)
 {
     /* 
@@ -129,12 +121,4 @@ __weak void CustomControllerSendCmd(void)
      NOTE : 在其他文件中定义具体内容
     */
 }
-#elif CUSTOM_CONTROLLER_MODE == CC_RECEIVER
-__weak void CustomControllerGetCmd(void)
-{
-    /* 
-     NOTE : 在其他文件中定义具体内容
-    */
-}
-#endif // CUSTOM_CONTROLLER_MODE
 /*------------------------------ End of File ------------------------------*/

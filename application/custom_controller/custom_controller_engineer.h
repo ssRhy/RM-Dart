@@ -20,7 +20,6 @@
 #include "robot_param.h"
 
 #if (CUSTOM_CONTROLLER_TYPE == CUSTOM_CONTROLLER_ENGINEER)
-#if (CUSTOM_CONTROLLER_MODE == CC_SENDER)
 
 #include "motor.h"
 #include "pid.h"
@@ -91,11 +90,6 @@ extern void CustomControllerReference(void);
 extern void CustomControllerConsole(void);
 extern void CustomControllerSendCmd(void);
 
-#elif (CUSTOM_CONTROLLER_MODE == CC_RECEIVER)
-
-extern void CustomControllerGetCmd(void);
-
-#endif  // CUSTOM_CONTROLLER_MODE
 #endif  // CUSTOM_CONTROLLER_TYPE
 #endif  // CUSTOM_CONTROLLER_ENGINEER_H
 /*------------------------------ End of File ------------------------------*/

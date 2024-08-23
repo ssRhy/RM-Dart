@@ -9,7 +9,6 @@
 #include "robot_typedef.h"
 
 #define CUSTOM_CONTROLLER_TYPE CUSTOM_CONTROLLER_ENGINEER  // 选择自定义控制器类型
-#define CUSTOM_CONTROLLER_MODE CC_SENDER                   // 自定义控制器模式
 
 // 机器人物理参数
 /*-------------------- Custom Controller --------------------*/
