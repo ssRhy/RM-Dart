@@ -42,7 +42,7 @@ typedef enum {
 typedef struct
 {
     CustomControllerMode_e mode;  // 机械臂模式
-    uint8_t error_code;        // 机械臂错误代码
+    uint8_t error_code;           // 机械臂错误代码
 
     /*-------------------- Motors --------------------*/
     Motor_s joint_motor[JOINT_NUM];
@@ -52,7 +52,7 @@ typedef struct
     {
         struct
         {
-            float velocity;  // (rad/s)速度
+            float vel;  // (rad/s)速度
         } joint[JOINT_NUM];
     } ref;
 
@@ -60,8 +60,8 @@ typedef struct
     {
         struct
         {
-            float angle;     // (rad)位置
-            float velocity;  // (rad/s)速度
+            float pos;  // (rad)位置
+            float vel;  // (rad/s)速度
         } joint[JOINT_NUM];
     } fdb;
 

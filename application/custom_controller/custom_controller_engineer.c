@@ -20,6 +20,9 @@
 #if (CUSTOM_CONTROLLER_TYPE == CUSTOM_CONTROLLER_ENGINEER)
 #if (CUSTOM_CONTROLLER_MODE == CC_SENDER)
 
+#include "CAN_communication.h"
+#include "string.h"
+
 /*------------------------------ Macro Definition ------------------------------*/
 
 #define J0 0
@@ -93,6 +96,7 @@ void CustomControllerInit(void)
     JointLpfInit(4);
     JointLpfInit(5);
     // #Initial value setting ---------------------
+    memset(&CUSTOM_CONTROLLER.ref, 0, sizeof(CUSTOM_CONTROLLER.ref));  // 目标量置零
     CUSTOM_CONTROLLER.mode = CUSTOM_CONTROLLER_DRAGGING;
     CUSTOM_CONTROLLER.error_code = 0;
     CUSTOM_CONTROLLER.transform.pos[J0] = J0_ANGLE_TRANSFORM;
@@ -128,7 +132,20 @@ void CustomControllerSetMode(void) {}
 /* auxiliary function: None                                       */
 /******************************************************************/
 
-void CustomControllerObserver(void) {}
+void CustomControllerObserver(void)
+{
+    uint8_t i;
+    // 更新电机测量数据
+    for (i = 0; i < JOINT_NUM; i++) {
+        GetMotorMeasure(&CUSTOM_CONTROLLER.joint_motor[i]);
+    }
+    // 获取观测值
+    for (i = 0; i < JOINT_NUM; i++) {
+        CUSTOM_CONTROLLER.fdb.joint[i].pos = theta_transform(
+            CUSTOM_CONTROLLER.joint_motor[i].fdb.pos, CUSTOM_CONTROLLER.transform.pos[i], 1, 1);
+        CUSTOM_CONTROLLER.fdb.joint[i].vel = CUSTOM_CONTROLLER.joint_motor[i].fdb.vel;
+    }
+}
 
 /******************************************************************/
 /* Reference                                                      */
@@ -146,7 +163,16 @@ void CustomControllerReference(void) {}
 /* auxiliary function: None                                       */
 /******************************************************************/
 
-void CustomControllerConsole(void) {}
+void CustomControllerConsole(void)
+{
+    uint8_t i;
+    // 计算控制量
+    for (i = 0; i < JOINT_NUM; i++) {
+        CUSTOM_CONTROLLER.joint_motor[i].set.value = PID_calc(
+            &CUSTOM_CONTROLLER.pid.joint[i], CUSTOM_CONTROLLER.fdb.joint[i].vel,
+            CUSTOM_CONTROLLER.ref.joint[i].vel);
+    }
+}
 
 /******************************************************************/
 /* SendCmd                                                        */
@@ -155,7 +181,21 @@ void CustomControllerConsole(void) {}
 /* auxiliary function: None                                       */
 /******************************************************************/
 
-void CustomControllerSendCmd(void) {}
+void CustomControllerSendCmd(void)
+{
+    // clang-format off
+    CanCmdDjiMotor(
+        1, DJI_6020_MODE_VOLTAGE_1, 
+        CUSTOM_CONTROLLER.joint_motor[0].set.value,
+        CUSTOM_CONTROLLER.joint_motor[1].set.value, 
+        CUSTOM_CONTROLLER.joint_motor[2].set.value, 0);
+    CanCmdDjiMotor(
+        2, DJI_3508_MODE_CURRENT_1, 
+        CUSTOM_CONTROLLER.joint_motor[3].set.value,
+        CUSTOM_CONTROLLER.joint_motor[4].set.value, 
+        CUSTOM_CONTROLLER.joint_motor[5].set.value, 0);
+    // clang-format on
+}
 
 #elif (CUSTOM_CONTROLLER_MODE == CC_RECEIVER)
 
@@ -166,7 +206,7 @@ void CustomControllerSendCmd(void) {}
 /* auxiliary function: None                                       */
 /******************************************************************/
 
-void CustomControllerGetCmd(void){}
+void CustomControllerGetCmd(void) {}
 
 #endif  // CUSTOM_CONTROLLER_MODE
 #endif  // CUSTOM_CONTROLLER_TYPE

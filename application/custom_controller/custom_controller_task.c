@@ -6,7 +6,7 @@
   * @history
   *  Version    Date            Author          Modification
   *  V1.0.0     May-27-2024     Penguin         1. 完成基本框架
-  *  V1.0.0     Aug-23-2024     Penguin         1. 将接收和发送模式分开
+  *  V1.0.1     Aug-23-2024     Penguin         1. 将接收和发送模式分开
   *
   @verbatim
   ==============================================================================
