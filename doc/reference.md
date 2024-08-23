@@ -36,3 +36,8 @@
     > 交龙的 10 变量控制模型。之前尝试照着做了一下仿真，没成功做出来，就先搁置了。
 - [上交平衡步兵模型。理论，仿真，源码详细讲解。助您快速上手。](https://www.bilibili.com/video/BV1cw4m1i7fj/?spm_id_from=333.337.search-card.all.click&vd_source=59764b46a0e4b4b4e2a08a3c20f8be23)
     > `@TI的小破站` 做的平步详解，可以看看。
+
+## 自定义控制器
+
+- [【RM2023-自定义控制器图传链路通信开源】上海大学-SRM战队](https://bbs.robomaster.com/forum.php?mod=viewthread&tid=22907&fromuid=70626
+)
