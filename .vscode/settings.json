@@ -117,7 +117,10 @@
         "portable.h": "c",
         "projdefs.h": "c",
         "freertosconfig.h": "c",
-        "robot_param_engineer.h": "c"
+        "robot_param_engineer.h": "c",
+        "mechanical_arm_engineer.h": "c",
+        "robot_param_engineer_controller.h": "c",
+        "custom_controller_engineer.h": "c"
     },
     "C_Cpp.codeAnalysis.clangTidy.enabled": true,
     "[cpp]": {

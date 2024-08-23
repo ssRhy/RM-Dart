@@ -56,15 +56,4 @@ void SendDataToPC(uint8_t * data)
     HAL_UART_Transmit(&huart1, (uint8_t *)(&TX_DATA), sizeof(TX_DATA), 50);
 }
 
-/*-------------------- Receive --------------------*/
-
-void EngineeringCustomControllerRxDecode(
-    EngineerCustomControllerData_t * engineer_custom_controller_data)
-{
-    CustomControllerData_t * custom_controller_data = GetCustomControllerDataPoint();
-    memcpy(
-        engineer_custom_controller_data, custom_controller_data->data,
-        sizeof(EngineerCustomControllerData_t));
-}
-
 /************************ END OF FILE ************************/
