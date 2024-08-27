@@ -20,8 +20,15 @@
 
 #include "attribute_typedef.h"
 #include "cmsis_os.h"
-#include "shoot.h"
 #include "shoot_fric_trigger.h"
+
+#ifndef SHOOT_TASK_INIT_TIME
+#define SHOOT_TASK_INIT_TIME 201
+#endif  // SHOOT_TASK_INIT_TIME
+
+#ifndef SHOOT_CONTROL_TIME
+#define SHOOT_CONTROL_TIME 1
+#endif  // SHOOT_CONTROL_TIME
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
 uint32_t shoot_high_water;

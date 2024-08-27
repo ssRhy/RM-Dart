@@ -17,7 +17,24 @@
 
 #include "chassis.h"
 
+#if CHASSIS_TYPE != CHASSIS_NONE
+
 #include <math.h>
+
+#include "chassis_balance.h"
+#include "chassis_mecanum.h"
+#include "chassis_omni.h"
+#include "chassis_steering.h"
+
+ChassisApi_t chassis = {
+    .SetCali = SetCali,
+    .CmdCali = CmdCali,
+    .GetStatus = GetStatus,
+    .GetDuration = GetDuration,
+    .GetSpeedVx = GetSpeedVx,
+    .GetSpeedVy = GetSpeedVy,
+    .GetSpeedWz = GetSpeedWz,
+};
 
 /**
  * @brief          将速度向量从云台坐标系下转换到底盘坐标系下
@@ -31,3 +48,5 @@ void GimbalSpeedVectorToChassisSpeedVector(ChassisSpeedVector_t * speed_vector_s
     speed_vector_set->vx = vx_chassis;
     speed_vector_set->vy = vy_chassis;
 }
+#endif  // CHASSIS_TYPE
+/*------------------------------ End of File ------------------------------*/

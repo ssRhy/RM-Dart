@@ -20,7 +20,6 @@
 #include "chassis_task.h"
 
 #include "attribute_typedef.h"
-#include "chassis.h"
 #include "chassis_balance.h"
 #include "chassis_mecanum.h"
 #include "chassis_omni.h"

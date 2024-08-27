@@ -17,3 +17,11 @@
   */
 
 #include "shoot.h"
+
+#if SHOOT_TYPE != SHOOT_NONE
+ShootApi_t shoot = {
+    .GetStatus = GetStatus,
+    .GetDuration = GetDuration,
+};
+#endif  // SHOOT_TYPE
+/*------------------------------ End of File ------------------------------*/

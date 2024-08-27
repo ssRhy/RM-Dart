@@ -16,3 +16,14 @@
   */
 
 #include "gimbal.h"
+
+#if GIMBAL_TYPE != GIMBAL_NONE
+GimbalApi_t gimbal = {
+    .SetCali = SetCali,
+    .CmdCali = CmdCali,
+    .GetStatus = GetStatus,
+    .GetDuration = GetDuration,
+    .GetYawMid = GetYawMid,
+};
+#endif  // GIMBAL_TYPE
+/*------------------------------ End of File ------------------------------*/

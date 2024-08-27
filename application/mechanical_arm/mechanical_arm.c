@@ -17,4 +17,12 @@
 
 #include "mechanical_arm.h"
 
-
+#if MECHANICAL_ARM_TYPE != MECHANICAL_ARM_NONE
+MechanicalArmApi_t mechanical_arm = {
+    .SetCali = SetCali,
+    .CmdCali = CmdCali,
+    .GetStatus = GetStatus,
+    .GetDuration = GetDuration,
+};
+#endif  // MECHANICAL_ARM_TYPR
+/*------------------------------ End of File ------------------------------*/
