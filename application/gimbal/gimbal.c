@@ -18,12 +18,22 @@
 #include "gimbal.h"
 
 #if GIMBAL_TYPE != GIMBAL_NONE
+
+#include <stdlib.h>
+
+// GimbalApi_t gimbal = {
+//     .SetCali = SetCali,
+//     .CmdCali = CmdCali,
+//     .GetStatus = GetStatus,
+//     .GetDuration = GetDuration,
+//     .GetYawMid = GetYawMid,
+// };
 GimbalApi_t gimbal = {
-    .SetCali = SetCali,
-    .CmdCali = CmdCali,
-    .GetStatus = GetStatus,
-    .GetDuration = GetDuration,
-    .GetYawMid = GetYawMid,
+    .SetCali = NULL,
+    .CmdCali = NULL,
+    .GetStatus = NULL,
+    .GetDuration = NULL,
+    .GetYawMid = NULL,
 };
 #endif  // GIMBAL_TYPE
 /*------------------------------ End of File ------------------------------*/

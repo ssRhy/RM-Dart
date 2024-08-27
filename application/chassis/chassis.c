@@ -20,20 +20,31 @@
 #if CHASSIS_TYPE != CHASSIS_NONE
 
 #include <math.h>
+#include <stdlib.h>
 
 #include "chassis_balance.h"
 #include "chassis_mecanum.h"
 #include "chassis_omni.h"
 #include "chassis_steering.h"
 
+// ChassisApi_t chassis = {
+//     .SetCali = SetCali,
+//     .CmdCali = CmdCali,
+//     .GetStatus = GetStatus,
+//     .GetDuration = GetDuration,
+//     .GetSpeedVx = GetSpeedVx,
+//     .GetSpeedVy = GetSpeedVy,
+//     .GetSpeedWz = GetSpeedWz,
+// };
+
 ChassisApi_t chassis = {
-    .SetCali = SetCali,
-    .CmdCali = CmdCali,
-    .GetStatus = GetStatus,
-    .GetDuration = GetDuration,
-    .GetSpeedVx = GetSpeedVx,
-    .GetSpeedVy = GetSpeedVy,
-    .GetSpeedWz = GetSpeedWz,
+    .SetCali = NULL,
+    .CmdCali = NULL,
+    .GetStatus = NULL,
+    .GetDuration = NULL,
+    .GetSpeedVx = NULL,
+    .GetSpeedVy = NULL,
+    .GetSpeedWz = NULL,
 };
 
 /**

@@ -18,11 +18,20 @@
 #include "mechanical_arm.h"
 
 #if MECHANICAL_ARM_TYPE != MECHANICAL_ARM_NONE
+
+#include <stdlib.h>
+
+// MechanicalArmApi_t mechanical_arm = {
+//     .SetCali = SetCali,
+//     .CmdCali = CmdCali,
+//     .GetStatus = GetStatus,
+//     .GetDuration = GetDuration,
+// };
 MechanicalArmApi_t mechanical_arm = {
-    .SetCali = SetCali,
-    .CmdCali = CmdCali,
-    .GetStatus = GetStatus,
-    .GetDuration = GetDuration,
+    .SetCali = NULL,
+    .CmdCali = NULL,
+    .GetStatus = NULL,
+    .GetDuration = NULL,
 };
 #endif  // MECHANICAL_ARM_TYPR
 /*------------------------------ End of File ------------------------------*/
