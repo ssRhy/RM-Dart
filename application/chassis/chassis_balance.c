@@ -15,7 +15,6 @@
   @endverbatim
   
   @todo:
-    1.添加腿角控制
     2.添加状态清零，当运行过程中出现异常时可以手动将底盘状态清零
 
   ****************************(C) COPYRIGHT 2024 Polarbear****************************
@@ -151,13 +150,9 @@ void ChassisInit(void)
         MAX_IOUT_CHASSIS_PITCH_VELOCITY);
 #else
     float roll_angle_pid[3] = {KP_CHASSIS_ROLL_ANGLE, KI_CHASSIS_ROLL_ANGLE, KD_CHASSIS_ROLL_ANGLE};
-    // float roll_velocity_pid[3] = {
-    //     KP_CHASSIS_ROLL_VELOCITY, KI_CHASSIS_ROLL_VELOCITY, KD_CHASSIS_ROLL_VELOCITY};
 
     float leg_length_length_pid[3] = {
         KP_CHASSIS_LEG_LENGTH_LENGTH, KI_CHASSIS_LEG_LENGTH_LENGTH, KD_CHASSIS_LEG_LENGTH_LENGTH};
-    // float leg_length_speed_pid[3] = {
-    //     KP_CHASSIS_LEG_LENGTH_SPEED, KI_CHASSIS_LEG_LENGTH_SPEED, KD_CHASSIS_LEG_LENGTH_SPEED};
 
     float leg_angle_angle_pid[3] = {
         KP_CHASSIS_LEG_ANGLE_ANGLE, KI_CHASSIS_LEG_ANGLE_ANGLE, KD_CHASSIS_LEG_ANGLE_ANGLE};
@@ -165,23 +160,14 @@ void ChassisInit(void)
     PID_init(
         &CHASSIS.pid.roll_angle, PID_POSITION, roll_angle_pid, MAX_OUT_CHASSIS_ROLL_ANGLE,
         MAX_IOUT_CHASSIS_ROLL_ANGLE);
-    // PID_init(
-    //     &CHASSIS.pid.roll_velocity, PID_POSITION, roll_velocity_pid, MAX_OUT_CHASSIS_ROLL_VELOCITY,
-    //     MAX_IOUT_CHASSIS_ROLL_VELOCITY);
 
     PID_init(
         &CHASSIS.pid.leg_length_length[0], PID_POSITION, leg_length_length_pid,
         MAX_OUT_CHASSIS_LEG_LENGTH_LENGTH, MAX_IOUT_CHASSIS_LEG_LENGTH_LENGTH);
-    // PID_init(
-    //     &CHASSIS.pid.leg_length_left_speed, PID_POSITION, leg_length_speed_pid,
-    //     MAX_OUT_CHASSIS_LEG_LENGTH_SPEED, MAX_IOUT_CHASSIS_LEG_LENGTH_SPEED);
 
     PID_init(
         &CHASSIS.pid.leg_length_length[1], PID_POSITION, leg_length_length_pid,
         MAX_OUT_CHASSIS_LEG_LENGTH_LENGTH, MAX_IOUT_CHASSIS_LEG_LENGTH_LENGTH);
-    // PID_init(
-    //     &CHASSIS.pid.leg_length_right_speed, PID_POSITION, leg_length_speed_pid,
-    //     MAX_OUT_CHASSIS_LEG_LENGTH_SPEED, MAX_IOUT_CHASSIS_LEG_LENGTH_SPEED);
 
     PID_init(
         &CHASSIS.pid.leg_angle_angle, PID_POSITION, leg_angle_angle_pid,
@@ -276,40 +262,8 @@ void ChassisHandleException(void)
 static void GroundTouchDectect(void)
 {
     for (uint8_t i = 0; i < 2; i++) {
-        // float Theta = CHASSIS.fdb.leg[i].rod.Angle - M_PI_2 - CHASSIS.imu->pitch;
-        // float dTheta = CHASSIS.fdb.leg[i].rod.dAngle - CHASSIS.imu->pitch_vel;
-        // float ddTheta = CHASSIS.fdb.leg[i].rod.ddAngle;
 
-        // float L0 = CHASSIS.fdb.leg[i].rod.Length;
-        // float dL0 = CHASSIS.fdb.leg[i].rod.dLength;
-        // float ddL0 = CHASSIS.fdb.leg[i].rod.ddLength;
-
-        // float ddz_M = CHASSIS.imu->z_accel - GRAVITY;
-        // float ddz_w = ddz_M - ddL0 * cosf(Theta) + 2 * dL0 * dTheta * sinf(Theta) +
-        //               L0 * ddTheta * sinf(Theta) + L0 * dTheta * dTheta * cosf(Theta);
-
-        // float F = CHASSIS.ref.leg[i].rod.F;
-        // float Tp = CHASSIS.ref.leg[i].rod.Tp;
-        // float P = F * cosf(Theta) + Tp * sinf(Theta) / L0;
-
-        // float Fn = P + WHEEL_MASS * GRAVITY + WHEEL_MASS * ddz_w;
-        // GROUND_TOUCH.support_force[i] = LowPassFilterCalc(&CHASSIS.lpf.support_force_filter[i], Fn);
-
-        // if (i == 1) {
-        //     OutputPCData.packets[15].data = P;
-        //     OutputPCData.packets[16].data = WHEEL_MASS * GRAVITY;
-        //     OutputPCData.packets[17].data = ddz_w;
-        //     OutputPCData.packets[18].data = Theta;
-        //     OutputPCData.packets[19].data = F;
-        //     OutputPCData.packets[20].data = Tp;
-        // }
     }
-
-    // GROUND_TOUCH.support_force[0] =
-    //     CHASSIS.ref.leg[0].rod.F +
-    //     LEG_MASS * (GRAVITY - (CHASSIS.fdb.leg[0].rod.ddLength - CHASSIS.imu->z_accel));
-
-    // bool touch = false;
 
     uint32_t now = HAL_GetTick();
     if (now - GROUND_TOUCH.touch_time < MAX_TOUCH_INTERVAL) {
@@ -435,28 +389,6 @@ void ChassisObserver(void)
     UpdateCalibrateStatus();
 
     BodyMotionObserve();
-
-    // OutputPCData.packets[0].data = CHASSIS.fdb.leg[0].rod.L0;
-    // OutputPCData.packets[1].data = CHASSIS.fdb.leg[1].rod.L0;
-    // OutputPCData.packets[2].data = CHASSIS.ref.rod_L0[0];
-    // OutputPCData.packets[3].data = CHASSIS.ref.rod_L0[1];
-    // OutputPCData.packets[4].data = CHASSIS.fdb.leg[0].state.theta;
-    // OutputPCData.packets[5].data = CHASSIS.fdb.leg[0].state.theta_dot;
-    // OutputPCData.packets[6].data = CHASSIS.fdb.leg[0].state.x;
-    // OutputPCData.packets[7].data = CHASSIS.fdb.leg[0].state.x_dot;
-    // OutputPCData.packets[8].data = CHASSIS.fdb.leg[0].state.phi;
-    // OutputPCData.packets[9].data = CHASSIS.fdb.leg[0].state.phi_dot;
-    // OutputPCData.packets[10].data = CHASSIS.joint_motor[1].set.tor;
-    // OutputPCData.packets[11].data = CHASSIS.joint_motor[2].set.tor;
-    // OutputPCData.packets[12].data = CHASSIS.joint_motor[3].set.tor;
-    // OutputPCData.packets[13].data = GROUND_TOUCH.support_force[0];
-    // OutputPCData.packets[14].data = GROUND_TOUCH.support_force[1];
-    // OutputPCData.packets[15].data = CHASSIS.imu->roll;
-    // OutputPCData.packets[16].data = CHASSIS.wheel_motor[0].set.tor;
-    // OutputPCData.packets[17].data = CHASSIS.wheel_motor[1].set.tor;
-    // OutputPCData.packets[18].data = CHASSIS.wheel_motor[0].set.tor;
-    // OutputPCData.packets[19].data = CHASSIS.wheel_motor[1].set.tor;
-    // OutputPCData.packets[20].data = CHASSIS.imu->z_accel;
 }
 
 /**
@@ -608,8 +540,8 @@ static void BodyMotionObserve(void)
     OBSERVER.body.v_kf.MeasuredVector[1] = CHASSIS.fdb.body.x_accel;
     OBSERVER.body.v_kf.F_data[1] = CHASSIS.duration;
     Kalman_Filter_Update(&OBSERVER.body.v_kf);
-    // CHASSIS.fdb.body.x_dot = OBSERVER.body.v_kf.xhat_data[0];
-    // CHASSIS.fdb.body.x_accel = OBSERVER.body.v_kf.xhat_data[1];
+    CHASSIS.fdb.body.x_dot = OBSERVER.body.v_kf.xhat_data[0];
+    CHASSIS.fdb.body.x_accel = OBSERVER.body.v_kf.xhat_data[1];
 }
 
 /******************************************************************/
