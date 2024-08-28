@@ -19,8 +19,16 @@
 
 #include "attribute_typedef.h"
 #include "cmsis_os.h"
-#include "mechanical_arm.h"
 #include "mechanical_arm_penguin_mini.h"
+#include "mechanical_arm_engineer.h"
+
+#ifndef MECHANICAL_ARM_TASK_INIT_TIME
+#define MECHANICAL_ARM_TASK_INIT_TIME 201
+#endif  // MECHANICAL_ARM_TASK_INIT_TIME
+
+#ifndef MECHANICAL_ARM_CONTROL_TIME
+#define MECHANICAL_ARM_CONTROL_TIME 1
+#endif  // MECHANICAL_ARM_CONTROL_TIME
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
 uint32_t mechanical_arm_high_water;

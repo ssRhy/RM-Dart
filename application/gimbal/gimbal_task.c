@@ -21,9 +21,16 @@
 
 #include "attribute_typedef.h"
 #include "cmsis_os.h"
-#include "gimbal.h"
 #include "gimbal_yaw_pitch_direct.h"
 #include "usb_debug.h"
+
+#ifndef GIMBAL_TASK_INIT_TIME
+#define GIMBAL_TASK_INIT_TIME 200
+#endif  // GIMBAL_TASK_INIT_TIME
+
+#ifndef GIMBAL_CONTROL_TIME
+#define GIMBAL_CONTROL_TIME 1
+#endif  // GIMBAL_CONTROL_TIME
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
 uint32_t gimbal_high_water;
