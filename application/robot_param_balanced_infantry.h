@@ -274,8 +274,9 @@
 #define MAX_OUT_CHASSIS_WHEEL_STOP  (500.0f)
 
 //LPF parameters ---------------------
-#define LEG_DDLENGTH_LPF_ALPHA       (0.1f)
-#define LEG_DDANGLE_LPF_ALPHA        (0.1f)
+#define LEG_DDL0_LPF_ALPHA           (0.1f)
+#define LEG_DDPHI0_LPF_ALPHA         (0.1f)
+#define LEG_DDTHETA_LPF_ALPHA        (0.1f)
 #define LEG_SUPPORT_FORCE_LPF_ALPHA  (0.1f)
 
 //other parameters ---------------------

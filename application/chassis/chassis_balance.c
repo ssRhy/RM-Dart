@@ -188,11 +188,14 @@ void ChassisInit(void)
         MAX_IOUT_CHASSIS_WHEEL_STOP);
 
     // 初始化低通滤波器
-    LowPassFilterInit(&CHASSIS.lpf.leg_length_accel_filter[0], LEG_DDLENGTH_LPF_ALPHA);
-    LowPassFilterInit(&CHASSIS.lpf.leg_length_accel_filter[1], LEG_DDLENGTH_LPF_ALPHA);
+    LowPassFilterInit(&CHASSIS.lpf.leg_l0_accel_filter[0], LEG_DDL0_LPF_ALPHA);
+    LowPassFilterInit(&CHASSIS.lpf.leg_l0_accel_filter[1], LEG_DDL0_LPF_ALPHA);
 
-    LowPassFilterInit(&CHASSIS.lpf.leg_angle_accel_filter[0], LEG_DDANGLE_LPF_ALPHA);
-    LowPassFilterInit(&CHASSIS.lpf.leg_angle_accel_filter[1], LEG_DDANGLE_LPF_ALPHA);
+    LowPassFilterInit(&CHASSIS.lpf.leg_phi0_accel_filter[0], LEG_DDPHI0_LPF_ALPHA);
+    LowPassFilterInit(&CHASSIS.lpf.leg_phi0_accel_filter[1], LEG_DDPHI0_LPF_ALPHA);
+
+    LowPassFilterInit(&CHASSIS.lpf.leg_theta_accel_filter[0], LEG_DDTHETA_LPF_ALPHA);
+    LowPassFilterInit(&CHASSIS.lpf.leg_theta_accel_filter[1], LEG_DDTHETA_LPF_ALPHA);
 
     LowPassFilterInit(&CHASSIS.lpf.support_force_filter[0], LEG_SUPPORT_FORCE_LPF_ALPHA);
     LowPassFilterInit(&CHASSIS.lpf.support_force_filter[1], LEG_SUPPORT_FORCE_LPF_ALPHA);
@@ -449,6 +452,11 @@ static void UpdateLegStatus(void)
     CHASSIS.fdb.leg[1].joint.dPhi1 = CHASSIS.joint_motor[2].fdb.vel * (J2_DIRECTION);
     CHASSIS.fdb.leg[1].joint.dPhi4 = CHASSIS.joint_motor[3].fdb.vel * (J3_DIRECTION);
 
+    CHASSIS.fdb.leg[0].joint.T1 = CHASSIS.joint_motor[0].fdb.tor * (J0_DIRECTION);
+    CHASSIS.fdb.leg[0].joint.T2 = CHASSIS.joint_motor[1].fdb.tor * (J1_DIRECTION);
+    CHASSIS.fdb.leg[1].joint.T1 = CHASSIS.joint_motor[2].fdb.tor * (J2_DIRECTION);
+    CHASSIS.fdb.leg[1].joint.T2 = CHASSIS.joint_motor[3].fdb.tor * (J3_DIRECTION);
+
     // =====更新驱动轮姿态=====
     CHASSIS.fdb.leg[0].wheel.Velocity = CHASSIS.wheel_motor[0].fdb.vel * (W0_DIRECTION);
     CHASSIS.fdb.leg[1].wheel.Velocity = CHASSIS.wheel_motor[1].fdb.vel * (W1_DIRECTION);
@@ -457,10 +465,14 @@ static void UpdateLegStatus(void)
     float L0_Phi0[2];
     float dL0_dPhi0[2];
     for (i = 0; i < 2; i++) {
+        float last_dL0 = CHASSIS.fdb.leg[i].rod.dL0;
+        float last_dPhi0 = CHASSIS.fdb.leg[i].rod.dTheta;
+
         // 更新位置信息
         GetL0AndPhi0(CHASSIS.fdb.leg[i].joint.Phi1, CHASSIS.fdb.leg[i].joint.Phi4, L0_Phi0);
         CHASSIS.fdb.leg[i].rod.L0 = L0_Phi0[0];
         CHASSIS.fdb.leg[i].rod.Phi0 = L0_Phi0[1];
+        CHASSIS.fdb.leg[i].rod.Theta = M_PI_2 - CHASSIS.fdb.leg[i].rod.Phi0 - CHASSIS.imu->pitch;
 
         // 计算雅可比矩阵
         CalcJacobian(
@@ -472,15 +484,46 @@ static void UpdateLegStatus(void)
             dL0_dPhi0);
         CHASSIS.fdb.leg[i].rod.dL0 = dL0_dPhi0[0];
         CHASSIS.fdb.leg[i].rod.dPhi0 = dL0_dPhi0[1];
+        CHASSIS.fdb.leg[i].rod.dTheta = -CHASSIS.fdb.leg[i].rod.dPhi0 - CHASSIS.imu->pitch_vel;
 
-        // // 更新加速度信息
-        // float accel = (CHASSIS.fdb.leg[i].rod.dLength - last_dLength) / CHASSIS_CONTROL_TIME_S;
-        // CHASSIS.fdb.leg[i].rod.ddLength =
-        //     LowPassFilterCalc(&CHASSIS.lpf.leg_length_accel_filter[i], accel);
+        // 更新加速度信息
+        float accel = (CHASSIS.fdb.leg[i].rod.dL0 - last_dL0) / CHASSIS.duration;
+        CHASSIS.fdb.leg[i].rod.ddL0 = LowPassFilterCalc(&CHASSIS.lpf.leg_l0_accel_filter[i], accel);
 
-        // accel = (CHASSIS.fdb.leg[i].rod.dAngle - last_dAngle) / CHASSIS_CONTROL_TIME_S;
-        // CHASSIS.fdb.leg[i].rod.ddAngle =
-        //     LowPassFilterCalc(&CHASSIS.lpf.leg_angle_accel_filter[i], accel);
+        accel = (CHASSIS.fdb.leg[i].rod.dPhi0 - last_dPhi0) / CHASSIS.duration;
+        CHASSIS.fdb.leg[i].rod.ddPhi0 =
+            LowPassFilterCalc(&CHASSIS.lpf.leg_phi0_accel_filter[i], accel);
+
+        accel = (CHASSIS.fdb.leg[i].rod.dTheta - CHASSIS.fdb.leg[i].rod.ddPhi0) / CHASSIS.duration;
+        CHASSIS.fdb.leg[i].rod.ddTheta =
+            LowPassFilterCalc(&CHASSIS.lpf.leg_theta_accel_filter[i], accel);
+
+        // 差分计算腿长变化率和腿角速度
+        // TODO：结合姿态矩阵消去重力加速度得到更为精确的机体竖直方向运动加速度
+        float ddot_z_M = CHASSIS.imu->z_accel - 9.8f;
+        float l0 = CHASSIS.fdb.leg[i].rod.L0;
+        float v_l0 = CHASSIS.fdb.leg[i].rod.dL0;
+        float theta = CHASSIS.fdb.leg[i].rod.Theta;
+        float w_theta = CHASSIS.fdb.leg[i].rod.dTheta;
+
+        float dot_v_l0 = CHASSIS.fdb.leg[i].rod.ddL0;
+        float dot_w_theta = CHASSIS.fdb.leg[i].rod.ddTheta;
+        // clang-format off
+        float ddot_z_w = ddot_z_M 
+                    - dot_v_l0 * cosf(theta) 
+                    + 2.0f * v_l0 * w_theta * sinf(theta) 
+                    + l0 * dot_w_theta * cosf(theta) 
+                    + l0 * powf(w_theta, 2) * sinf(theta);
+        // clang-format on
+
+        // 计算支撑力
+        float F[2];
+        GetLegForce(
+            CHASSIS.fdb.leg[i].J, CHASSIS.fdb.leg[i].joint.T1, CHASSIS.fdb.leg[i].joint.T2, F);
+        float F0 = F[0];
+        float Tp = F[1];
+        float P = F0 * arm_cos_f32(theta) + Tp * arm_sin_f32(theta) / l0;
+        CHASSIS.fdb.leg[0].Fn = P + WHEEL_MASS * (9.8f + ddot_z_w);
     }
 }
 

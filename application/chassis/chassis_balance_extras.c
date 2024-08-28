@@ -72,6 +72,27 @@ void GetdL0AnddPhi0(float J[2][2], float d_phi1, float d_phi4, float dL0_dPhi0[2
 }
 
 /**
+ * @brief 获取腿部支持力
+ * @param[in]  J 雅可比矩阵
+ * @param[in]  T1 
+ * @param[in]  T2 
+ * @param[out] F 
+ */
+void GetLegForce(float J[2][2], float T1, float T2, float F[2])
+{
+    float det = J[0][0] * J[1][1] - J[0][1] * J[1][0];
+    // clang-format off
+    float inv_J[4] = {J[0][0] / det, J[1][0] / det, 
+                      J[0][1] / det, J[1][1] / det};
+    // clang-format on
+    float F0 = inv_J[0] * T1 + inv_J[1] * T2;
+    float Tp = inv_J[2] * T1 + inv_J[3] * T2;
+
+    F[0] = F0;
+    F[1] = Tp;
+}
+
+/**
  * @brief 计算雅可比矩阵
  * @param phi1 
  * @param phi4 

@@ -67,10 +67,18 @@ typedef struct Leg
         float L0;    // m
         float dL0;   // m/s
         float ddL0;  // m/s^2
+
+        float Theta;    // rad
+        float dTheta;   // rad/s
+        float ddTheta;  // rad/s^2
+
+        float F;   // N
+        float Tp;  // N*m
     } rod;
 
     struct joint
     {
+        float T1, T2;        // N*m
         float Phi1, Phi4;    // rad
         float dPhi1, dPhi4;  // rad/s
     } joint;
@@ -81,7 +89,8 @@ typedef struct Leg
         float Velocity;  // rad/s
     } wheel;
 
-    float J[2][2];  //雅可比矩阵
+    float J[2][2];  // 雅可比矩阵
+    float Fn;       // N
 } Leg_t;
 
 typedef struct Body
@@ -196,8 +205,9 @@ typedef struct
 
 typedef struct LPF
 {
-    LowPassFilter_t leg_length_accel_filter[2];
-    LowPassFilter_t leg_angle_accel_filter[2];
+    LowPassFilter_t leg_l0_accel_filter[2];
+    LowPassFilter_t leg_phi0_accel_filter[2];
+    LowPassFilter_t leg_theta_accel_filter[2];
     LowPassFilter_t support_force_filter[2];
 } LPF_t;
 
