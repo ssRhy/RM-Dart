@@ -76,7 +76,12 @@ static Chassis_s CHASSIS = {
 
 void ChassisPublish(void) { Publish(&CHASSIS.fdb.speed_vector, CHASSIS_FDB_SPEED_NAME); }
 
-/*-------------------- Init --------------------*/
+/******************************************************************/
+/* Init                                                           */
+/*----------------------------------------------------------------*/
+/* main function:      ChassisInit                                */
+/* auxiliary function: None                                       */
+/******************************************************************/
 
 /**
  * @brief          初始化
@@ -224,7 +229,12 @@ void ChassisInit(void)
     memcpy(OBSERVER.body.v_kf.H_data, H, sizeof(H));
 }
 
-/*-------------------- Handle exception --------------------*/
+/******************************************************************/
+/* Handle exception                                               */
+/*----------------------------------------------------------------*/
+/* main function:      ChassisHandleException                     */
+/* auxiliary function: GroundTouchDectect                         */
+/******************************************************************/
 
 static void GroundTouchDectect(void);
 
@@ -313,7 +323,12 @@ static void GroundTouchDectect(void)
     }
 }
 
-/*-------------------- Set mode --------------------*/
+/******************************************************************/
+/* Set mode                                                       */
+/*----------------------------------------------------------------*/
+/* main function:      ChassisSetMode                             */
+/* auxiliary function: None                                       */
+/******************************************************************/
 
 /**
  * @brief          设置模式
@@ -387,7 +402,16 @@ void ChassisSetMode(void)
     }
 }
 
-/*-------------------- Observe --------------------*/
+/******************************************************************/
+/* Observe                                                        */
+/*----------------------------------------------------------------*/
+/* main function:      ChassisObserver                            */
+/* auxiliary function: UpdateBodyStatus                           */
+/*                     UpdateLegStatus                            */
+/*                     UpdateMotorStatus                          */
+/*                     UpdateCalibrateStatus                      */
+/*                     BodyMotionObserve                          */
+/******************************************************************/
 
 #define ZERO_POS_THRESHOLD 0.001f
 
@@ -586,7 +610,12 @@ static void BodyMotionObserve(void)
     Kalman_Filter_Update(&OBSERVER.body.v_kf);
 }
 
-/*-------------------- Reference --------------------*/
+/******************************************************************/
+/* Reference                                                      */
+/*----------------------------------------------------------------*/
+/* main function:      ChassisReference                           */
+/* auxiliary function: None                                       */
+/******************************************************************/
 
 /**
  * @brief          更新目标量
@@ -674,7 +703,20 @@ void ChassisReference(void)
     CHASSIS.ref.body.roll = fp32_constrain(rc_roll * RC_TO_ONE * MAX_ROLL, MIN_ROLL, MAX_ROLL);
 }
 
-/*-------------------- Console --------------------*/
+/******************************************************************/
+/* Console                                                        */
+/*----------------------------------------------------------------*/
+/* main function:      ChassisConsole                             */
+/* auxiliary function: LocomotionController                       */
+/*                     LegTorqueController                        */
+/*                     LegFeedForward                             */
+/*                     CalcLQR                                    */
+/*                     ConsoleZeroForce                           */
+/*                     ConsoleCalibrate                           */
+/*                     ConsoleNormal                              */
+/*                     ConsoleDebug                               */
+/*                     ConsoleStandUp                             */
+/******************************************************************/
 
 static void LocomotionController(void);
 // static void LegPositionController(void);
@@ -928,7 +970,13 @@ static void ConsoleStandUp(void)
     CHASSIS.wheel_motor[1].set.value = (feedforward + CHASSIS.pid.stand_up.out) * W1_DIRECTION;
 }
 
-/*-------------------- Cmd --------------------*/
+/******************************************************************/
+/* Cmd                                                            */
+/*----------------------------------------------------------------*/
+/* main function:      ChassisSendCmd                             */
+/* auxiliary function: SendJointMotorCmd                          */
+/*                     SendWheelMotorCmd                          */
+/******************************************************************/
 
 #define DM_DELAY 250
 
