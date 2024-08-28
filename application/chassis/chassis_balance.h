@@ -228,6 +228,8 @@ typedef struct
 
     Ratio_t ratio;  // 比例系数
 
+    uint32_t last_time;  // 上一次更新时间
+    uint32_t duration;   // 任务周期
     float dyaw;  // (rad)(feedback)当前位置与云台中值角度差（用于坐标转换）
     uint16_t yaw_mid;  // (ecd)(preset)云台中值角度
 } Chassis_s;

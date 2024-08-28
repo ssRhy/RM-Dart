@@ -38,6 +38,13 @@
 #define CALIBRATE_STOP_TIME 200        // ms
 #define CALIBRATE_VELOCITY 2.0f        // rad/s
 
+#define VEL_PROCESS_NOISE 25   // 速度过程噪声
+#define VEL_MEASURE_NOISE 800  // 速度测量噪声
+// 同时估计加速度和速度时对加速度的噪声
+// 更好的方法是设置为动态,当有冲击时/加加速度大时更相信轮速
+#define ACC_PROCESS_NOISE 2000  // 加速度过程噪声
+#define ACC_MEASURE_NOISE 0.01  // 加速度测量噪声
+
 static Calibrate_s CALIBRATE = {
     .cali_cnt = 0,
     .velocity = {0.0f, 0.0f, 0.0f, 0.0f},
@@ -204,24 +211,13 @@ void ChassisInit(void)
     LowPassFilterInit(&CHASSIS.lpf.support_force_filter[1], LEG_SUPPORT_FORCE_LPF_ALPHA);
 
     // 初始化机体速度观测器
-    float dt = 0.005f;  // 5ms(测试得到底盘任务周期为5ms)
-    // clang-format off
-    float F[4] = {1, dt, 
-                  0, 1}; // 状态转移矩阵其余项在滤波器更新时更新
-        
-    float P[4] = {100, 0.1, 
-                  0.1, 100}; // 后验估计协方差初始值
-        
-    float Q[4] = {0.01, 0.00, 
-                  0.00, 0.01}; // Q矩阵初始值
-        
-    float R[4] = {1000, 0, 
-                  0     , 1000}; // R矩阵初始值
-        
-    float H[4] = {1, 0,
-                  0, 1}; // 由于不需要异步量测自适应，这里直接设置矩阵H为常量
-    // clang-format on
+    // 使用kf同时估计速度和加速度
     Kalman_Filter_Init(&OBSERVER.body.v_kf, 2, 0, 2);
+    float F[4] = {1, 0.005, 0, 1};
+    float Q[4] = {VEL_PROCESS_NOISE, 0, 0, ACC_PROCESS_NOISE};
+    float R[4] = {VEL_MEASURE_NOISE, 0, 0, ACC_MEASURE_NOISE};
+    float P[4] = {100000, 0, 0, 100000};
+    float H[4] = {1, 0, 0, 1};
     memcpy(OBSERVER.body.v_kf.F_data, F, sizeof(F));
     memcpy(OBSERVER.body.v_kf.P_data, P, sizeof(P));
     memcpy(OBSERVER.body.v_kf.Q_data, Q, sizeof(Q));
@@ -429,6 +425,9 @@ static void BodyMotionObserve(void);
  */
 void ChassisObserver(void)
 {
+    CHASSIS.duration = xTaskGetTickCount() - CHASSIS.last_time;
+    CHASSIS.last_time = xTaskGetTickCount();
+
     UpdateMotorStatus();
     UpdateBodyStatus();
     UpdateLegStatus();
@@ -603,11 +602,13 @@ static void UpdateCalibrateStatus(void)
  */
 static void BodyMotionObserve(void)
 {
-    // 更新量测数据
+    // 使用kf同时估计加速度和速度,滤波更新
     OBSERVER.body.v_kf.MeasuredVector[0] = CHASSIS.fdb.body.x_dot;
     OBSERVER.body.v_kf.MeasuredVector[1] = CHASSIS.fdb.body.x_accel;
-    // 更新滤波器
+    OBSERVER.body.v_kf.F_data[1] = CHASSIS.duration;
     Kalman_Filter_Update(&OBSERVER.body.v_kf);
+    // CHASSIS.fdb.body.x_dot = OBSERVER.body.v_kf.xhat_data[0];
+    // CHASSIS.fdb.body.x_accel = OBSERVER.body.v_kf.xhat_data[1];
 }
 
 /******************************************************************/
