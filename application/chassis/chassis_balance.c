@@ -262,7 +262,6 @@ void ChassisHandleException(void)
 static void GroundTouchDectect(void)
 {
     for (uint8_t i = 0; i < 2; i++) {
-
     }
 
     uint32_t now = HAL_GetTick();
@@ -384,8 +383,8 @@ void ChassisObserver(void)
     CHASSIS.last_time = xTaskGetTickCount();
 
     UpdateMotorStatus();
-    UpdateBodyStatus();
     UpdateLegStatus();
+    UpdateBodyStatus();
     UpdateCalibrateStatus();
 
     BodyMotionObserve();
@@ -482,15 +481,6 @@ static void UpdateLegStatus(void)
         // accel = (CHASSIS.fdb.leg[i].rod.dAngle - last_dAngle) / CHASSIS_CONTROL_TIME_S;
         // CHASSIS.fdb.leg[i].rod.ddAngle =
         //     LowPassFilterCalc(&CHASSIS.lpf.leg_angle_accel_filter[i], accel);
-
-        // clang-format off
-        CHASSIS.fdb.leg_state[i].theta     =  M_PI_2 - CHASSIS.fdb.leg[i].rod.Phi0 - CHASSIS.fdb.body.phi;
-        CHASSIS.fdb.leg_state[i].theta_dot = -CHASSIS.fdb.leg[i].rod.dPhi0 - CHASSIS.fdb.body.phi_dot;
-        CHASSIS.fdb.leg_state[i].x         =  CHASSIS.fdb.body.x;
-        CHASSIS.fdb.leg_state[i].x_dot     =  CHASSIS.fdb.body.x_dot;
-        CHASSIS.fdb.leg_state[i].phi       =  CHASSIS.fdb.body.phi;
-        CHASSIS.fdb.leg_state[i].phi_dot   =  CHASSIS.fdb.body.phi_dot;
-        // clang-format on
     }
 }
 
@@ -542,6 +532,19 @@ static void BodyMotionObserve(void)
     Kalman_Filter_Update(&OBSERVER.body.v_kf);
     CHASSIS.fdb.body.x_dot = OBSERVER.body.v_kf.xhat_data[0];
     CHASSIS.fdb.body.x_accel = OBSERVER.body.v_kf.xhat_data[1];
+
+    // 更新2条腿的状态向量
+    uint8_t i = 0;
+    for (i = 0; i < 2; i++) {
+        // clang-format off
+        CHASSIS.fdb.leg_state[i].theta     =  M_PI_2 - CHASSIS.fdb.leg[i].rod.Phi0 - CHASSIS.fdb.body.phi;
+        CHASSIS.fdb.leg_state[i].theta_dot = -CHASSIS.fdb.leg[i].rod.dPhi0 - CHASSIS.fdb.body.phi_dot;
+        CHASSIS.fdb.leg_state[i].x         =  CHASSIS.fdb.body.x;
+        CHASSIS.fdb.leg_state[i].x_dot     =  CHASSIS.fdb.body.x_dot;
+        CHASSIS.fdb.leg_state[i].phi       =  CHASSIS.fdb.body.phi;
+        CHASSIS.fdb.leg_state[i].phi_dot   =  CHASSIS.fdb.body.phi_dot;
+        // clang-format on
+    }
 }
 
 /******************************************************************/
