@@ -121,7 +121,8 @@
         "mechanical_arm_engineer.h": "c",
         "robot_param_engineer_controller.h": "c",
         "custom_controller_engineer.h": "c",
-        "shoot_fric_trigger.h": "c"
+        "shoot_fric_trigger.h": "c",
+        "calibrate_task.h": "c"
     },
     "C_Cpp.codeAnalysis.clangTidy.enabled": true,
     "[cpp]": {

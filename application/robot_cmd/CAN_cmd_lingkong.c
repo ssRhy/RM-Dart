@@ -254,15 +254,21 @@ void LkMultipleTorqueControl(
 
     if (hcan == NULL) return;
 
-    int16_t current[4];
-    current[0] = fp32_constrain(torque_1, LK_MIN_MF_TORQUE, LK_MAX_MF_TORQUE) / TORQUE_COEFFICIENT;
-    current[1] = fp32_constrain(torque_2, LK_MIN_MF_TORQUE, LK_MAX_MF_TORQUE) / TORQUE_COEFFICIENT;
-    current[2] = fp32_constrain(torque_3, LK_MIN_MF_TORQUE, LK_MAX_MF_TORQUE) / TORQUE_COEFFICIENT;
-    current[3] = fp32_constrain(torque_4, LK_MIN_MF_TORQUE, LK_MAX_MF_TORQUE) / TORQUE_COEFFICIENT;
+    int16_t iqControl[4];
+    iqControl[0] = int16_constrain(
+        (torque_1 / TORQUE_COEFFICIENT) * CURRENT_TO_MULTICONTROL, LK_MIN_MULTICONTROL_IQ,
+        LK_MAX_MULTICONTROL_IQ);
+    iqControl[1] = int16_constrain(
+        (torque_2 / TORQUE_COEFFICIENT) * CURRENT_TO_MULTICONTROL, LK_MIN_MULTICONTROL_IQ,
+        LK_MAX_MULTICONTROL_IQ);
+    iqControl[2] = int16_constrain(
+        (torque_3 / TORQUE_COEFFICIENT) * CURRENT_TO_MULTICONTROL, LK_MIN_MULTICONTROL_IQ,
+        LK_MAX_MULTICONTROL_IQ);
+    iqControl[3] = int16_constrain(
+        (torque_4 / TORQUE_COEFFICIENT) * CURRENT_TO_MULTICONTROL, LK_MIN_MULTICONTROL_IQ,
+        LK_MAX_MULTICONTROL_IQ);
 
-    MultipleTorqueControl(
-        hcan, current[0] * CURRENT_TO_MULTICONTROL, current[1] * CURRENT_TO_MULTICONTROL,
-        current[2] * CURRENT_TO_MULTICONTROL, current[3] * CURRENT_TO_MULTICONTROL);
+    MultipleTorqueControl(hcan, iqControl[0], iqControl[1], iqControl[2], iqControl[3]);
 }
 
 void LkMultipleIqControl(

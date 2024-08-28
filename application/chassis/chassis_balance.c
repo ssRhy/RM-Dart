@@ -25,6 +25,7 @@
 #include "CAN_communication.h"
 #include "bsp_delay.h"
 #include "chassis_balance_extras.h"
+#include "cmsis_os.h"
 #include "data_exchange.h"
 #include "detect_task.h"
 #include "kalman_filter.h"
