@@ -16,6 +16,7 @@
   
   @todo:
     2.添加状态清零，当运行过程中出现异常时可以手动将底盘状态清零
+    3.在浮空时通过动量守恒维持底盘的平衡，并调整合适的触地姿态
 
   ****************************(C) COPYRIGHT 2024 Polarbear****************************
 */
@@ -290,9 +291,6 @@ static void GroundTouchDectect(void)
  */
 void ChassisSetMode(void)
 {
-    static ChassisMode_e last_mode;
-    last_mode = CHASSIS.mode;
-
     if (CHASSIS.error_code & DBUS_ERROR_OFFSET) {  // 遥控器出错时的状态处理
         CHASSIS.mode = CHASSIS_SAFE;
         return;
@@ -312,20 +310,6 @@ void ChassisSetMode(void)
         return;
     }
 
-    if (switch_is_down(CHASSIS.rc->rc.s[0]) && switch_is_down(CHASSIS.rc->rc.s[1]) &&
-        CALIBRATE.cali_cnt > 100) {  // 切入底盘校准
-        CHASSIS.mode = CHASSIS_CALIBRATE;
-        CALIBRATE.calibrated = false;
-
-        uint32_t now = HAL_GetTick();
-        for (uint8_t i = 0; i < 4; i++) {
-            CALIBRATE.reached[i] = false;
-            CALIBRATE.stpo_time[i] = now;
-        }
-
-        return;
-    }
-
     if (switch_is_up(CHASSIS.rc->rc.s[CHASSIS_MODE_CHANNEL])) {
         // CHASSIS.mode = CHASSIS_FREE;
         CHASSIS.mode = CHASSIS_CUSTOM;
@@ -333,25 +317,6 @@ void ChassisSetMode(void)
         CHASSIS.mode = CHASSIS_DEBUG;
     } else if (switch_is_down(CHASSIS.rc->rc.s[CHASSIS_MODE_CHANNEL])) {
         CHASSIS.mode = CHASSIS_SAFE;
-    }
-
-    switch (CHASSIS.mode)  //进入起立模式的判断
-    {
-        case CHASSIS_FREE:
-        case CHASSIS_FOLLOW_GIMBAL_YAW:
-        case CHASSIS_CUSTOM: {  // 若上一次模式为底盘关闭或底盘安全，则进入起立模式
-            if (last_mode == CHASSIS_OFF ||       // 上一次模式为底盘关闭
-                last_mode == CHASSIS_SAFE ||      // 上一次模式为底盘安全
-                last_mode == CHASSIS_STAND_UP) {  // 上一次模式为起立模式
-                CHASSIS.mode = CHASSIS_STAND_UP;
-            }
-        } break;
-        default:
-            break;
-    }
-
-    if (CHASSIS.mode == CHASSIS_STAND_UP && fabs(CHASSIS.fdb.body.phi) < 0.1f) {
-        CHASSIS.mode = CHASSIS_CUSTOM;
     }
 }
 
@@ -529,14 +494,6 @@ static void UpdateLegStatus(void)
 
 static void UpdateCalibrateStatus(void)
 {
-    // 更新校准相关的数据
-    if ((CHASSIS.rc->rc.ch[0] < -655) && (CHASSIS.rc->rc.ch[1] < -655) &&
-        (CHASSIS.rc->rc.ch[2] > 655) && (CHASSIS.rc->rc.ch[3] < -655)) {
-        CALIBRATE.cali_cnt++;  // 遥控器下内八进入底盘校准
-    } else {
-        CALIBRATE.cali_cnt = 0;
-    }
-
     if ((CHASSIS.mode == CHASSIS_CALIBRATE) &&
         fabs(CHASSIS.joint_motor[0].fdb.pos) < ZERO_POS_THRESHOLD &&
         fabs(CHASSIS.joint_motor[1].fdb.pos) < ZERO_POS_THRESHOLD &&
@@ -1106,4 +1063,41 @@ static void SendWheelMotorCmd(void)
     }
 }
 
+/******************************************************************/
+/* Public                                                         */
+/*----------------------------------------------------------------*/
+/* main function:      None                                       */
+/* auxiliary function: SetCali                                    */
+/*                     CmdCali                                    */
+/*                     ChassisSetCaliData                         */
+/*                     ChassisCmdCali                             */
+/******************************************************************/
+
+void SetCali(const fp32 motor_middle[4]) {}
+
+bool_t CmdCali(fp32 motor_middle[4])
+{
+    if (CHASSIS.mode != CHASSIS_CALIBRATE) {  // 切入底盘校准
+        CHASSIS.mode = CHASSIS_CALIBRATE;
+        CALIBRATE.calibrated = false;
+
+        uint32_t now = HAL_GetTick();
+        for (uint8_t i = 0; i < 4; i++) {
+            CALIBRATE.reached[i] = false;
+            CALIBRATE.stpo_time[i] = now;
+        }
+
+        return false;
+    }
+
+    if (CALIBRATE.calibrated) {  // 校准完成
+        return true;
+    }
+    return false;
+}
+
+void ChassisSetCaliData(const fp32 motor_middle[4]) { SetCali(motor_middle); }
+
+bool_t ChassisCmdCali(fp32 motor_middle[4]) { return CmdCali(motor_middle); }
 #endif /* CHASSIS_BALANCE */
+/*------------------------------ End of File ------------------------------*/

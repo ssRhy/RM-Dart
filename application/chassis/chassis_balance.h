@@ -48,12 +48,12 @@ typedef enum {
     CHASSIS_STAND_UP,   // 底盘起立，从倒地状态到站立状态的中间过程
     CHASSIS_CALIBRATE,  // 底盘校准
     CHASSIS_FOLLOW_GIMBAL_YAW,  // 底盘跟随云台（运动方向为云台坐标系方向，需进行坐标转换）
-    CHASSIS_FLOATING,    // 底盘悬空状态
-    CHASSIS_CUSHIONING,  // 底盘缓冲状态
-    CHASSIS_FREE,        // 底盘不跟随云台
-    CHASSIS_AUTO,        // 底盘自动模式
-    CHASSIS_DEBUG,       // 调试模式
-    CHASSIS_CUSTOM       // 自定义模式
+    CHASSIS_FLOATING,  // 底盘悬空状态
+    CHASSIS_CRASHING,  // 底盘接地状态，进行缓冲
+    CHASSIS_FREE,      // 底盘不跟随云台
+    CHASSIS_AUTO,      // 底盘自动模式
+    CHASSIS_DEBUG,     // 调试模式
+    CHASSIS_CUSTOM     // 自定义模式
 } ChassisMode_e;
 
 typedef struct Leg
@@ -271,18 +271,19 @@ typedef struct
 } Observer_t;
 
 extern void ChassisInit(void);
-
 extern void ChassisHandleException(void);
-
 extern void ChassisSetMode(void);
-
 extern void ChassisObserver(void);
-
 extern void ChassisReference(void);
-
 extern void ChassisConsole(void);
-
 extern void ChassisSendCmd(void);
+
+
+extern void SetCali(const fp32 motor_middle[4]);
+extern bool_t CmdCali(fp32 motor_middle[4]);
+extern void ChassisSetCaliData(const fp32 motor_middle[4]);
+extern bool_t ChassisCmdCali(fp32 motor_middle[4]);
 
 #endif /* CHASSIS_BALANCE */
 #endif /* CHASSIS_BALANCE_H */
+/*------------------------------ End of File ------------------------------*/
