@@ -157,8 +157,14 @@ void GimbalConsole(void)
  */
 void SendGimbalCmd(void) 
 {
-  MultipleCurrentControl(gimbal_direct.pitch.can,gimbal_direct.pitch.id,gimbal_direct.pitch.set.curr,0,0,0);
-  MultipleCurrentControl(gimbal_direct.yaw.can,gimbal_direct.yaw.id,gimbal_direct.yaw.set.curr,0,0,0);
+  if (toe_is_error(DBUS_TOE))
+  {
+    CanCmdDjiMotor(gimbal_direct.pitch.can,gimbal_direct.pitch.id,gimbal_direct.yaw.set.curr,gimbal_direct.pitch.set.curr,0,0);
+  }
+  else
+  {
+    CanCmdDjiMotor(gimbal_direct.pitch.can,gimbal_direct.pitch.id,0,0,0,0);
+  }
 }
 
 #endif  // GIMBAL_YAW_PITCH

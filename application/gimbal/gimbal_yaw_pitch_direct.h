@@ -27,6 +27,9 @@
 #include "remote_control.h"
 #include "robot_param.h"
 #include "struct_typedef.h"
+#include  "user_lib.h"
+#include "CAN_cmd_dji.h"
+#include "detect_task.h"
 
 
 /**

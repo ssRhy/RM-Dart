@@ -53,7 +53,7 @@
 #define GIMBAL_DIRECT_PITCH_ID ((uint8_t)2)
 
 //电机can口
-#define GIMBAL_DIRECT_YAW_CAN ((uint8_t)1)
+#define GIMBAL_DIRECT_YAW_CAN ((uint8_t)2)
 #define GIMBAL_DIRECT_PITCH_CAN ((uint8_t)2) 
 
 //电机种类        
@@ -73,36 +73,36 @@
 #define GIMBAL_DIRECT_PITCH_MODE (0)
 
 //physical parameters ---------------------
-#define GIMBAL_UPPER_LIMIT_PITCH (0.0f)
+#define GIMBAL_UPPER_LIMIT_PITCH (20.0f)
 #define GIMBAL_UPPER_LIMIT_YAW (0.0f)
 #define GIMBAL_LOWER_LIMIT_PITCH (0.0f)
 #define GIMBAL_LOWER_LIMIT_YAW (0.0f)
 //PID parameters ---------------------
 //YAW ANGLE
-#define KP_GIMBAL_YAW_ANGLE (0.0f)
+#define KP_GIMBAL_YAW_ANGLE (1.0f)
 #define KI_GIMBAL_YAW_ANGLE (0.0f)
 #define KD_GIMBAL_YAW_ANGLE (0.0f)
-#define MAX_IOUT_GIMBAL_YAW_ANGLE (0.0f)
-#define MAX_OUT_GIMBAL_YAW_ANGLE (0.0f)
+#define MAX_IOUT_GIMBAL_YAW_ANGLE (20.0f)
+#define MAX_OUT_GIMBAL_YAW_ANGLE (2000.0f)
 //VELOCITY:角速度
-#define KP_GIMBAL_YAW_VELOCITY (0.0f)
+#define KP_GIMBAL_YAW_VELOCITY (1.0f)
 #define KI_GIMBAL_YAW_VELOCITY (0.0f)
 #define KD_GIMBAL_YAW_VELOCITY (0.0f)
-#define MAX_IOUT_GIMBAL_YAW_VELOCITY (0.0f)
-#define MAX_OUT_GIMBAL_YAW_VELOCITY (0.0f)
+#define MAX_IOUT_GIMBAL_YAW_VELOCITY (20.0f)
+#define MAX_OUT_GIMBAL_YAW_VELOCITY (2000.0f)
 
 //PITCH ANGLE
-#define KP_GIMBAL_PITCH_ANGLE (0.0f)
+#define KP_GIMBAL_PITCH_ANGLE (1.0f)
 #define KI_GIMBAL_PITCH_ANGLE (0.0f)
 #define KD_GIMBAL_PITCH_ANGLE (0.0f)
-#define MAX_IOUT_GIMBAL_PITCH_ANGLE (0.0f)
-#define MAX_OUT_GIMBAL_PITCH_ANGLE (0.0f)
+#define MAX_IOUT_GIMBAL_PITCH_ANGLE (20.0f)
+#define MAX_OUT_GIMBAL_PITCH_ANGLE (2000.0f)
 //VELOCITY:角速度
-#define KP_GIMBAL_PITCH_VELOCITY (0.0f)
+#define KP_GIMBAL_PITCH_VELOCITY (1.0f)
 #define KI_GIMBAL_PITCH_VELOCITY (0.0f)
 #define KD_GIMBAL_PITCH_VELOCITY (0.0f)
-#define MAX_IOUT_GIMBAL_PITCH_VELOCITY (0.0f)
-#define MAX_OUT_GIMBAL_PITCH_VELOCITY (0.0f)
+#define MAX_IOUT_GIMBAL_PITCH_VELOCITY (20.0f)
+#define MAX_OUT_GIMBAL_PITCH_VELOCITY (2000.0f)
 /*-------------------- Shoot --------------------*/
 //physical parameters ---------------------
 #define FRIC_RADIUS 0.03f  // (m)摩擦轮半径
