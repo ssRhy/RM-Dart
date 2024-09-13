@@ -132,6 +132,13 @@ uint16_t sizeof_float, sizeof_double;
 
 static void H_K_R_Adjustment(KalmanFilter_t *kf);
 
+/**
+  * @brief        卡尔曼滤波器初始化
+  * @param[1]     卡尔曼滤波器结构体指针
+  * @param[2]     状态向量维数
+  * @param[3]     控制向量维数
+  * @param[4]     量测向量维数
+  */
 void Kalman_Filter_Init(KalmanFilter_t *kf, uint8_t xhatSize, uint8_t uSize, uint8_t zSize)
 {
     sizeof_float = sizeof(float);
@@ -253,6 +260,11 @@ void Kalman_Filter_Init(KalmanFilter_t *kf, uint8_t xhatSize, uint8_t uSize, uin
     kf->SkipEq5 = 0;
 }
 
+/**
+  * @brief        卡尔曼滤波器更新
+  * @param[1]     卡尔曼滤波器结构体指针
+  * @retval       估计值数组首地址
+  */
 float *Kalman_Filter_Update(KalmanFilter_t *kf)
 {
     // 矩阵H K R根据量测情况自动调整

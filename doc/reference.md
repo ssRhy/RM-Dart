@@ -14,6 +14,11 @@
 - [【RM2023-平衡步兵机械结构开源】上海交通大学-云汉交龙](https://bbs.robomaster.com/forum.php?mod=viewthread&tid=22803)
     > 你知道的，我是交的忠实粉丝。
 
+### 电控
+
+- [北京科技大学Reborn战队2024赛季轮腿机器人控制代码开源](https://github.com/wzhbaba/RM2024_Reborn_LegWheel_Chassis)
+    > 参考了部分代码设计。
+
 ### 核心控制算法部分
 
 - [RoboMaster平衡步兵机器人控制系统设计](https://zhuanlan.zhihu.com/p/563048952)

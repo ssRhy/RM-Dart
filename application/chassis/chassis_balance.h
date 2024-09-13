@@ -23,13 +23,14 @@
 #if (CHASSIS_TYPE == CHASSIS_BALANCE)
 #include "IMU_task.h"
 #include "chassis.h"
+#include "custom_typedef.h"
+#include "kalman_filter.h"
 #include "math.h"
 #include "motor.h"
 #include "pid.h"
 #include "remote_control.h"
 #include "struct_typedef.h"
 #include "user_lib.h"
-#include "custom_typedef.h"
 
 // clang-format off
 #define JOINT_ERROR_OFFSET   ((uint8_t)1 << 0)  // 关节电机错误偏移量
@@ -47,12 +48,12 @@ typedef enum {
     CHASSIS_STAND_UP,   // 底盘起立，从倒地状态到站立状态的中间过程
     CHASSIS_CALIBRATE,  // 底盘校准
     CHASSIS_FOLLOW_GIMBAL_YAW,  // 底盘跟随云台（运动方向为云台坐标系方向，需进行坐标转换）
-    CHASSIS_FLOATING,    // 底盘悬空状态
-    CHASSIS_CUSHIONING,  // 底盘缓冲状态
-    CHASSIS_FREE,        // 底盘不跟随云台
-    CHASSIS_AUTO,        // 底盘自动模式
-    CHASSIS_DEBUG,       // 调试模式
-    CHASSIS_CUSTOM       // 自定义模式
+    CHASSIS_FLOATING,  // 底盘悬空状态
+    CHASSIS_CRASHING,  // 底盘接地状态，进行缓冲
+    CHASSIS_FREE,      // 底盘不跟随云台
+    CHASSIS_AUTO,      // 底盘自动模式
+    CHASSIS_DEBUG,     // 调试模式
+    CHASSIS_CUSTOM     // 自定义模式
 } ChassisMode_e;
 
 typedef struct Leg
@@ -66,10 +67,18 @@ typedef struct Leg
         float L0;    // m
         float dL0;   // m/s
         float ddL0;  // m/s^2
+
+        float Theta;    // rad
+        float dTheta;   // rad/s
+        float ddTheta;  // rad/s^2
+
+        float F;   // N
+        float Tp;  // N*m
     } rod;
 
     struct joint
     {
+        float T1, T2;        // N*m
         float Phi1, Phi4;    // rad
         float dPhi1, dPhi4;  // rad/s
     } joint;
@@ -80,13 +89,15 @@ typedef struct Leg
         float Velocity;  // rad/s
     } wheel;
 
-    float J[2][2];  //雅可比矩阵
+    float J[2][2];  // 雅可比矩阵
+    float Fn;       // N
 } Leg_t;
 
 typedef struct Body
 {
     float x;
     float x_dot;
+    float x_accel;
     float phi;
     float phi_dot;
 
@@ -137,7 +148,7 @@ typedef struct
 {
     Body_t body;
     LegState_t leg_state[2];  // 0-左 1-右
-    float rod_L0[2];         // 0-左 1-右
+    float rod_L0[2];          // 0-左 1-右
     ChassisSpeedVector_t speed_vector;
 } Ref_t;
 
@@ -152,7 +163,7 @@ typedef struct Cmd
         } rod;
         struct joint_cmd
         {
-            float T[2];  // N*m
+            float T[2];    // N*m
             float Pos[2];  // rad
         } joint;
         struct wheel_cmd
@@ -194,8 +205,9 @@ typedef struct
 
 typedef struct LPF
 {
-    LowPassFilter_t leg_length_accel_filter[2];
-    LowPassFilter_t leg_angle_accel_filter[2];
+    LowPassFilter_t leg_l0_accel_filter[2];
+    LowPassFilter_t leg_phi0_accel_filter[2];
+    LowPassFilter_t leg_theta_accel_filter[2];
     LowPassFilter_t support_force_filter[2];
 } LPF_t;
 
@@ -226,6 +238,8 @@ typedef struct
 
     Ratio_t ratio;  // 比例系数
 
+    uint32_t last_time;  // 上一次更新时间
+    uint32_t duration;   // 任务周期
     float dyaw;  // (rad)(feedback)当前位置与云台中值角度差（用于坐标转换）
     uint16_t yaw_mid;  // (ecd)(preset)云台中值角度
 } Chassis_s;
@@ -248,19 +262,28 @@ typedef struct GroundTouch
     bool touch;  //是否触地
 } GroundTouch_s;
 
+typedef struct
+{
+    struct
+    {
+        KalmanFilter_t v_kf;  // 观测车体速度
+    } body;
+} Observer_t;
+
 extern void ChassisInit(void);
-
 extern void ChassisHandleException(void);
-
 extern void ChassisSetMode(void);
-
 extern void ChassisObserver(void);
-
 extern void ChassisReference(void);
-
 extern void ChassisConsole(void);
-
 extern void ChassisSendCmd(void);
+
+
+extern void SetCali(const fp32 motor_middle[4]);
+extern bool_t CmdCali(fp32 motor_middle[4]);
+extern void ChassisSetCaliData(const fp32 motor_middle[4]);
+extern bool_t ChassisCmdCali(fp32 motor_middle[4]);
 
 #endif /* CHASSIS_BALANCE */
 #endif /* CHASSIS_BALANCE_H */
+/*------------------------------ End of File ------------------------------*/
