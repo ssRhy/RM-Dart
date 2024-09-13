@@ -17,6 +17,7 @@
   @todo:
     2.添加状态清零，当运行过程中出现异常时可以手动将底盘状态清零
     3.在浮空时通过动量守恒维持底盘的平衡，并调整合适的触地姿态
+    4.无法退出底盘校准模式！！！！
 
   ****************************(C) COPYRIGHT 2024 Polarbear****************************
 */
@@ -530,8 +531,8 @@ static void BodyMotionObserve(void)
     OBSERVER.body.v_kf.MeasuredVector[1] = CHASSIS.fdb.body.x_accel;
     OBSERVER.body.v_kf.F_data[1] = CHASSIS.duration;
     Kalman_Filter_Update(&OBSERVER.body.v_kf);
-    // CHASSIS.fdb.body.x_dot = OBSERVER.body.v_kf.xhat_data[0];
-    // CHASSIS.fdb.body.x_accel = OBSERVER.body.v_kf.xhat_data[1];
+    CHASSIS.fdb.body.x_dot = OBSERVER.body.v_kf.xhat_data[0];
+    CHASSIS.fdb.body.x_accel = OBSERVER.body.v_kf.xhat_data[1];
 
     // 更新2条腿的状态向量
     uint8_t i = 0;
