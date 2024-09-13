@@ -7,6 +7,7 @@
   *  Version    Date            Author          Modification
   *  V1.0.0     Apr-1-2024      Penguin         1. done
   *  V1.0.1     Apr-16-2024     Penguin         1. 完成基本框架
+  *  V1.0.2     Sep-16-2024     Penguin         1. 添加速度观测器并测试效果
   *
   @verbatim
   ==============================================================================
