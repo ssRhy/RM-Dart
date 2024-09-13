@@ -530,8 +530,8 @@ static void BodyMotionObserve(void)
     OBSERVER.body.v_kf.MeasuredVector[1] = CHASSIS.fdb.body.x_accel;
     OBSERVER.body.v_kf.F_data[1] = CHASSIS.duration;
     Kalman_Filter_Update(&OBSERVER.body.v_kf);
-    CHASSIS.fdb.body.x_dot = OBSERVER.body.v_kf.xhat_data[0];
-    CHASSIS.fdb.body.x_accel = OBSERVER.body.v_kf.xhat_data[1];
+    // CHASSIS.fdb.body.x_dot = OBSERVER.body.v_kf.xhat_data[0];
+    // CHASSIS.fdb.body.x_accel = OBSERVER.body.v_kf.xhat_data[1];
 
     // 更新2条腿的状态向量
     uint8_t i = 0;
