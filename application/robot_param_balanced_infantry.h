@@ -121,9 +121,9 @@
 
 #define MAX_LEG_LENGTH       (0.35f)
 #define MAX_LEG_ANGLE        (M_PI_2 + MAX_DELTA_ROD_ANGLE)
-#define MAX_SPEED            (1.5f)
-#define MAX_SPEED_VECTOR_VX  (1.5f)
-#define MAX_SPEED_VECTOR_VY  (1.5f)
+#define MAX_SPEED            (2.5f)
+#define MAX_SPEED_VECTOR_VX  (2.5f)
+#define MAX_SPEED_VECTOR_VY  (2.5f)
 #define MAX_SPEED_VECTOR_WZ  (3.0f)
 
 #define MAX_JOINT_TORQUE   (5.0f)  // (Nm)关节最大扭矩
