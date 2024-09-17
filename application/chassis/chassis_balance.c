@@ -490,8 +490,10 @@ static void UpdateLegStatus(void)
         float F0 = F[0];
         float Tp = F[1];
         float P = F0 * arm_cos_f32(theta) + Tp * arm_sin_f32(theta) / l0;
-        CHASSIS.fdb.leg[0].Fn = P + WHEEL_MASS * (9.8f + ddot_z_w);
+        CHASSIS.fdb.leg[i].Fn = P + WHEEL_MASS * (9.8f + ddot_z_w);
     }
+    ModifyDebugDataPackage(0, CHASSIS.fdb.leg[0].Fn, "FnL");
+    ModifyDebugDataPackage(1, CHASSIS.fdb.leg[1].Fn, "FnR");
 }
 
 static void UpdateCalibrateStatus(void)
@@ -508,7 +510,7 @@ static void UpdateCalibrateStatus(void)
     uint32_t now = HAL_GetTick();
     if (CHASSIS.mode == CHASSIS_CALIBRATE) {
         for (uint8_t i = 0; i < 4; i++) {
-            CALIBRATE.velocity[i] = CHASSIS.joint_motor[i].fdb.vel;
+            CALIBRATE.velocity[i] = fabs(CHASSIS.joint_motor[i].fdb.vel);
             if (CALIBRATE.velocity[i] > CALIBRATE_STOP_VELOCITY) {  // 速度大于阈值时重置计时
                 CALIBRATE.reached[i] = false;
                 CALIBRATE.stpo_time[i] = now;
@@ -528,6 +530,7 @@ static void UpdateCalibrateStatus(void)
 static void BodyMotionObserve(void)
 {
     // 使用kf同时估计加速度和速度,滤波更新
+    // TODO：使用xz平面上的加速度作为输入？
     OBSERVER.body.v_kf.MeasuredVector[0] = CHASSIS.fdb.body.x_dot;
     OBSERVER.body.v_kf.MeasuredVector[1] = CHASSIS.fdb.body.x_accel;
     OBSERVER.body.v_kf.F_data[1] = CHASSIS.duration;
@@ -1079,6 +1082,10 @@ void SetCali(const fp32 motor_middle[4]) {}
 
 bool_t CmdCali(fp32 motor_middle[4])
 {
+    if (CALIBRATE.calibrated) {  // 校准完成
+        return true;
+    }
+
     if (CHASSIS.mode != CHASSIS_CALIBRATE) {  // 切入底盘校准
         CHASSIS.mode = CHASSIS_CALIBRATE;
         CALIBRATE.calibrated = false;
@@ -1092,9 +1099,6 @@ bool_t CmdCali(fp32 motor_middle[4])
         return false;
     }
 
-    if (CALIBRATE.calibrated) {  // 校准完成
-        return true;
-    }
     return false;
 }
 

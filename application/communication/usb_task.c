@@ -152,7 +152,7 @@ void usb_task(void const * argument)
     UsbInit();
 
     while (1) {
-        ModifyDebugDataPackage(0, ROBOT_CMD_DATA.gimbal.pitch, "pitch");
+        // ModifyDebugDataPackage(0, ROBOT_CMD_DATA.gimbal.pitch, "pitch");
 
         // ModifyDebugDataPackage(1, VIRTUAL_RC_CTRL.rc.ch[0], "ch0");
         // ModifyDebugDataPackage(2, VIRTUAL_RC_CTRL.rc.ch[1], "ch1");
