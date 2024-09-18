@@ -312,6 +312,20 @@ void ChassisSetMode(void)
         return;
     }
 
+    if (CALIBRATE.toggle) {  // 切入底盘校准
+        CALIBRATE.toggle = false;
+        CHASSIS.mode = CHASSIS_CALIBRATE;
+        CALIBRATE.calibrated = false;
+
+        uint32_t now = HAL_GetTick();
+        for (uint8_t i = 0; i < 4; i++) {
+            CALIBRATE.reached[i] = false;
+            CALIBRATE.stpo_time[i] = now;
+        }
+
+        return;
+    }
+
     if (switch_is_up(CHASSIS.rc->rc.s[CHASSIS_MODE_CHANNEL])) {
         // CHASSIS.mode = CHASSIS_FREE;
         CHASSIS.mode = CHASSIS_CUSTOM;
@@ -358,6 +372,11 @@ void ChassisObserver(void)
     UpdateCalibrateStatus();
 
     BodyMotionObserve();
+
+    ModifyDebugDataPackage(2, CHASSIS.joint_motor[0].fdb.pos, "p0");
+    ModifyDebugDataPackage(3, CHASSIS.joint_motor[1].fdb.pos, "p1");
+    ModifyDebugDataPackage(4, CHASSIS.joint_motor[2].fdb.pos, "p2");
+    ModifyDebugDataPackage(5, CHASSIS.joint_motor[3].fdb.pos, "p3");
 }
 
 /**
@@ -510,7 +529,7 @@ static void UpdateCalibrateStatus(void)
     uint32_t now = HAL_GetTick();
     if (CHASSIS.mode == CHASSIS_CALIBRATE) {
         for (uint8_t i = 0; i < 4; i++) {
-            CALIBRATE.velocity[i] = fabs(CHASSIS.joint_motor[i].fdb.vel);
+            CALIBRATE.velocity[i] = CHASSIS.joint_motor[i].fdb.vel;
             if (CALIBRATE.velocity[i] > CALIBRATE_STOP_VELOCITY) {  // 速度大于阈值时重置计时
                 CALIBRATE.reached[i] = false;
                 CALIBRATE.stpo_time[i] = now;
@@ -1083,20 +1102,13 @@ void SetCali(const fp32 motor_middle[4]) {}
 bool_t CmdCali(fp32 motor_middle[4])
 {
     if (CALIBRATE.calibrated) {  // 校准完成
+        CHASSIS.mode = CHASSIS_SAFE;
+        CALIBRATE.calibrated = false;
         return true;
     }
 
-    if (CHASSIS.mode != CHASSIS_CALIBRATE) {  // 切入底盘校准
-        CHASSIS.mode = CHASSIS_CALIBRATE;
-        CALIBRATE.calibrated = false;
-
-        uint32_t now = HAL_GetTick();
-        for (uint8_t i = 0; i < 4; i++) {
-            CALIBRATE.reached[i] = false;
-            CALIBRATE.stpo_time[i] = now;
-        }
-
-        return false;
+    if (CHASSIS.mode != CHASSIS_CALIBRATE) {
+        CALIBRATE.toggle = true;
     }
 
     return false;

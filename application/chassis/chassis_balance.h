@@ -251,6 +251,7 @@ typedef struct Calibrate
     uint32_t stpo_time[4];  //停止时间
     bool reached[4];        //是否到达限位
     bool calibrated;        //完成校准
+    bool toggle;            //切换校准状态
 } Calibrate_s;
 
 typedef struct GroundTouch
@@ -277,7 +278,6 @@ extern void ChassisObserver(void);
 extern void ChassisReference(void);
 extern void ChassisConsole(void);
 extern void ChassisSendCmd(void);
-
 
 extern void SetCali(const fp32 motor_middle[4]);
 extern bool_t CmdCali(fp32 motor_middle[4]);
