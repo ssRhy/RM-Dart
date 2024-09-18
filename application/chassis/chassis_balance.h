@@ -52,6 +52,7 @@ typedef enum {
     CHASSIS_CRASHING,  // 底盘接地状态，进行缓冲
     CHASSIS_FREE,      // 底盘不跟随云台
     CHASSIS_AUTO,      // 底盘自动模式
+    CHASSIS_OFF_HOOK,  // 底盘脱困模式
     CHASSIS_DEBUG,     // 调试模式
     CHASSIS_CUSTOM     // 自定义模式
 } ChassisMode_e;

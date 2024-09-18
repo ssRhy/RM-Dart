@@ -48,6 +48,8 @@
 #define ACC_PROCESS_NOISE 2000  // 加速度过程噪声
 #define ACC_MEASURE_NOISE 0.01  // 加速度测量噪声
 
+#define RC_OFF_HOOK_VALUE_HOLE 650
+
 static Calibrate_s CALIBRATE = {
     .cali_cnt = 0,
     .velocity = {0.0f, 0.0f, 0.0f, 0.0f},
@@ -332,7 +334,15 @@ void ChassisSetMode(void)
     } else if (switch_is_mid(CHASSIS.rc->rc.s[CHASSIS_MODE_CHANNEL])) {
         CHASSIS.mode = CHASSIS_DEBUG;
     } else if (switch_is_down(CHASSIS.rc->rc.s[CHASSIS_MODE_CHANNEL])) {
-        CHASSIS.mode = CHASSIS_SAFE;
+        // 在安全模式时，遥控器摇杆打成左下，右上进入脱困模式
+        if (CHASSIS.rc->rc.ch[0] > RC_OFF_HOOK_VALUE_HOLE &&
+            CHASSIS.rc->rc.ch[1] > RC_OFF_HOOK_VALUE_HOLE &&
+            CHASSIS.rc->rc.ch[2] < -RC_OFF_HOOK_VALUE_HOLE &&
+            CHASSIS.rc->rc.ch[3] < -RC_OFF_HOOK_VALUE_HOLE) {
+            CHASSIS.mode = CHASSIS_OFF_HOOK;
+        } else {
+            CHASSIS.mode = CHASSIS_SAFE;
+        }
     }
 }
 
@@ -674,6 +684,7 @@ void ChassisReference(void)
 /*                     CalcLQR                                    */
 /*                     ConsoleZeroForce                           */
 /*                     ConsoleCalibrate                           */
+/*                     ConsoleOffHook                             */
 /*                     ConsoleNormal                              */
 /*                     ConsoleDebug                               */
 /*                     ConsoleStandUp                             */
@@ -687,6 +698,7 @@ static void CalcLQR(float k[2][6], float x[6], float t[2]);
 
 static void ConsoleZeroForce(void);
 static void ConsoleCalibrate(void);
+static void ConsoleOffHook(void);
 static void ConsoleNormal(void);
 static void ConsoleDebug(void);
 static void ConsoleStandUp(void);
@@ -701,6 +713,9 @@ void ChassisConsole(void)
     switch (CHASSIS.mode) {
         case CHASSIS_CALIBRATE: {
             ConsoleCalibrate();
+        } break;
+        case CHASSIS_OFF_HOOK: {
+            ConsoleOffHook();
         } break;
         case CHASSIS_FOLLOW_GIMBAL_YAW:
         case CHASSIS_CUSTOM:
@@ -840,6 +855,17 @@ static void ConsoleZeroForce(void)
 }
 
 static void ConsoleCalibrate(void)
+{
+    CHASSIS.joint_motor[0].set.vel = -CALIBRATE_VELOCITY;
+    CHASSIS.joint_motor[1].set.vel = CALIBRATE_VELOCITY;
+    CHASSIS.joint_motor[2].set.vel = CALIBRATE_VELOCITY;
+    CHASSIS.joint_motor[3].set.vel = -CALIBRATE_VELOCITY;
+
+    CHASSIS.wheel_motor[0].set.tor = 0;
+    CHASSIS.wheel_motor[1].set.tor = 0;
+}
+
+static void ConsoleOffHook(void)
 {
     CHASSIS.joint_motor[0].set.vel = -CALIBRATE_VELOCITY;
     CHASSIS.joint_motor[1].set.vel = CALIBRATE_VELOCITY;
@@ -1024,6 +1050,13 @@ static void SendJointMotorCmd(void)
                     DmSavePosZero(&CHASSIS.joint_motor[2]);
                     DmSavePosZero(&CHASSIS.joint_motor[3]);
                 }
+            } break;
+            case CHASSIS_OFF_HOOK: {
+                DmMitCtrlVelocity(&CHASSIS.joint_motor[0], CALIBRATE_VEL_KP);
+                DmMitCtrlVelocity(&CHASSIS.joint_motor[1], CALIBRATE_VEL_KP);
+                delay_us(DM_DELAY);
+                DmMitCtrlVelocity(&CHASSIS.joint_motor[2], CALIBRATE_VEL_KP);
+                DmMitCtrlVelocity(&CHASSIS.joint_motor[3], CALIBRATE_VEL_KP);
             } break;
             case CHASSIS_DEBUG: {
                 DmMitCtrlVelocity(&CHASSIS.joint_motor[0], CALIBRATE_VEL_KP);
