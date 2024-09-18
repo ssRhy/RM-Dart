@@ -22,7 +22,6 @@
 
 #if (CHASSIS_TYPE == CHASSIS_BALANCE)
 #include "IMU_task.h"
-#include "chassis.h"
 #include "custom_typedef.h"
 #include "kalman_filter.h"
 #include "math.h"
@@ -221,7 +220,6 @@ typedef struct
     const RC_ctrl_t * rc;  // 底盘使用的遥控器指针
     const Imu_t * imu;     // imu数据
     ChassisMode_e mode;    // 底盘模式
-    ChassisState_e state;  // 底盘状态
     uint8_t error_code;    // 底盘错误代码
 
     /*-------------------- Motors --------------------*/

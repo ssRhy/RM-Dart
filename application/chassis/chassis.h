@@ -1,11 +1,10 @@
 /**
   ****************************(C) COPYRIGHT 2024 Polarbear****************************
   * @file       chassis.c/h
-  * @brief      底盘控制任务所需要的变量和函数
+  * @brief      底盘模块对外开放的接口函数
   * @history
   *  Version    Date            Author          Modification
-  *  V1.0.0     Apr-1-2024      Penguin         1. done
-  *  V1.0.1     Apr-16-2024     Penguin         1. 完成基本框架
+  *  V1.0.0     Sep-18-2024     Penguin         1. done
   *
   @verbatim
   ==============================================================================
@@ -22,40 +21,34 @@
 
 #if CHASSIS_TYPE != CHASSIS_NONE
 
-#include "custom_typedef.h"
-#include "struct_typedef.h"
+// inline void ChassisSetCali(void);
+// inline void ChassisCmdCali(void);
 
-#define rc_deadband_limit(input, output, dealine)          \
-    {                                                      \
-        if ((input) > (dealine) || (input) < -(dealine)) { \
-            (output) = (input);                            \
-        } else {                                           \
-            (output) = 0;                                  \
-        }                                                  \
-    }
 
-typedef enum __ChassisState {
-    CHASSIS_STATE_NORNAL,  // 底盘正常状态
-    CHASSIS_STATE_ERROR    // 底盘错误状态
-} ChassisState_e;
+/**
+ * @brief 获取底盘状态（未启用）
+ */
+inline uint8_t ChassisGetStatus(void);
 
-// clang-format off
-typedef struct
-{
-    void     (*SetCali)(void);
-    void     (*CmdCali)(void);
-    void     (*GetStatus)(void);
-    uint32_t (*GetDuration)(void);
-    float    (*GetSpeedVx)(void);
-    float    (*GetSpeedVy)(void);
-    float    (*GetSpeedWz)(void);
-} ChassisApi_t;
-// clang-format on
+/**
+ * @brief 获取底盘控制周期 (ms)
+ */
+inline uint32_t ChassisGetDuration(void);
 
-extern ChassisApi_t chassis;
+/**
+ * @brief 获取底盘坐标系下的速度vx (m/s)
+ */
+inline float ChassisGetSpeedVx(void);
 
-extern void GimbalSpeedVectorToChassisSpeedVector(
-    ChassisSpeedVector_t * speed_vector_set, float dyaw);
+/**
+ * @brief 获取底盘坐标系下的速度vy (m/s)
+ */
+inline float ChassisGetSpeedVy(void);
+
+/**
+ * @brief 获取底盘坐标系下的速度wz (rad/s)
+ */
+inline float ChassisGetSpeedWz(void);
 
 #endif  // CHASSIS_TYPE
 #endif  // CHASSIS_H

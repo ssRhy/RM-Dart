@@ -26,11 +26,13 @@
 #if (CHASSIS_TYPE == CHASSIS_BALANCE)
 #include "CAN_communication.h"
 #include "bsp_delay.h"
+#include "chassis.h"
 #include "chassis_balance_extras.h"
 #include "cmsis_os.h"
 #include "data_exchange.h"
 #include "detect_task.h"
 #include "kalman_filter.h"
+#include "macro_typedef.h"
 #include "signal_generator.h"
 #include "stdbool.h"
 #include "string.h"
@@ -65,9 +67,8 @@ static GroundTouch_s GROUND_TOUCH = {
 
 static Observer_t OBSERVER;
 
-static Chassis_s CHASSIS = {
+Chassis_s CHASSIS = {
     .mode = CHASSIS_OFF,
-    .state = CHASSIS_STATE_ERROR,
     .error_code = 0,
     .yaw_mid = 0,
 
@@ -613,7 +614,7 @@ void ChassisReference(void)
             break;
         }
         case CHASSIS_FOLLOW_GIMBAL_YAW: {  // 云台跟随模式下，控制量为云台坐标系下的速度，需要进行坐标转换
-            GimbalSpeedVectorToChassisSpeedVector(&v_set, CHASSIS.dyaw);
+            // GimbalSpeedVectorToChassisSpeedVector(&v_set, CHASSIS.dyaw);
             break;
         }
         case CHASSIS_AUTO: {  // 底盘自动模式，控制量为云台坐标系下的速度，需要进行坐标转换
@@ -1128,6 +1129,11 @@ static void SendWheelMotorCmd(void)
 /*                     CmdCali                                    */
 /*                     ChassisSetCaliData                         */
 /*                     ChassisCmdCali                             */
+/*                     ChassisGetStatus                           */
+/*                     ChassisGetDuration                         */
+/*                     ChassisGetSpeedVx                          */
+/*                     ChassisGetSpeedVy                          */
+/*                     ChassisGetSpeedWz                          */
 /******************************************************************/
 
 void SetCali(const fp32 motor_middle[4]) {}
@@ -1152,5 +1158,11 @@ bool_t CmdCali(fp32 motor_middle[4])
 void ChassisSetCaliData(const fp32 motor_middle[4]) { SetCali(motor_middle); }
 
 bool_t ChassisCmdCali(fp32 motor_middle[4]) { return CmdCali(motor_middle); }
+
+inline uint8_t ChassisGetStatus(void) { return 0; }
+inline uint32_t ChassisGetDuration(void) { return CHASSIS.duration; }
+inline float ChassisGetSpeedVx(void) { return CHASSIS.fdb.speed_vector.vx; }
+inline float ChassisGetSpeedVy(void) { return CHASSIS.fdb.speed_vector.vy; }
+inline float ChassisGetSpeedWz(void) { return CHASSIS.fdb.speed_vector.wz; }
 #endif /* CHASSIS_BALANCE */
 /*------------------------------ End of File ------------------------------*/
