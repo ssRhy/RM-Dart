@@ -18,7 +18,7 @@
   @todo:
     2.添加状态清零，当运行过程中出现异常时可以手动将底盘状态清零
     3.在浮空时通过动量守恒维持底盘的平衡，并调整合适的触地姿态
-    4.无法退出底盘校准模式！！！！
+    4.写一个异常姿态脱困模式用来替代校准模式完成脱困功能
 
   ****************************(C) COPYRIGHT 2024 Polarbear****************************
 */
@@ -1101,17 +1101,19 @@ void SetCali(const fp32 motor_middle[4]) {}
 
 bool_t CmdCali(fp32 motor_middle[4])
 {
-    if (CALIBRATE.calibrated) {  // 校准完成
-        CHASSIS.mode = CHASSIS_SAFE;
-        CALIBRATE.calibrated = false;
-        return true;
-    }
+    // if (CALIBRATE.calibrated) {  // 校准完成
+    //     CHASSIS.mode = CHASSIS_SAFE;
+    //     CALIBRATE.calibrated = false;
+    //     return true;
+    // }
 
-    if (CHASSIS.mode != CHASSIS_CALIBRATE) {
-        CALIBRATE.toggle = true;
-    }
+    // if (CHASSIS.mode != CHASSIS_CALIBRATE) {
+    //     CALIBRATE.toggle = true;
+    // }
 
-    return false;
+    // return false;
+
+    return true;
 }
 
 void ChassisSetCaliData(const fp32 motor_middle[4]) { SetCali(motor_middle); }
