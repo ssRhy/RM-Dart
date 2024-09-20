@@ -382,11 +382,6 @@ void ChassisObserver(void)
     UpdateCalibrateStatus();
 
     BodyMotionObserve();
-
-    ModifyDebugDataPackage(2, CHASSIS.joint_motor[0].fdb.pos, "p0");
-    ModifyDebugDataPackage(3, CHASSIS.joint_motor[1].fdb.pos, "p1");
-    ModifyDebugDataPackage(4, CHASSIS.joint_motor[2].fdb.pos, "p2");
-    ModifyDebugDataPackage(5, CHASSIS.joint_motor[3].fdb.pos, "p3");
 }
 
 /**
@@ -518,6 +513,13 @@ static void UpdateLegStatus(void)
             CHASSIS.fdb.leg[i].J, CHASSIS.fdb.leg[i].joint.T1, CHASSIS.fdb.leg[i].joint.T2, F);
         float F0 = F[0];
         float Tp = F[1];
+        if (i){
+            ModifyDebugDataPackage(4, F0, "F0R");
+            ModifyDebugDataPackage(5, Tp, "TpR");
+        }else{
+            ModifyDebugDataPackage(2, F0, "F0L");
+            ModifyDebugDataPackage(3, Tp, "TpL");
+        }
         float P = F0 * arm_cos_f32(theta) + Tp * arm_sin_f32(theta) / l0;
         CHASSIS.fdb.leg[i].Fn = P + WHEEL_MASS * (9.8f + ddot_z_w);
     }
@@ -758,8 +760,8 @@ static void LocomotionController(void)
         // clang-format on
         CalcLQR(k, x, T_Tp);
 
-        CHASSIS.cmd.leg[i].wheel.T = T_Tp[0];
-        CHASSIS.cmd.leg[i].rod.Tp = T_Tp[1];
+        CHASSIS.cmd.leg[i].wheel.T = T_RATIO * T_Tp[0];
+        CHASSIS.cmd.leg[i].rod.Tp = TP_RATIO * T_Tp[1];
     }
 
     // 转向控制
