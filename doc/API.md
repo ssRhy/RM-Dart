@@ -5,6 +5,12 @@ version: v1.0.0
 
 - [接口标准](#接口标准)
   - [用户库（USER\_LIB）](#用户库user_lib)
+  - [机器人控制模块（ROBOT\_CMD）](#机器人控制模块robot_cmd)
+    - [达妙电机](#达妙电机)
+    - [DJI电机](#dji电机)
+    - [瓴控电机](#瓴控电机)
+    - [Cybergear电机](#cybergear电机)
+    - [CAN接收](#can接收)
   - [校准模块（CALIBRATE）](#校准模块calibrate)
   - [裁判系统模块（REFEREE）](#裁判系统模块referee)
   - [遥控器模块（REMOTE\_CONTROL）](#遥控器模块remote_control)
@@ -156,6 +162,231 @@ version: v1.0.0
   |filter|LowPassFilter_t *|滤波器结构体地址|
   |input|float|输入|
   |返回|float|滤波结果|
+
+## 机器人控制模块（ROBOT_CMD）
+
+```C
+// 导入控制模块相关的所有库
+//#include "robot_cmd.h"
+#include "CAN_communication.h"
+
+// 当然，你也可以按需导入
+
+// 导入电机定义的库
+#include "motor.h"
+// 导入达妙电机控制相关的库
+#include "CAN_cmd_damiao.h"
+// 导入dji电机控制相关的库
+#include "CAN_cmd_dji.h"
+// 导入瓴控电机控制相关的库
+#include "CAN_cmd_lingkong.h"
+// 导入小米电机Cybergear控制相关的库
+#include "CAN_cmd_cybergear.h"
+// 导入CAN接收相关的库
+#include "CAN_receive.h"
+```
+
+### 达妙电机
+
+- `DmClearErr`
+  > 达妙电机清除错误
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |motor|Motor_s *|电机结构体指针|
+
+- `DmEnable`
+  > 达妙电机使能
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |motor|Motor_s *|电机结构体指针|
+
+- `DmDisable`
+  > 达妙电机失能
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |motor|Motor_s *|电机结构体指针|
+
+- `DmSavePosZero`
+  > 达妙电机保存零点
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |motor|Motor_s *|电机结构体指针|
+
+- `DmMitStop`
+  > 达妙电机MIT模式下停止，直接发送0力矩
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |motor|Motor_s *|电机结构体指针|
+
+- `DmMitCtrl`
+  > 达妙电机MIT控制
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |motor|Motor_s *|电机结构体指针|
+  |kp|float|kp|
+  |kd|float|kd|
+
+- `DmMitCtrlTorque`
+  > 达妙电机使用MIT模式控制力矩
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |motor|Motor_s *|电机结构体指针|
+
+- `DmMitCtrlVelocity`
+  > 达妙电机使用MIT模式控制速度
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |motor|Motor_s *|电机结构体指针|
+  |kd|float|kd|
+
+- `DmMitCtrlPosition`
+  > 达妙电机使用MIT模式控制位置
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |motor|Motor_s *|电机结构体指针|
+  |kp|float|kp|
+  |kd|float|kd|
+
+- `DmPosCtrl`
+  > 达妙电机位置模式控制
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |motor|Motor_s *|电机结构体指针|
+
+- `DmSpeedCtrl`
+  > 达妙电机速度模式控制
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |motor|Motor_s *|电机结构体指针|
+
+### DJI电机
+
+- `CanCmdDjiMotor`
+  > 通过CAN控制DJI电机(支持GM3508 GM2006 GM6020)\
+  >\
+  > NOTE: StandardRobot 的控制方式的兼容函数，等后期的安全函数上线后会删除
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |can|uint8_t|发送数据使用的can口(1/2)|
+  |std_id|uint16_t|发送数据使用的std_id，配合已经定义好的std_id的宏使用|
+  |curr_1|int16_t|电机控制电流(id=1/5)|
+  |curr_2|int16_t|电机控制电流(id=2/6)|
+  |curr_3|int16_t|电机控制电流(id=3/7)|
+  |curr_4|int16_t|电机控制电流(id=4/8)|
+
+### 瓴控电机
+
+- `LkDisable`
+  > 瓴控电机失能
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |p_motor|Motor_s *|电机结构体指针|
+
+- `LkStop`
+  > 瓴控电机停止
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |p_motor|Motor_s *|电机结构体指针|
+
+- `LkEnable`
+  > 瓴控电机使能
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |p_motor|Motor_s *|电机结构体指针|
+
+- `LkSingleTorqueControl`
+  > 瓴控单电机转矩闭环
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |p_motor|Motor_s *|电机结构体指针|
+
+- `LkSingleSpeedControl`
+  > 瓴控单电机速度闭环
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |p_motor|Motor_s *|电机结构体指针|
+
+- `LkMultipleTorqueControl`
+  > 瓴控多电机转矩闭环
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |can|uint8_t|发送数据使用的can口(1/2)|
+  |torque_1|float|电机1的转矩|
+  |torque_2|float|电机2的转矩|
+  |torque_3|float|电机3的转矩|
+  |torque_4|float|电机4的转矩|
+
+- `LkMultipleTorqueControl`
+  > 瓴控多电机电流控制
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |can|uint8_t|发送数据使用的can口(1/2)|
+  |iqControl_1|int16_t|电机1的电流值|
+  |iqControl_1|int16_t|电机2的电流值|
+  |iqControl_1|int16_t|电机3的电流值|
+  |iqControl_1|int16_t|电机4的电流值|
+
+### Cybergear电机
+
+- `CybergearTorqueControl`
+  > 小米电机力矩控制模式控制指令
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |p_motor|Motor_s *|电机结构体指针|
+
+- `CybergearPositionControl`
+  > 小米电机力矩控制模式控制指令
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |p_motor|Motor_s *|电机结构体指针|
+  |kp|Motor_s *|响应速度(到达位置快慢)，一般取1-10|
+  |kd|Motor_s *|电机阻尼，过小会震荡，过大电机会震动明显。一般取0.5左右|
+
+- `CybergearVelocityControl`
+  > 小米电机速度模式控制指令
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |p_motor|Motor_s *|电机结构体指针|
+  |kd|Motor_s *|电机阻尼，过小会震荡，过大电机会震动明显。一般取0.5左右|
+
+### CAN接收
+
+- `GetMotorMeasure`
+  > 获取电机测量数据
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |p_motor|Motor_s *|电机结构体指针|
+
+- `GetOtherBoardDataUint16`
+  > 获取板间通信数据
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |data_id|uint8_t|数据ID|
+  |data_offset|uint8_t|数据位置偏移|
 
 ## 校准模块（CALIBRATE）
 
