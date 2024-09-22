@@ -4,13 +4,21 @@ version: v1.0.0
 > 如代码中的内容与本标准冲突，基于本标准修改代码。
 
 - [接口标准](#接口标准)
-  - [用户库（USER\_LIB）](#用户库user_lib)
+  - [组件（COMPONENTS）](#组件components)
+    - [用户库（USER\_LIB）](#用户库user_lib)
+    - [PID算法（PID）](#pid算法pid)
+    - [链表（CLIST）](#链表clist)
+    - [CRC校验（CRC8\_CRC16）](#crc校验crc8_crc16)
+    - [先进先出队列（FIFO）](#先进先出队列fifo)
+    - [卡尔曼滤波器（KALMAN\_FILTER）](#卡尔曼滤波器kalman_filter)
+    - [信号发生器（SIGNAL\_GENERATOR）](#信号发生器signal_generator)
   - [机器人控制模块（ROBOT\_CMD）](#机器人控制模块robot_cmd)
     - [达妙电机](#达妙电机)
     - [DJI电机](#dji电机)
     - [瓴控电机](#瓴控电机)
     - [Cybergear电机](#cybergear电机)
     - [CAN接收](#can接收)
+  - [数据交换模块（DATA\_EXCHANGE）](#数据交换模块data_exchange)
   - [校准模块（CALIBRATE）](#校准模块calibrate)
   - [裁判系统模块（REFEREE）](#裁判系统模块referee)
   - [遥控器模块（REMOTE\_CONTROL）](#遥控器模块remote_control)
@@ -23,7 +31,9 @@ version: v1.0.0
   - [机械臂模块（MECHANICAL\_ARM）](#机械臂模块mechanical_arm)
   - [自定义控制器模块（CUSTOM\_CONTROLLER）](#自定义控制器模块custom_controller)
 
-## 用户库（USER_LIB）
+## 组件（COMPONENTS）
+
+### 用户库（USER_LIB）
 
 ```C
 #include "user_lib.h"
@@ -162,6 +172,298 @@ version: v1.0.0
   |filter|LowPassFilter_t *|滤波器结构体地址|
   |input|float|输入|
   |返回|float|滤波结果|
+
+### PID算法（PID）
+
+```C
+#include "pid.h"
+```
+
+- `PID_init`
+  > pid struct data init
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |pid|pid_type_def *|PID结构数据指针|
+  |mode|uint8_t|PID_POSITION:普通PID <br> PID_DELTA: 差分PID|
+  |PID[3]|const fp32|0: kp, 1: ki, 2:kd|
+  |max_out|fp32|pid最大输出|
+  |max_iout|fp32|pid最大积分输出|
+
+- `PID_calc`
+  > pid计算
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |pid|pid_type_def *|PID结构数据指针|
+  |ref|fp32|反馈数据|
+  |set|fp32|设定值|
+
+- `PID_clear`
+  > pid 输出清除
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |pid|pid_type_def *|PID结构数据指针|
+
+### 链表（CLIST）
+
+```C
+#include "clist.h"
+```
+
+- `ListCreate`
+  > 创建一个链表
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |返回|List *|创建的链表指针|
+
+- `ListPushBack`
+  > 尾部添加数据
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |list|List *|链表指针|
+  |data|void *|数据指针|
+
+- `ListPushFront`
+  > 头部添加数据
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |list|List *|链表指针|
+  |data|void *|数据指针|
+
+- `ListInsert`
+  > 按位置插入数据
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |list|List *|链表指针|
+  |pos|uint32_t|位置|
+  |data|void *|数据指针|
+  |返回|int8_t|插入结果，-1:创建失败, 0:创建成功|
+
+- `ListInsertForNode`
+  > 给定节点插入数据，插入到节点前
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |list|List *|链表指针|
+  |pos|Node *|位置：节点指针|
+  |data|void *|数据指针|
+  |返回|int8_t|插入结果，-1:创建失败, 0:创建成功|
+
+- `ListEraseBack`
+  > 尾部删除
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |list|List *|链表指针|
+
+- `ListEraseFront`
+  > 头部删除
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |list|List *|链表指针|
+
+- `ListEraseForNode`
+  > 给定节点删除
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |list|List *|链表指针|
+  |pos|Node *|节点指针|
+
+- `ListGetHead`
+  > 获取头节点
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |list|List *|链表指针|
+  |返回|Node *|头节点指针|
+
+- `ListGetTail`
+  > 获取尾节点
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |list|List *|链表指针|
+  |返回|Node *|尾节点指针|
+
+- `ListGetNode`
+  > 获取指定位置的节点
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |list|List *|链表指针|
+  |pos|uint32_t|位置|
+  |返回|Node *|节点指针|
+
+- `ListGetNodeNext`
+  > 获取指定结点的下一个结点
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |node|Node *|节点指针|
+  |返回|Node *|下一个节点指针|
+
+- `ListDestroy`
+  > 销毁链表
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |list|List *|链表指针|
+
+### CRC校验（CRC8_CRC16）
+
+```C
+#include "CRC8_CRC16.h"
+```
+
+- `get_CRC8_check_sum`
+  > 计算CRC8
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |pch_message|unsigned char *|数据|
+  |dw_length|unsigned int|数据和校验的长度|
+  |ucCRC8|unsigned char|初始CRC8|
+  |返回|uint8_t|计算完的CRC8|
+
+- `verify_CRC8_check_sum`
+  > CRC8校验函数
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |pch_message|unsigned char *|数据|
+  |dw_length|unsigned int|数据和校验的长度|
+  |返回|uint32_t|真或者假|
+
+- `append_CRC8_check_sum`
+  > 添加CRC8到数据的结尾
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |pch_message|unsigned char *|数据|
+  |dw_length|unsigned int|数据和校验的长度|
+
+- `get_CRC16_check_sum`
+  > 计算CRC16
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |pch_message|uint8_t *|数据|
+  |dw_length|uint32_t|数据和校验的长度|
+  |wCRC|uint16_t|初始CRC16|
+  |返回|uint16_t|计算完的CRC16|
+
+- `verify_CRC16_check_sum`
+  > CRC16校验函数
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |pch_message|uint8_t *|数据|
+  |dw_length|uint32_t|数据和校验的长度|
+  |返回|uint32_t|真或者假|
+
+- `append_CRC16_check_sum`
+  > 添加CRC16到数据的结尾
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |pch_message|uint8_t *|数据|
+  |dw_length|uint32_t|数据和校验的长度|
+
+### 先进先出队列（FIFO）
+
+```C
+#include "fifo.h"
+```
+
+### 卡尔曼滤波器（KALMAN_FILTER）
+
+```C
+#include "kalman_filter.h"
+```
+
+- `Kalman_Filter_Init`
+  > 卡尔曼滤波器初始化
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |kf|KalmanFilter_t *|卡尔曼滤波器结构体指针|
+  |xhatSize|uint8_t|状态向量维数|
+  |uSize|uint8_t|控制向量维数|
+  |zSize|uint8_t|量测向量维数|
+
+- `Kalman_Filter_Update`
+  > 卡尔曼滤波器更新
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |kf|KalmanFilter_t *|卡尔曼滤波器结构体指针|
+  |返回|float *|估计值数组首地址|
+
+### 信号发生器（SIGNAL_GENERATOR）
+
+```C
+#include "signal_generator.h"
+```
+
+- `GenerateSinWave`
+  > 正弦信号发生器
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |amplitude|float|振幅|
+  |offset|float|输出偏移量|
+  |period|float|(s)周期|
+  |返回|float|SinWave|
+
+- `GenerateStepWave`
+  > 阶跃信号发生器
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |a0|float|初始值|
+  |a1|float|最终值|
+  |t0|float|(s)起始时间|
+  |返回|float|StepWave|
+
+- `GenerateRampWave`
+  > 生成斜坡波信号
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |a0|float|信号的初始幅度|
+  |a1|float|信号的最终幅度|
+  |t0|float|(s)信号的起始时间|
+  |t1|float|(s)信号的结束时间|
+  |返回|float|当前时间下的信号幅度|
+
+- `GeneratePulseWave`
+  > 生成脉冲波形信号
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |a1|float|脉冲波形的幅值1|
+  |a2|float|脉冲波形的幅值2|
+  |t1|float|(s)脉冲幅值1的持续时间|
+  |t2|float|(s)脉冲幅值2的持续时间|
+  |返回|float|当前时间下的信号幅度|
+
+- `GenerateSawtoothWave`
+  > 生成锯齿波形
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |a0|float|波形起始值|
+  |a1|float|波形结束值|
+  |T|float|(s)波形周期|
+  |返回|float|生成的锯齿波形值|
 
 ## 机器人控制模块（ROBOT_CMD）
 
@@ -387,6 +689,31 @@ version: v1.0.0
   |------|------|-----|
   |data_id|uint8_t|数据ID|
   |data_offset|uint8_t|数据位置偏移|
+
+## 数据交换模块（DATA_EXCHANGE）
+
+```C
+#include "data_exchange.h"
+```
+
+> 注：现在作为向模块接口过渡时期的模块，将于12月停止维护并作旧化处理
+
+- `Publish`
+  > 发布数据
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |address|void *|要发布的数据的地址|
+  |name|char *|数据名称(最大长度为19字符)|
+  |返回|uint8_t|数据发布状态|
+
+- `Subscribe`
+  > 订阅数据
+
+  | 参数 | 类型 | 备注 |
+  |------|------|-----|
+  |name|char *|数据名称|
+  |返回|const void *|订阅的数据的地址|
 
 ## 校准模块（CALIBRATE）
 
