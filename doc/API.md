@@ -4,6 +4,7 @@ version: v1.0.0
 > 如代码中的内容与本标准冲突，基于本标准修改代码。
 
 - [接口标准](#接口标准)
+  - [用户库（USER\_LIB）](#用户库user_lib)
   - [校准模块（CALIBRATE）](#校准模块calibrate)
   - [裁判系统模块（REFEREE）](#裁判系统模块referee)
   - [遥控器模块（REMOTE\_CONTROL）](#遥控器模块remote_control)
@@ -16,9 +17,23 @@ version: v1.0.0
   - [机械臂模块（MECHANICAL\_ARM）](#机械臂模块mechanical_arm)
   - [自定义控制器模块（CUSTOM\_CONTROLLER）](#自定义控制器模块custom_controller)
 
+## 用户库（USER_LIB）
+
+```C
+#include "user_lib.h"
+```
+
 ## 校准模块（CALIBRATE）
 
+```C
+#include "calibrate.h"
+```
+
 ## 裁判系统模块（REFEREE）
+
+```C
+#include "referee.h"
+```
 
 - `GetRefereeStatus`
   > 获取裁判系统状态。
@@ -36,6 +51,10 @@ version: v1.0.0
   |返回|float|自定义控制器传入的关节位置|
 
 ## 遥控器模块（REMOTE_CONTROL）
+
+```C
+#include "remote_control.h"
+```
 
 - `switch_is_up`
   > 【宏】判断拨杆是否置于上档
@@ -106,6 +125,16 @@ version: v1.0.0
   |返回|bool|键盘按键是否被按下|
 
 ## 通信模块（COMMUNICATION）
+
+```C
+// 导入通信相关的所有库
+#include "communication.h"
+
+// 当然，你也可以按需导入
+
+// 导入usb通信相关的库
+#include "usb.h"
+```
 
 上位机：Supervisory Computer
 
@@ -196,6 +225,10 @@ version: v1.0.0
 
 ## IMU模块（IMU）
 
+```C
+#include "IMU.h"
+```
+
 - `CaliGyro`
   > 校准陀螺仪
 
@@ -253,6 +286,10 @@ version: v1.0.0
   |返回|float|(m/s^2) axis轴上的加速度| -->
 
 ## 音乐模块（MUSIC）
+
+```C
+#include "music.h"
+```
 
 - `SwitchMusic`
   > 切换歌曲
@@ -317,6 +354,10 @@ version: v1.0.0
 
 ## 云台模块（GIMBAL）
 
+```C
+#include "gimbal.h"
+```
+
 - `SetGimbalCali`
   > 云台校准设置，传入校准值以修正底盘的相关数据
 
@@ -376,6 +417,10 @@ version: v1.0.0
 
 ## 射击模块（SHOOT）
 
+```C
+#include "shoot.h"
+```
+
 - `GetShootStatus`
   > 获取射击模块状态。
 
@@ -391,6 +436,10 @@ version: v1.0.0
   |返回|uint32_t|(ms) 射击模块运行周期|
 
 ## 机械臂模块（MECHANICAL_ARM）
+
+```C
+#include "mechanical_arm.h"
+```
 
 - `SetMechanicalArmCali`
   > 机械臂校准设置
@@ -437,6 +486,10 @@ version: v1.0.0
   |返回|float|(rad/s) 机械臂joint_id关节位置|
 
 ## 自定义控制器模块（CUSTOM_CONTROLLER）
+
+```C
+#include "custom_controller.h"
+```
 
 - `GetCustomControllerStatus`
   > 获取自定义控制器状态。
