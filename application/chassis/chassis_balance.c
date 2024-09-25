@@ -911,14 +911,17 @@ static void ConsoleDebug(void)
     CHASSIS.joint_motor[2].set.vel = 0;
     CHASSIS.joint_motor[3].set.vel = 0;
 
-    // CHASSIS.wheel_motor[0].set.value = CHASSIS.wheel_motor[0].set.tor =
-    //     CHASSIS.rc->rc.ch[1] * RC_TO_ONE * 100;
-    // CHASSIS.wheel_motor[1].set.value = CHASSIS.wheel_motor[1].set.tor =
-    //     CHASSIS.rc->rc.ch[1] * RC_TO_ONE * 100;
+    CHASSIS.joint_motor[0].set.pos = 0;
+    CHASSIS.joint_motor[1].set.pos = M_PI;
+    CHASSIS.joint_motor[2].set.pos = 0;
+    CHASSIS.joint_motor[3].set.pos = M_PI;
 
-    LocomotionController();
-    CHASSIS.wheel_motor[0].set.tor = -(CHASSIS.cmd.leg[0].wheel.T * (W0_DIRECTION));
-    CHASSIS.wheel_motor[1].set.tor = -(CHASSIS.cmd.leg[1].wheel.T * (W1_DIRECTION));
+    // LocomotionController();
+    // CHASSIS.wheel_motor[0].set.tor = -(CHASSIS.cmd.leg[0].wheel.T * (W0_DIRECTION));
+    // CHASSIS.wheel_motor[1].set.tor = -(CHASSIS.cmd.leg[1].wheel.T * (W1_DIRECTION));
+    
+    CHASSIS.wheel_motor[0].set.tor = 0;
+    CHASSIS.wheel_motor[1].set.tor = 0;
 }
 
 static void ConsoleStandUp(void)
@@ -966,6 +969,9 @@ static void ConsoleStandUp(void)
 /******************************************************************/
 
 #define DM_DELAY 250
+
+#define DEBUG_KP 10
+#define DEBUG_KD 1
 
 static void SendJointMotorCmd(void);
 static void SendWheelMotorCmd(void);
@@ -1059,11 +1065,17 @@ static void SendJointMotorCmd(void)
                 DmMitCtrlVelocity(&CHASSIS.joint_motor[3], CALIBRATE_VEL_KP);
             } break;
             case CHASSIS_DEBUG: {
-                DmMitCtrlVelocity(&CHASSIS.joint_motor[0], CALIBRATE_VEL_KP);
-                DmMitCtrlVelocity(&CHASSIS.joint_motor[1], CALIBRATE_VEL_KP);
+                DmMitCtrlPosition(&CHASSIS.joint_motor[0], DEBUG_KP, DEBUG_KD);
+                DmMitCtrlPosition(&CHASSIS.joint_motor[1], DEBUG_KP, DEBUG_KD);
                 delay_us(DM_DELAY);
-                DmMitCtrlVelocity(&CHASSIS.joint_motor[2], CALIBRATE_VEL_KP);
-                DmMitCtrlVelocity(&CHASSIS.joint_motor[3], CALIBRATE_VEL_KP);
+                DmMitCtrlPosition(&CHASSIS.joint_motor[2], DEBUG_KP, DEBUG_KD);
+                DmMitCtrlPosition(&CHASSIS.joint_motor[3], DEBUG_KP, DEBUG_KD);
+
+                // DmMitCtrlVelocity(&CHASSIS.joint_motor[0], CALIBRATE_VEL_KP);
+                // DmMitCtrlVelocity(&CHASSIS.joint_motor[1], CALIBRATE_VEL_KP);
+                // delay_us(DM_DELAY);
+                // DmMitCtrlVelocity(&CHASSIS.joint_motor[2], CALIBRATE_VEL_KP);
+                // DmMitCtrlVelocity(&CHASSIS.joint_motor[3], CALIBRATE_VEL_KP);
 
                 // DmMitCtrlTorque(&CHASSIS.joint_motor[0]);
                 // DmMitCtrlTorque(&CHASSIS.joint_motor[1]);
@@ -1108,6 +1120,7 @@ static void SendWheelMotorCmd(void)
             LkMultipleTorqueControl(WHEEL_CAN, 0, 0, 0, 0);
         } break;
         case CHASSIS_DEBUG: {
+            // LkMultipleTorqueControl(WHEEL_CAN, 0, 0, 0, 0);
             LkMultipleTorqueControl(
                 WHEEL_CAN, CHASSIS.wheel_motor[0].set.tor, CHASSIS.wheel_motor[1].set.tor, 0, 0);
         } break;
