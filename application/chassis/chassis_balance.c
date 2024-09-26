@@ -383,10 +383,10 @@ void ChassisObserver(void)
 
     BodyMotionObserve();
 
-    ModifyDebugDataPackage(2, CHASSIS.joint_motor[0].fdb.pos, "p0");
-    ModifyDebugDataPackage(3, CHASSIS.joint_motor[1].fdb.pos, "p1");
-    ModifyDebugDataPackage(4, CHASSIS.joint_motor[2].fdb.pos, "p2");
-    ModifyDebugDataPackage(5, CHASSIS.joint_motor[3].fdb.pos, "p3");
+    ModifyDebugDataPackage(2, CHASSIS.fdb.leg[0].joint.Phi1, "lp1");
+    ModifyDebugDataPackage(3, CHASSIS.fdb.leg[0].joint.Phi4, "lp4");
+    ModifyDebugDataPackage(4, CHASSIS.fdb.leg[1].joint.Phi1, "rp1");
+    ModifyDebugDataPackage(5, CHASSIS.fdb.leg[1].joint.Phi4, "rp4");
 }
 
 /**
@@ -911,15 +911,21 @@ static void ConsoleDebug(void)
     CHASSIS.joint_motor[2].set.vel = 0;
     CHASSIS.joint_motor[3].set.vel = 0;
 
-    CHASSIS.joint_motor[0].set.pos = 0;
-    CHASSIS.joint_motor[1].set.pos = M_PI;
-    CHASSIS.joint_motor[2].set.pos = 0;
-    CHASSIS.joint_motor[3].set.pos = M_PI;
+#define DELTA_ANGLE 0.5f
+
+    CHASSIS.joint_motor[0].set.pos =
+        theta_transform(M_PI - DELTA_ANGLE, -J0_ANGLE_OFFSET, J0_DIRECTION, 1);
+    CHASSIS.joint_motor[1].set.pos =
+        theta_transform(0 + DELTA_ANGLE, -J1_ANGLE_OFFSET, J1_DIRECTION, 1);
+    CHASSIS.joint_motor[2].set.pos =
+        theta_transform(M_PI - DELTA_ANGLE, -J2_ANGLE_OFFSET, J2_DIRECTION, 1);
+    CHASSIS.joint_motor[3].set.pos =
+        theta_transform(0 + DELTA_ANGLE, -J3_ANGLE_OFFSET, J3_DIRECTION, 1);
 
     // LocomotionController();
     // CHASSIS.wheel_motor[0].set.tor = -(CHASSIS.cmd.leg[0].wheel.T * (W0_DIRECTION));
     // CHASSIS.wheel_motor[1].set.tor = -(CHASSIS.cmd.leg[1].wheel.T * (W1_DIRECTION));
-    
+
     CHASSIS.wheel_motor[0].set.tor = 0;
     CHASSIS.wheel_motor[1].set.tor = 0;
 }
