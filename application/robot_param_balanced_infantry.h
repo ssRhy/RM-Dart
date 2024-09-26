@@ -128,6 +128,7 @@
 
 #define MAX_JOINT_TORQUE   (5.0f)  // (Nm)关节最大扭矩
 #define MAX_VEL_ADD        (1.0f)  // (m/s)速度增量上限
+#define MAX_L0_DELTA       (0.2f)  // (m)L0差值上限
 #define MAX_PITCH_VEL      (0.1f)  // (rad/s)pitch轴速度上限
 
 #define MAX_TOUCH_INTERVAL (200)   // (ms)最大离地时间，超过这个时间认为离地
@@ -210,18 +211,18 @@
     #define MAX_OUT_CHASSIS_PITCH_VELOCITY   (0.2f)
 #else
     //roll轴跟踪角度环PID参数
-    #define KP_CHASSIS_ROLL_ANGLE        (0.4f)
-    #define KI_CHASSIS_ROLL_ANGLE        (0.003f)
-    #define KD_CHASSIS_ROLL_ANGLE        (0.02f)
-    #define MAX_IOUT_CHASSIS_ROLL_ANGLE  (0.005f)
-    #define MAX_OUT_CHASSIS_ROLL_ANGLE   (0.15f)
+    #define KP_CHASSIS_ROLL_ANGLE        (0.01f)
+    #define KI_CHASSIS_ROLL_ANGLE        (0.00002f)
+    #define KD_CHASSIS_ROLL_ANGLE        (0.001f)
+    #define MAX_IOUT_CHASSIS_ROLL_ANGLE  (0.00002f)
+    #define MAX_OUT_CHASSIS_ROLL_ANGLE   (0.0005f)
     
-    //roll轴跟踪角度环PID参数
-    // #define KP_CHASSIS_ROLL_ANGLE        (8.0f)
+    // //roll轴跟踪速度环PID参数
+    // #define KP_CHASSIS_ROLL_ANGLE        (1.5f)
     // #define KI_CHASSIS_ROLL_ANGLE        (0.0f)
-    // #define KD_CHASSIS_ROLL_ANGLE        (1.0f)
+    // #define KD_CHASSIS_ROLL_ANGLE        (0.1f)
     // #define MAX_IOUT_CHASSIS_ROLL_ANGLE  (0.0f)
-    // #define MAX_OUT_CHASSIS_ROLL_ANGLE   (15.0f)
+    // #define MAX_OUT_CHASSIS_ROLL_ANGLE   (0.2f)
 
     //pitch轴跟踪角度环PID参数
     #define KP_CHASSIS_PITCH_ANGLE        (0.0f)

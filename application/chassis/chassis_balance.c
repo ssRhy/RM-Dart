@@ -766,8 +766,10 @@ static void LocomotionController(void)
     }
 
     // ROLL角控制
-    float delta_L0 =
-        PID_calc(&CHASSIS.pid.roll_angle, CHASSIS.fdb.body.roll, CHASSIS.ref.body.roll);
+    static float delta_L0 = 0.0f;
+    delta_L0 += PID_calc(&CHASSIS.pid.roll_angle, CHASSIS.fdb.body.roll, CHASSIS.ref.body.roll);
+    delta_L0 = fp32_constrain(delta_L0, -MAX_L0_DELTA, MAX_L0_DELTA);
+
     CHASSIS.ref.rod_L0[0] =
         fp32_constrain(CHASSIS.ref.rod_L0[0] - delta_L0, MIN_LEG_LENGTH, MAX_LEG_LENGTH);
     CHASSIS.ref.rod_L0[1] =
