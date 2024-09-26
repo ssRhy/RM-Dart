@@ -217,7 +217,7 @@
     #define MAX_OUT_CHASSIS_ROLL_ANGLE   (0.1f)
     
     //roll轴跟踪速度环PID参数
-    #define KP_CHASSIS_ROLL_VELOCITY        (0.01f)
+    #define KP_CHASSIS_ROLL_VELOCITY        (0.6f)
     #define KI_CHASSIS_ROLL_VELOCITY        (0.0001f)
     #define KD_CHASSIS_ROLL_VELOCITY        (0.005f)
     #define MAX_IOUT_CHASSIS_ROLL_VELOCITY  (0.01f)
