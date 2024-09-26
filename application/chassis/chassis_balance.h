@@ -149,6 +149,7 @@ typedef struct
     Body_t body;
     LegState_t leg_state[2];  // 0-左 1-右
     float rod_L0[2];          // 0-左 1-右
+    float rod_Angle[2];       // 0-左 1-右
     ChassisSpeedVector_t speed_vector;
 } Ref_t;
 

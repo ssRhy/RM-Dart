@@ -182,7 +182,6 @@ void CalcPhi1AndPhi4(float phi0, float l0, float phi1_phi4[2])
     phi41 = acos(cos_phi41);
     phi42 = acos(cos_phi42);
 
-    // 这里还要再修改一下适配现在的仿真模型
     phi1 = phi11 + phi12;
     phi4 = M_PI - (phi41 + phi42);
 

@@ -382,11 +382,6 @@ void ChassisObserver(void)
     UpdateCalibrateStatus();
 
     BodyMotionObserve();
-
-    ModifyDebugDataPackage(2, CHASSIS.fdb.leg[0].joint.Phi1, "lp1");
-    ModifyDebugDataPackage(3, CHASSIS.fdb.leg[0].joint.Phi4, "lp4");
-    ModifyDebugDataPackage(4, CHASSIS.fdb.leg[1].joint.Phi1, "rp1");
-    ModifyDebugDataPackage(5, CHASSIS.fdb.leg[1].joint.Phi4, "rp4");
 }
 
 /**
@@ -596,11 +591,12 @@ static void BodyMotionObserve(void)
 void ChassisReference(void)
 {
     int16_t rc_x = 0, rc_wz = 0;
-    // int16_t rc_length = 0;
+    int16_t rc_length = 0, rc_angle = 0;
     int16_t rc_roll = 0;
     rc_deadband_limit(CHASSIS.rc->rc.ch[CHASSIS_X_CHANNEL], rc_x, CHASSIS_RC_DEADLINE);
     rc_deadband_limit(CHASSIS.rc->rc.ch[CHASSIS_WZ_CHANNEL], rc_wz, CHASSIS_RC_DEADLINE);
-    // rc_deadband_limit(CHASSIS.rc->rc.ch[CHASSIS_LENGTH_CHANNEL], rc_length, CHASSIS_RC_DEADLINE);
+    rc_deadband_limit(CHASSIS.rc->rc.ch[CHASSIS_LENGTH_CHANNEL], rc_length, CHASSIS_RC_DEADLINE);
+    rc_deadband_limit(CHASSIS.rc->rc.ch[CHASSIS_ANGLE_CHANNEL], rc_angle, CHASSIS_RC_DEADLINE);
     rc_deadband_limit(CHASSIS.rc->rc.ch[CHASSIS_ROLL_CHANNEL], rc_roll, CHASSIS_RC_DEADLINE);
 
     // 计算速度向量
@@ -654,8 +650,8 @@ void ChassisReference(void)
         } break;
         case CHASSIS_CUSTOM:
         case CHASSIS_DEBUG: {
-            angle = M_PI_2;  // + rc_angle * RC_TO_ONE * 0.3f;
-            length = 0.15f;  //+= rc_length * RC_LENGTH_ADD_RATIO;
+            angle = M_PI_2 + rc_angle * RC_TO_ONE * 0.3f;
+            length = 0.22f + rc_length * RC_TO_ONE * 0.1f;
         } break;
         case CHASSIS_FREE: {
         } break;
@@ -670,6 +666,8 @@ void ChassisReference(void)
 
     CHASSIS.ref.rod_L0[0] = length;
     CHASSIS.ref.rod_L0[1] = length;
+    CHASSIS.ref.rod_Angle[0] = angle;
+    CHASSIS.ref.rod_Angle[1] = angle;
 
     CHASSIS.ref.body.roll = fp32_constrain(rc_roll * RC_TO_ONE * MAX_ROLL, MIN_ROLL, MAX_ROLL);
 }
@@ -911,21 +909,47 @@ static void ConsoleDebug(void)
     CHASSIS.joint_motor[2].set.vel = 0;
     CHASSIS.joint_motor[3].set.vel = 0;
 
-#define DELTA_ANGLE 0.5f
+    float phi1_phi4_l[2], phi1_phi4_r[2];
 
+    CalcPhi1AndPhi4(CHASSIS.ref.rod_Angle[0], CHASSIS.ref.rod_L0[0], phi1_phi4_l);
+    CalcPhi1AndPhi4(CHASSIS.ref.rod_Angle[1], CHASSIS.ref.rod_L0[1], phi1_phi4_r);
+
+    ModifyDebugDataPackage(2, phi1_phi4_l[0], "lp1");
+    ModifyDebugDataPackage(3, phi1_phi4_l[1], "lp4");
+    ModifyDebugDataPackage(4, phi1_phi4_r[0], "rp1");
+    ModifyDebugDataPackage(5, phi1_phi4_r[1], "rp4");
+    ModifyDebugDataPackage(6, CHASSIS.ref.rod_Angle[0], "angle");
+    ModifyDebugDataPackage(7, CHASSIS.ref.rod_L0[0], "L0");
+
+    // 当解算出的角度正常时，设置目标角度
+    if (!(isnan(phi1_phi4_l[0]) || isnan(phi1_phi4_l[1]) || isnan(phi1_phi4_r[0]) ||
+          isnan(phi1_phi4_r[1]))) {
+        CHASSIS.joint_motor[0].set.pos =
+            theta_transform(phi1_phi4_l[0], -J0_ANGLE_OFFSET, J0_DIRECTION, 1);
+        CHASSIS.joint_motor[1].set.pos =
+            theta_transform(phi1_phi4_l[1], -J1_ANGLE_OFFSET, J1_DIRECTION, 1);
+        CHASSIS.joint_motor[2].set.pos =
+            theta_transform(phi1_phi4_r[0], -J2_ANGLE_OFFSET, J2_DIRECTION, 1);
+        CHASSIS.joint_motor[3].set.pos =
+            theta_transform(phi1_phi4_r[1], -J3_ANGLE_OFFSET, J3_DIRECTION, 1);
+    }
+    // 检测设定角度是否超过电机角度限制
     CHASSIS.joint_motor[0].set.pos =
-        theta_transform(M_PI - DELTA_ANGLE, -J0_ANGLE_OFFSET, J0_DIRECTION, 1);
+        fp32_constrain(CHASSIS.joint_motor[0].set.pos, MIN_J0_ANGLE, MAX_J0_ANGLE);
     CHASSIS.joint_motor[1].set.pos =
-        theta_transform(0 + DELTA_ANGLE, -J1_ANGLE_OFFSET, J1_DIRECTION, 1);
+        fp32_constrain(CHASSIS.joint_motor[1].set.pos, MIN_J1_ANGLE, MAX_J1_ANGLE);
     CHASSIS.joint_motor[2].set.pos =
-        theta_transform(M_PI - DELTA_ANGLE, -J2_ANGLE_OFFSET, J2_DIRECTION, 1);
+        fp32_constrain(CHASSIS.joint_motor[2].set.pos, MIN_J2_ANGLE, MAX_J2_ANGLE);
     CHASSIS.joint_motor[3].set.pos =
-        theta_transform(0 + DELTA_ANGLE, -J3_ANGLE_OFFSET, J3_DIRECTION, 1);
+        fp32_constrain(CHASSIS.joint_motor[3].set.pos, MIN_J3_ANGLE, MAX_J3_ANGLE);
 
-    // LocomotionController();
-    // CHASSIS.wheel_motor[0].set.tor = -(CHASSIS.cmd.leg[0].wheel.T * (W0_DIRECTION));
-    // CHASSIS.wheel_motor[1].set.tor = -(CHASSIS.cmd.leg[1].wheel.T * (W1_DIRECTION));
+    // 测试计算函数时先维持0位置
+    // CHASSIS.joint_motor[0].set.pos = 0;
+    // CHASSIS.joint_motor[1].set.pos = 0;
+    // CHASSIS.joint_motor[2].set.pos = 0;
+    // CHASSIS.joint_motor[3].set.pos = 0;
 
+    // ===驱动轮控制===
     CHASSIS.wheel_motor[0].set.tor = 0;
     CHASSIS.wheel_motor[1].set.tor = 0;
 }
