@@ -910,16 +910,8 @@ static void ConsoleDebug(void)
     CHASSIS.joint_motor[3].set.vel = 0;
 
     float phi1_phi4_l[2], phi1_phi4_r[2];
-
     CalcPhi1AndPhi4(CHASSIS.ref.rod_Angle[0], CHASSIS.ref.rod_L0[0], phi1_phi4_l);
     CalcPhi1AndPhi4(CHASSIS.ref.rod_Angle[1], CHASSIS.ref.rod_L0[1], phi1_phi4_r);
-
-    ModifyDebugDataPackage(2, phi1_phi4_l[0], "lp1");
-    ModifyDebugDataPackage(3, phi1_phi4_l[1], "lp4");
-    ModifyDebugDataPackage(4, phi1_phi4_r[0], "rp1");
-    ModifyDebugDataPackage(5, phi1_phi4_r[1], "rp4");
-    ModifyDebugDataPackage(6, CHASSIS.ref.rod_Angle[0], "angle");
-    ModifyDebugDataPackage(7, CHASSIS.ref.rod_L0[0], "L0");
 
     // 当解算出的角度正常时，设置目标角度
     if (!(isnan(phi1_phi4_l[0]) || isnan(phi1_phi4_l[1]) || isnan(phi1_phi4_r[0]) ||
@@ -943,15 +935,10 @@ static void ConsoleDebug(void)
     CHASSIS.joint_motor[3].set.pos =
         fp32_constrain(CHASSIS.joint_motor[3].set.pos, MIN_J3_ANGLE, MAX_J3_ANGLE);
 
-    // 测试计算函数时先维持0位置
-    // CHASSIS.joint_motor[0].set.pos = 0;
-    // CHASSIS.joint_motor[1].set.pos = 0;
-    // CHASSIS.joint_motor[2].set.pos = 0;
-    // CHASSIS.joint_motor[3].set.pos = 0;
-
     // ===驱动轮控制===
-    CHASSIS.wheel_motor[0].set.tor = 0;
-    CHASSIS.wheel_motor[1].set.tor = 0;
+    LocomotionController();
+    CHASSIS.wheel_motor[0].set.tor = -(CHASSIS.cmd.leg[0].wheel.T * (W0_DIRECTION));
+    CHASSIS.wheel_motor[1].set.tor = -(CHASSIS.cmd.leg[1].wheel.T * (W1_DIRECTION));
 }
 
 static void ConsoleStandUp(void)
@@ -1150,7 +1137,6 @@ static void SendWheelMotorCmd(void)
             LkMultipleTorqueControl(WHEEL_CAN, 0, 0, 0, 0);
         } break;
         case CHASSIS_DEBUG: {
-            // LkMultipleTorqueControl(WHEEL_CAN, 0, 0, 0, 0);
             LkMultipleTorqueControl(
                 WHEEL_CAN, CHASSIS.wheel_motor[0].set.tor, CHASSIS.wheel_motor[1].set.tor, 0, 0);
         } break;
