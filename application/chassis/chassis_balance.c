@@ -382,6 +382,11 @@ void ChassisObserver(void)
     UpdateCalibrateStatus();
 
     BodyMotionObserve();
+
+    ModifyDebugDataPackage(2, CHASSIS.cmd.leg[0].rod.F, "Fl");
+    ModifyDebugDataPackage(3, CHASSIS.cmd.leg[1].rod.F, "Fr");
+    ModifyDebugDataPackage(4, CHASSIS.fdb.leg[0].rod.L0, "L0l");
+    ModifyDebugDataPackage(5, CHASSIS.fdb.leg[1].rod.L0, "L0r");
 }
 
 /**
@@ -904,7 +909,7 @@ static void ConsoleDebug(void)
     CHASSIS.joint_motor[3].set.vel = 0;
 
     LocomotionController();
-    
+
     float phi1_phi4_l[2], phi1_phi4_r[2];
     CalcPhi1AndPhi4(CHASSIS.ref.rod_Angle[0], CHASSIS.ref.rod_L0[0], phi1_phi4_l);
     CalcPhi1AndPhi4(CHASSIS.ref.rod_Angle[1], CHASSIS.ref.rod_L0[1], phi1_phi4_r);
