@@ -17,26 +17,48 @@
 
 #include "usb_task.h"
 
+#include <stdbool.h>
+#include <string.h>
+
 #include "CRC8_CRC16.h"
 #include "cmsis_os.h"
 #include "data_exchange.h"
-#include "stdbool.h"
-#include "string.h"
 #include "usb_debug.h"
 #include "usb_device.h"
 #include "usb_typdef.h"
 #include "usbd_cdc_if.h"
 #include "usbd_conf.h"
 
+#if INCLUDE_uxTaskGetStackHighWaterMark
+uint32_t usb_high_water;
+#endif
+
 #define USB_TASK_CONTROL_TIME 1  // ms
 
-#define SEND_DURATION_IMU 1          // ms
-#define SEND_DURATION_DEBUG 1        // ms
-#define SEND_DURATION_ROBOT_INFO 10  // ms
+#define USB_OFFLINE_THRESHOLD 100  // ms
+#define USB_CONNECT_CNT 10
+
+// clang-format off
+#define SEND_DURATION_Imu         5   // ms
+#define SEND_DURATION_Debug       5   // ms
+#define SEND_DURATION_RobotInfo   10  // ms
+#define SEND_DURATION_Pid         10  // ms
+#define SEND_DURATION_AllRobotHp  10  // ms
+#define SEND_DURATION_GameStatus  10  // ms
+#define SEND_DURATION_RobotMotion 10  // ms
+// clang-format on
 
 #define USB_RX_DATA_SIZE 256  // byte
 #define USB_RECEIVE_LEN 150   // byte
 #define HEADER_SIZE 4         // byte
+
+#define CheckDurationAndSend(send_name)                                                  \
+    do {                                                                                 \
+        if ((HAL_GetTick() - LAST_SEND_TIME.##send_name) >= SEND_DURATION_##send_name) { \
+            LAST_SEND_TIME.##send_name = HAL_GetTick();                                  \
+            UsbSend##send_name##Data();                                                  \
+        }                                                                                \
+    } while (0)
 
 // Variable Declarations
 static uint8_t USB_RX_BUF[USB_RX_DATA_SIZE];
@@ -44,29 +66,44 @@ static uint8_t USB_RX_BUF[USB_RX_DATA_SIZE];
 static const Imu_t * IMU;
 static const ChassisSpeedVector_t * FDB_SPEED_VECTOR;
 
+// 判断USB连接状态用到的一些变量
+static bool USB_OFFLINE = true;
+static uint32_t RECEIVE_TIME = 0;
+static uint32_t LATEST_RX_TIMESTAMP = 0;
+static uint32_t CONTINUE_RECEIVE_CNT = 0;
+
 // 数据发送结构体
 // clang-format off
-static DebugSendData_s     SEND_DATA_DEBUG;
-static ImuSendData_s       SEND_DATA_IMU;
-static RobotInfoSendData_s SEND_DATA_ROBOT_INFO;
-static PidDebugSendData_s  SEND_DATA_PID;
+static SendDataDebug_s       SEND_DATA_DEBUG;
+static SendDataImu_s         SEND_DATA_IMU;
+static SendDataRobotInfo_s   SEND_DATA_ROBOT_INFO;
+static SendDataPidDebug_s    SEND_DATA_PID;
+static SendDataAllRobotHp_s  SEND_DATA_ALL_ROBOT_HP;
+static SendDataGameStatus_s  SEND_DATA_GAME_STATUS;
+static SendDataRobotMotion_s SEND_ROBOT_MOTION_DATA;
 // clang-format on
 
 // 数据接收结构体
-static RobotCmdReceiveData_s RECEIVE_ROBOT_CMD_DATA;
-static PidDebugReceiveData_s RECEIVE_PID_DEBUG_DATA;
+static ReceiveDataRobotCmd_s RECEIVE_ROBOT_CMD_DATA;
+static ReceiveDataPidDebug_s RECEIVE_PID_DEBUG_DATA;
+static ReceiveDataVirtualRc_s RECEIVE_VIRTUAL_RC_DATA;
 
 // 机器人控制指令数据
 static RobotCmdData_t ROBOT_CMD_DATA;
+static RC_ctrl_t VIRTUAL_RC_CTRL;
 
 // 发送数据间隔时间
 typedef struct
 {
-    uint8_t imu;
-    uint8_t debug;
-    uint8_t robot_info;
-} Duration_t;
-static Duration_t DURATION;
+    uint32_t Imu;
+    uint32_t Debug;
+    uint32_t RobotInfo;
+    uint32_t Pid;
+    uint32_t AllRobotHp;
+    uint32_t GameStatus;
+    uint32_t RobotMotion;
+} LastSendTime_t;
+static LastSendTime_t LAST_SEND_TIME;
 
 /*******************************************************************************/
 /* Main Function                                                               */
@@ -80,15 +117,23 @@ static void UsbInit(void);
 /* Send Function                                                               */
 /*******************************************************************************/
 
-static void UsbSendImuData(uint8_t duration);
-static void UsbSendDebugData(uint8_t duration);
-static void UsbSendRobotInfoData(uint8_t duration);
+static void UsbSendImuData(void);
+static void UsbSendDebugData(void);
+static void UsbSendRobotInfoData(void);
+static void UsbSendAllRobotHpData(void);
+static void UsbSendGameStatusData(void);
+static void UsbSendRobotMotionData(void);
 
 /*******************************************************************************/
 /* Receive Function                                                            */
 /*******************************************************************************/
 
 static void GetCmdData(void);
+static void GetVirtualRcCtrlData(void);
+
+/******************************************************************/
+/* Task                                                           */
+/******************************************************************/
 
 /**
  * @brief      USB任务主函数
@@ -97,27 +142,45 @@ static void GetCmdData(void);
  */
 void usb_task(void const * argument)
 {
+    Publish(&ROBOT_CMD_DATA, ROBOT_CMD_DATA_NAME);
+    Publish(&USB_OFFLINE, USB_OFFLINE_NAME);
+    Publish(&VIRTUAL_RC_CTRL, VIRTUAL_RC_NAME);
+
     MX_USB_DEVICE_Init();
 
-    Publish(&ROBOT_CMD_DATA, "ROBOT_CMD_DATA");
-
     vTaskDelay(10);  //等待USB设备初始化完成
-
     UsbInit();
 
     while (1) {
-        ModifyDebugDataPackage(0, IMU->yaw, "yaw");
-        ModifyDebugDataPackage(1, SEND_DATA_IMU.time_stamp, "data1");
-        ModifyDebugDataPackage(2, ROBOT_CMD_DATA.speed_vector.vx, "vx_set");
-        ModifyDebugDataPackage(3, ROBOT_CMD_DATA.speed_vector.vy, "vy_set");
-        ModifyDebugDataPackage(4, ROBOT_CMD_DATA.gimbal.pitch, "pitch");
-        ModifyDebugDataPackage(5, ROBOT_CMD_DATA.gimbal.yaw, "yaw");
+        ModifyDebugDataPackage(0, ROBOT_CMD_DATA.gimbal.pitch, "pitch");
+
+        // ModifyDebugDataPackage(1, VIRTUAL_RC_CTRL.rc.ch[0], "ch0");
+        // ModifyDebugDataPackage(2, VIRTUAL_RC_CTRL.rc.ch[1], "ch1");
+        // ModifyDebugDataPackage(3, VIRTUAL_RC_CTRL.rc.ch[2], "ch2");
+        // ModifyDebugDataPackage(4, VIRTUAL_RC_CTRL.rc.ch[3], "ch3");
+        // ModifyDebugDataPackage(5, VIRTUAL_RC_CTRL.rc.ch[4], "ch4");
+        // ModifyDebugDataPackage(6, VIRTUAL_RC_CTRL.rc.s[0], "s0");
+        // ModifyDebugDataPackage(7, VIRTUAL_RC_CTRL.rc.s[1], "s1");
 
         UsbSendData();
         UsbReceiveData();
         GetCmdData();
+        GetVirtualRcCtrlData();
+
+        if (HAL_GetTick() - RECEIVE_TIME > USB_OFFLINE_THRESHOLD) {
+            USB_OFFLINE = true;
+            CONTINUE_RECEIVE_CNT = 0;
+        } else if (CONTINUE_RECEIVE_CNT > USB_CONNECT_CNT) {
+            USB_OFFLINE = false;
+        } else {
+            CONTINUE_RECEIVE_CNT++;
+        }
 
         vTaskDelay(USB_TASK_CONTROL_TIME);
+
+#if INCLUDE_uxTaskGetStackHighWaterMark
+        usb_high_water = uxTaskGetStackHighWaterMark(NULL);
+#endif
     }
 }
 
@@ -133,20 +196,24 @@ void usb_task(void const * argument)
 static void UsbInit(void)
 {
     // 订阅数据
-    IMU = Subscribe("imu_data");                        // 获取IMU数据指针
-    FDB_SPEED_VECTOR = Subscribe("chassis_fdb_speed");  // 获取底盘速度矢量指针
+    IMU = Subscribe(IMU_NAME);                        // 获取IMU数据指针
+    FDB_SPEED_VECTOR = Subscribe(CHASSIS_FDB_SPEED_NAME);  // 获取底盘速度矢量指针
 
     // 数据置零
-    memset(&DURATION, 0, sizeof(Duration_t));
+    memset(&LAST_SEND_TIME, 0, sizeof(LastSendTime_t));
+    memset(&RECEIVE_ROBOT_CMD_DATA, 0, sizeof(ReceiveDataRobotCmd_s));
+    memset(&RECEIVE_PID_DEBUG_DATA, 0, sizeof(ReceiveDataPidDebug_s));
+    memset(&RECEIVE_VIRTUAL_RC_DATA, 0, sizeof(ReceiveDataVirtualRc_s));
+    memset(&ROBOT_CMD_DATA, 0, sizeof(RobotCmdData_t));
+    memset(&VIRTUAL_RC_CTRL, 0, sizeof(RC_ctrl_t));
 
     // 1.初始化调试数据包
     // 帧头部分
     SEND_DATA_DEBUG.frame_header.sof = SEND_SOF;
-    SEND_DATA_DEBUG.frame_header.len = (uint8_t)(sizeof(DebugSendData_s) - 6);
+    SEND_DATA_DEBUG.frame_header.len = (uint8_t)(sizeof(SendDataDebug_s) - 6);
     SEND_DATA_DEBUG.frame_header.id = DEBUG_DATA_SEND_ID;
     append_CRC8_check_sum(  // 添加帧头 CRC8 校验位
         (uint8_t *)(&SEND_DATA_DEBUG.frame_header), sizeof(SEND_DATA_DEBUG.frame_header));
-
     // 数据部分
     for (uint8_t i = 0; i < DEBUG_PACKAGE_NUM; i++) {
         SEND_DATA_DEBUG.packages[i].type = 1;
@@ -154,18 +221,16 @@ static void UsbInit(void)
     }
 
     // 2.初始化IMU数据包
-    // 帧头部分
     SEND_DATA_IMU.frame_header.sof = SEND_SOF;
-    SEND_DATA_IMU.frame_header.len = (uint8_t)(sizeof(ImuSendData_s) - 6);
+    SEND_DATA_IMU.frame_header.len = (uint8_t)(sizeof(SendDataImu_s) - 6);
     SEND_DATA_IMU.frame_header.id = IMU_DATA_SEND_ID;
     append_CRC8_check_sum(  // 添加帧头 CRC8 校验位
         (uint8_t *)(&SEND_DATA_IMU.frame_header), sizeof(SEND_DATA_IMU.frame_header));
-    // 数据部分
 
     // 3.初始化机器人信息数据包
     // 帧头部分
     SEND_DATA_ROBOT_INFO.frame_header.sof = SEND_SOF;
-    SEND_DATA_ROBOT_INFO.frame_header.len = (uint8_t)(sizeof(RobotInfoSendData_s) - 6);
+    SEND_DATA_ROBOT_INFO.frame_header.len = (uint8_t)(sizeof(SendDataRobotInfo_s) - 6);
     SEND_DATA_ROBOT_INFO.frame_header.id = ROBOT_INFO_DATA_SEND_ID;
     append_CRC8_check_sum(  // 添加帧头 CRC8 校验位
         (uint8_t *)(&SEND_DATA_ROBOT_INFO.frame_header), sizeof(SEND_DATA_ROBOT_INFO.frame_header));
@@ -175,23 +240,36 @@ static void UsbInit(void)
     SEND_DATA_ROBOT_INFO.data.type.shoot = SHOOT_TYPE;
     SEND_DATA_ROBOT_INFO.data.type.arm = MECHANICAL_ARM_TYPE;
 
-    // SEND_DATA_ROBOT_INFO.data.type.chassis = 1;
-    // SEND_DATA_ROBOT_INFO.data.type.gimbal = 2;
-    // SEND_DATA_ROBOT_INFO.data.type.shoot = 3;
-    // SEND_DATA_ROBOT_INFO.data.type.arm = 4;
-    // SEND_DATA_ROBOT_INFO.data.type.custom_controller = 5;
-
-    // sizeof(RobotCmdData_s);
-
     // 4.初始化pid调参数据
-    // 帧头部分
     SEND_DATA_PID.frame_header.sof = SEND_SOF;
-    SEND_DATA_PID.frame_header.len = (uint8_t)(sizeof(PidDebugSendData_s) - 6);
+    SEND_DATA_PID.frame_header.len = (uint8_t)(sizeof(SendDataPidDebug_s) - 6);
     SEND_DATA_PID.frame_header.id = PID_DEBUG_DATA_SEND_ID;
     append_CRC8_check_sum(  // 添加帧头 CRC8 校验位
         (uint8_t *)(&SEND_DATA_PID.frame_header), sizeof(SEND_DATA_PID.frame_header));
-    // 数据部分
 
+    // 5.初始化所有机器人血量数据
+    SEND_DATA_ALL_ROBOT_HP.frame_header.sof = SEND_SOF;
+    SEND_DATA_ALL_ROBOT_HP.frame_header.len = (uint8_t)(sizeof(SendDataAllRobotHp_s) - 6);
+    SEND_DATA_ALL_ROBOT_HP.frame_header.id = ALL_ROBOT_HP_SEND_ID;
+    append_CRC8_check_sum(  // 添加帧头 CRC8 校验位
+        (uint8_t *)(&SEND_DATA_ALL_ROBOT_HP.frame_header),
+        sizeof(SEND_DATA_ALL_ROBOT_HP.frame_header));
+
+    // 6.初始化比赛状态数据
+    SEND_DATA_GAME_STATUS.frame_header.sof = SEND_SOF;
+    SEND_DATA_GAME_STATUS.frame_header.len = (uint8_t)(sizeof(SendDataGameStatus_s) - 6);
+    SEND_DATA_GAME_STATUS.frame_header.id = GAME_STATUS_SEND_ID;
+    append_CRC8_check_sum(  // 添加帧头 CRC8 校验位
+        (uint8_t *)(&SEND_DATA_GAME_STATUS.frame_header),
+        sizeof(SEND_DATA_GAME_STATUS.frame_header));
+
+    // 7.初始化机器人运动数据
+    SEND_ROBOT_MOTION_DATA.frame_header.sof = SEND_SOF;
+    SEND_ROBOT_MOTION_DATA.frame_header.len = (uint8_t)(sizeof(SendDataRobotMotion_s) - 6);
+    SEND_ROBOT_MOTION_DATA.frame_header.id = ROBOT_MOTION_DATA_SEND_ID;
+    append_CRC8_check_sum(  // 添加帧头 CRC8 校验位
+        (uint8_t *)(&SEND_ROBOT_MOTION_DATA.frame_header),
+        sizeof(SEND_ROBOT_MOTION_DATA.frame_header));
 }
 
 /**
@@ -201,12 +279,18 @@ static void UsbInit(void)
  */
 static void UsbSendData(void)
 {
-    // 发送imu数据
-    UsbSendImuData(SEND_DURATION_IMU);
-    // 发送debug数据
-    UsbSendDebugData(SEND_DURATION_DEBUG);
-    // 发送机器人信息数据
-    UsbSendRobotInfoData(SEND_DURATION_ROBOT_INFO);
+    // 发送Imu数据
+    CheckDurationAndSend(Imu);
+    // 发送Debug数据
+    CheckDurationAndSend(Debug);
+    // 发送RobotInfo数据
+    CheckDurationAndSend(RobotInfo);
+    // 发送AllRobotHp数据
+    CheckDurationAndSend(AllRobotHp);
+    // 发送GameStatus数据
+    CheckDurationAndSend(GameStatus);
+    // 发送RobotMotion数据
+    CheckDurationAndSend(RobotMotion);
 }
 
 /**
@@ -232,7 +316,7 @@ static void UsbReceiveData(void)
             sof_address++;
         }
         // 判断是否超出接收数据范围
-        if (sof_address > USB_RX_BUF + USB_RECEIVE_LEN) {
+        if (sof_address > rx_data_end_address) {
             break;  // 退出循环
         }
         // 检查CRC8校验
@@ -245,16 +329,26 @@ static void UsbReceiveData(void)
             if (crc16_ok) {
                 switch (data_id) {
                     case ROBOT_CMD_DATA_RECEIVE_ID: {
-                        memcpy(&RECEIVE_ROBOT_CMD_DATA, sof_address, sizeof(RobotCmdReceiveData_s));
+                        memcpy(&RECEIVE_ROBOT_CMD_DATA, sof_address, sizeof(ReceiveDataRobotCmd_s));
                     } break;
                     case PID_DEBUG_DATA_RECEIVE_ID: {
-                        memcpy(&RECEIVE_PID_DEBUG_DATA, sof_address, sizeof(PidDebugReceiveData_s));
+                        memcpy(&RECEIVE_PID_DEBUG_DATA, sof_address, sizeof(ReceiveDataPidDebug_s));
+                    } break;
+                    case VIRTUAL_RC_DATA_RECEIVE_ID: {
+                        memcpy(
+                            &RECEIVE_VIRTUAL_RC_DATA, sof_address, sizeof(ReceiveDataVirtualRc_s));
                     } break;
                     default:
                         break;
                 }
+                if (*((uint32_t *)(&sof_address[4])) > LATEST_RX_TIMESTAMP) {
+                    LATEST_RX_TIMESTAMP = *((uint32_t *)(&sof_address[4]));
+                    RECEIVE_TIME = HAL_GetTick();
+                }
             }
             sof_address += (data_len + HEADER_SIZE + 2);
+        } else {  //CRC8校验失败，移动到下一个字节
+            sof_address++;
         }
     }
     // 更新下一次接收数据的起始位置
@@ -278,17 +372,13 @@ static void UsbReceiveData(void)
  * @brief 发送IMU数据
  * @param duration 发送周期
  */
-static void UsbSendImuData(uint8_t duration)
+static void UsbSendImuData(void)
 {
     if (IMU == NULL) {
         return;
     }
 
-    DURATION.imu++;
-    if (DURATION.imu < duration) {
-        return;
-    }
-    DURATION.imu = 0;
+    SEND_DATA_IMU.time_stamp = HAL_GetTick();
 
     SEND_DATA_IMU.data.yaw = IMU->yaw;
     SEND_DATA_IMU.data.pitch = IMU->pitch;
@@ -298,48 +388,99 @@ static void UsbSendImuData(uint8_t duration)
     SEND_DATA_IMU.data.pitch_vel = IMU->pitch_vel;
     SEND_DATA_IMU.data.roll_vel = IMU->roll_vel;
 
-    SEND_DATA_IMU.time_stamp = HAL_GetTick();
-    append_CRC16_check_sum((uint8_t *)&SEND_DATA_IMU, sizeof(ImuSendData_s));
-    USB_Transmit((uint8_t *)&SEND_DATA_IMU, sizeof(ImuSendData_s));
+    append_CRC16_check_sum((uint8_t *)&SEND_DATA_IMU, sizeof(SendDataImu_s));
+    USB_Transmit((uint8_t *)&SEND_DATA_IMU, sizeof(SendDataImu_s));
 }
 
 /**
  * @brief 发送DEBUG数据
  * @param duration 发送周期
  */
-static void UsbSendDebugData(uint8_t duration)
+static void UsbSendDebugData(void)
 {
-    DURATION.debug++;
-    if (DURATION.debug < duration) {
-        return;
-    }
-    DURATION.debug = 0;
-
     SEND_DATA_DEBUG.time_stamp = HAL_GetTick();
-    append_CRC16_check_sum((uint8_t *)&SEND_DATA_DEBUG, sizeof(DebugSendData_s));
-    USB_Transmit((uint8_t *)&SEND_DATA_DEBUG, sizeof(DebugSendData_s));
+    append_CRC16_check_sum((uint8_t *)&SEND_DATA_DEBUG, sizeof(SendDataDebug_s));
+    USB_Transmit((uint8_t *)&SEND_DATA_DEBUG, sizeof(SendDataDebug_s));
 }
 
 /**
  * @brief 发送机器人信息数据
  * @param duration 发送周期
  */
-static void UsbSendRobotInfoData(uint8_t duration)
+static void UsbSendRobotInfoData(void)
 {
-    DURATION.robot_info++;
-    if (DURATION.robot_info < duration) {
-        return;
-    }
-    DURATION.robot_info = 0;
-
     SEND_DATA_ROBOT_INFO.time_stamp = HAL_GetTick();
 
-    SEND_DATA_ROBOT_INFO.data.speed_vector.vx = FDB_SPEED_VECTOR->vx;
-    SEND_DATA_ROBOT_INFO.data.speed_vector.vy = FDB_SPEED_VECTOR->vy;
-    SEND_DATA_ROBOT_INFO.data.speed_vector.wz = FDB_SPEED_VECTOR->wz;
+    SEND_DATA_ROBOT_INFO.data.referee.id = 1;
+    SEND_DATA_ROBOT_INFO.data.referee.hp = 2;
+    SEND_DATA_ROBOT_INFO.data.referee.heat = 3;
 
-    append_CRC16_check_sum((uint8_t *)&SEND_DATA_ROBOT_INFO, sizeof(RobotInfoSendData_s));
-    USB_Transmit((uint8_t *)&SEND_DATA_ROBOT_INFO, sizeof(RobotInfoSendData_s));
+    append_CRC16_check_sum((uint8_t *)&SEND_DATA_ROBOT_INFO, sizeof(SendDataRobotInfo_s));
+    USB_Transmit((uint8_t *)&SEND_DATA_ROBOT_INFO, sizeof(SendDataRobotInfo_s));
+}
+
+/**
+ * @brief 发送全场机器人hp信息数据
+ * @param duration 发送周期
+ */
+static void UsbSendAllRobotHpData(void)
+{
+    SEND_DATA_ALL_ROBOT_HP.time_stamp = HAL_GetTick();
+
+    SEND_DATA_ALL_ROBOT_HP.data.red_1_robot_hp = 1;
+    SEND_DATA_ALL_ROBOT_HP.data.red_2_robot_hp = 2;
+    SEND_DATA_ALL_ROBOT_HP.data.red_3_robot_hp = 3;
+    SEND_DATA_ALL_ROBOT_HP.data.red_4_robot_hp = 4;
+    SEND_DATA_ALL_ROBOT_HP.data.red_5_robot_hp = 5;
+    SEND_DATA_ALL_ROBOT_HP.data.red_7_robot_hp = 7;
+    SEND_DATA_ALL_ROBOT_HP.data.red_outpost_hp = 8;
+    SEND_DATA_ALL_ROBOT_HP.data.red_base_hp = 9;
+    SEND_DATA_ALL_ROBOT_HP.data.blue_1_robot_hp = 1;
+    SEND_DATA_ALL_ROBOT_HP.data.blue_2_robot_hp = 2;
+    SEND_DATA_ALL_ROBOT_HP.data.blue_3_robot_hp = 3;
+    SEND_DATA_ALL_ROBOT_HP.data.blue_4_robot_hp = 4;
+    SEND_DATA_ALL_ROBOT_HP.data.blue_5_robot_hp = 5;
+    SEND_DATA_ALL_ROBOT_HP.data.blue_7_robot_hp = 7;
+    SEND_DATA_ALL_ROBOT_HP.data.blue_outpost_hp = 8;
+    SEND_DATA_ALL_ROBOT_HP.data.blue_base_hp = 9;
+
+    append_CRC16_check_sum((uint8_t *)&SEND_DATA_ALL_ROBOT_HP, sizeof(SendDataAllRobotHp_s));
+    USB_Transmit((uint8_t *)&SEND_DATA_ALL_ROBOT_HP, sizeof(SendDataAllRobotHp_s));
+}
+
+/**
+ * @brief 发送比赛状态数据
+ * @param duration 发送周期
+ */
+static void UsbSendGameStatusData(void)
+{
+    SEND_DATA_GAME_STATUS.time_stamp = HAL_GetTick();
+
+    SEND_DATA_GAME_STATUS.data.game_progress = 1;
+    SEND_DATA_GAME_STATUS.data.stage_remain_time = 100;
+
+    append_CRC16_check_sum((uint8_t *)&SEND_DATA_GAME_STATUS, sizeof(SendDataGameStatus_s));
+    USB_Transmit((uint8_t *)&SEND_DATA_GAME_STATUS, sizeof(SendDataGameStatus_s));
+}
+
+/**
+ * @brief 发送机器人运动数据
+ * @param duration 发送周期
+ */
+static void UsbSendRobotMotionData(void)
+{
+    if (FDB_SPEED_VECTOR == NULL) {
+        return;
+    }
+
+    SEND_ROBOT_MOTION_DATA.time_stamp = HAL_GetTick();
+
+    SEND_ROBOT_MOTION_DATA.data.speed_vector.vx = FDB_SPEED_VECTOR->vx;
+    SEND_ROBOT_MOTION_DATA.data.speed_vector.vy = FDB_SPEED_VECTOR->vy;
+    SEND_ROBOT_MOTION_DATA.data.speed_vector.wz = FDB_SPEED_VECTOR->wz;
+
+    append_CRC16_check_sum((uint8_t *)&SEND_ROBOT_MOTION_DATA, sizeof(SendDataRobotMotion_s));
+    USB_Transmit((uint8_t *)&SEND_ROBOT_MOTION_DATA, sizeof(SendDataRobotMotion_s));
 }
 
 /*******************************************************************************/
@@ -364,6 +505,11 @@ static void GetCmdData(void)
     ROBOT_CMD_DATA.shoot.fric_on = RECEIVE_ROBOT_CMD_DATA.data.shoot.fric_on;
 }
 
+static void GetVirtualRcCtrlData(void)
+{
+    memcpy(&VIRTUAL_RC_CTRL, &RECEIVE_VIRTUAL_RC_DATA.data, sizeof(RC_ctrl_t));
+}
+
 /*******************************************************************************/
 /* Public Function                                                             */
 /*******************************************************************************/
@@ -377,7 +523,10 @@ static void GetCmdData(void)
 void ModifyDebugDataPackage(uint8_t index, float data, const char * name)
 {
     SEND_DATA_DEBUG.packages[index].data = data;
-    SEND_DATA_DEBUG.packages[index].type = 1;
+
+    if (SEND_DATA_DEBUG.packages[index].name[0] != '\0') {
+        return;
+    }
 
     uint8_t i = 0;
     while (name[i] != '\0' && i < 10) {

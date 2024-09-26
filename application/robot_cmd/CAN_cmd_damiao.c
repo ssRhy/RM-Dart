@@ -338,6 +338,19 @@ void DmMitStop(Motor_s * motor)
 }
 
 /**
+ * @brief          达妙电机MIT控制
+ * @param[in]      motor 电机结构体
+ * @retval         none
+ */
+void DmMitCtrl(Motor_s * motor, float kp, float kd)
+{
+    hcan_t * hcan = GetHcanPoint(motor);
+    if (hcan == NULL) return;
+
+    MitCtrl(hcan, motor->id, motor->set.pos, motor->set.vel, kp, kd, motor->set.tor);
+}
+
+/**
  * @brief          达妙电机使用力矩控制
  * @param[in]      motor 电机结构体
  * @retval         none

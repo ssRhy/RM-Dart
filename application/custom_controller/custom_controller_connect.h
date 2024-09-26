@@ -15,8 +15,8 @@
   ****************************(C) COPYRIGHT 2024 Polarbear****************************
   */
 
-#ifndef __SEND_DATA_TASK__
-#define __SEND_DATA_TASK__
+#ifndef __CUSTOM_CONTROLLER_CONNECT_H__
+#define __CUSTOM_CONTROLLER_CONNECT_H__
 
 #include "stm32f4xx_hal.h"
 #include "referee.h"
@@ -48,18 +48,7 @@ typedef __packed struct
     __packed uint16_t frame_tail;  // 帧尾CRC16校验
 } Controller_t;                    // 自定义控制器数据包
 
-typedef __packed struct __EngineerCustomController
-{
-    float yaw;
-    float big_arm_pitch;
-    float small_arm_pitch;
-    float small_arm_roll;
-} EngineerCustomControllerData_t;
-
 extern void SendDataToPC(uint8_t * data);
-
-extern void EngineeringCustomControllerRxDecode(
-    EngineerCustomControllerData_t * engineer_custom_controller_data);
 
 #endif
 /************************ END OF FILE ************************/

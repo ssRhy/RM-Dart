@@ -31,11 +31,31 @@
 #define __MUSIC_ON 0               // 开启音乐
 #define __TUNING_MODE TUNING_NONE  // 调参模式
 #define __SELF_BOARD_ID 1          // 本板ID
+#define __HEAT_IMU 0  // 加热IMU(防止Debug时因断点导致pid失效产生过热，烧坏IMU)
+#define __CALI_DATA_FROM CALI_FROM_FLASH  // 校准数据来源(部分flash损坏的C板需要采用其他数据源)
 
 // USB通信的部分选项
-#define __USING_OLD_USB 0   // 使用旧版USB通信
-#define __USB_SEND_IMU 1    // 发送IMU数据
-#define __USB_SEND_RC 1     // 发送遥控器数据
 #define __USB_SEND_DEBUG 1  // 发送DEBUG数据
+
+// 模块检查
+#ifndef CHASSIS_TYPE
+#define CHASSIS_TYPE CHASSIS_NONE
+#endif
+
+#ifndef GIMBAL_TYPE
+#define GIMBAL_TYPE GIMBAL_NONE
+#endif
+
+#ifndef SHOOT_TYPE
+#define SHOOT_TYPE SHOOT_NONE
+#endif
+
+#ifndef MECHANICAL_ARM_TYPE
+#define MECHANICAL_ARM_TYPE MECHANICAL_ARM_NONE
+#endif
+
+#ifndef CUSTOM_CONTROLLER_TYPE
+#define CUSTOM_CONTROLLER_TYPE CUSTOM_CONTROLLER_NONE
+#endif
 
 #endif /* ROBOT_PARAM_H */
