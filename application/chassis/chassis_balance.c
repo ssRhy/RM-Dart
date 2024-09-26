@@ -760,16 +760,19 @@ static void LocomotionController(void)
         CHASSIS.cmd.leg[i].rod.Tp = T_Tp[1];
     }
 
+    // ROLL角控制
+    float delta_L0 =
+        PID_calc(&CHASSIS.pid.roll_angle, CHASSIS.fdb.body.roll, CHASSIS.ref.body.roll);
+    CHASSIS.ref.rod_L0[0] =
+        fp32_constrain(CHASSIS.ref.rod_L0[0] - delta_L0, MIN_LEG_LENGTH, MAX_LEG_LENGTH);
+    CHASSIS.ref.rod_L0[1] =
+        fp32_constrain(CHASSIS.ref.rod_L0[1] + delta_L0, MIN_LEG_LENGTH, MAX_LEG_LENGTH);
+
     // 转向控制
     PID_calc(&CHASSIS.pid.yaw_velocity, CHASSIS.fdb.body.yaw_dot, CHASSIS.ref.speed_vector.wz);
     CHASSIS.cmd.leg[0].wheel.T += CHASSIS.pid.yaw_velocity.out;
     CHASSIS.cmd.leg[1].wheel.T -= CHASSIS.pid.yaw_velocity.out;
 }
-
-/**
- * @brief 腿部位置控制
- */
-// static void LegPositionController(void) {}
 
 /**
  * @brief 腿部力矩控制
@@ -788,15 +791,6 @@ static void LegTorqueController(void)
         CHASSIS.cmd.leg[i].rod.F = F_ff + F_compensate;
         // CHASSIS.cmd.leg[i].rod.F = F_ff + F_compensate - F_ff;
     }
-    // OutputPCData.packets[19].data = CHASSIS.pid.leg_length_length[0].out;
-    // OutputPCData.packets[20].data = CHASSIS.pid.leg_length_length[1].out;
-
-    // ROLL角控制
-    float F_delta = PID_calc(&CHASSIS.pid.roll_angle, CHASSIS.fdb.body.roll, CHASSIS.ref.body.roll);
-    CHASSIS.cmd.leg[0].rod.F -= CHASSIS.pid.roll_angle.out;
-    CHASSIS.cmd.leg[1].rod.F += CHASSIS.pid.roll_angle.out;
-
-    // 腿角控制
 
     // 转换为关节力矩
     CalcVmc(
@@ -909,6 +903,8 @@ static void ConsoleDebug(void)
     CHASSIS.joint_motor[2].set.vel = 0;
     CHASSIS.joint_motor[3].set.vel = 0;
 
+    LocomotionController();
+    
     float phi1_phi4_l[2], phi1_phi4_r[2];
     CalcPhi1AndPhi4(CHASSIS.ref.rod_Angle[0], CHASSIS.ref.rod_L0[0], phi1_phi4_l);
     CalcPhi1AndPhi4(CHASSIS.ref.rod_Angle[1], CHASSIS.ref.rod_L0[1], phi1_phi4_r);
@@ -936,7 +932,6 @@ static void ConsoleDebug(void)
         fp32_constrain(CHASSIS.joint_motor[3].set.pos, MIN_J3_ANGLE, MAX_J3_ANGLE);
 
     // ===驱动轮控制===
-    LocomotionController();
     CHASSIS.wheel_motor[0].set.tor = -(CHASSIS.cmd.leg[0].wheel.T * (W0_DIRECTION));
     CHASSIS.wheel_motor[1].set.tor = -(CHASSIS.cmd.leg[1].wheel.T * (W1_DIRECTION));
 }
