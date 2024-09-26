@@ -155,6 +155,8 @@ void ChassisInit(void)
         MAX_IOUT_CHASSIS_PITCH_VELOCITY);
 #else
     float roll_angle_pid[3] = {KP_CHASSIS_ROLL_ANGLE, KI_CHASSIS_ROLL_ANGLE, KD_CHASSIS_ROLL_ANGLE};
+    float roll_velocity_pid[3] = {
+        KP_CHASSIS_ROLL_VELOCITY, KI_CHASSIS_ROLL_VELOCITY, KD_CHASSIS_ROLL_VELOCITY};
 
     float leg_length_length_pid[3] = {
         KP_CHASSIS_LEG_LENGTH_LENGTH, KI_CHASSIS_LEG_LENGTH_LENGTH, KD_CHASSIS_LEG_LENGTH_LENGTH};
@@ -165,6 +167,10 @@ void ChassisInit(void)
     PID_init(
         &CHASSIS.pid.roll_angle, PID_POSITION, roll_angle_pid, MAX_OUT_CHASSIS_ROLL_ANGLE,
         MAX_IOUT_CHASSIS_ROLL_ANGLE);
+
+    PID_init(
+        &CHASSIS.pid.roll_velocity, PID_POSITION, roll_velocity_pid, MAX_OUT_CHASSIS_ROLL_VELOCITY,
+        MAX_IOUT_CHASSIS_ROLL_VELOCITY);
 
     PID_init(
         &CHASSIS.pid.leg_length_length[0], PID_POSITION, leg_length_length_pid,
@@ -766,8 +772,12 @@ static void LocomotionController(void)
     }
 
     // ROLL角控制
+    PID_calc(&CHASSIS.pid.roll_angle, CHASSIS.fdb.body.roll, CHASSIS.ref.body.roll);
     float delta_L0 =
-        PID_calc(&CHASSIS.pid.roll_angle, CHASSIS.fdb.body.roll, CHASSIS.ref.body.roll);
+        // PID_calc(&CHASSIS.pid.roll_velocity, CHASSIS.fdb.body.roll_dot, CHASSIS.pid.roll_angle.out);
+        PID_calc(
+            &CHASSIS.pid.roll_velocity, CHASSIS.fdb.body.roll_dot, GenerateSinWave(0.1f, 0, 3));
+
     CHASSIS.ref.rod_L0[0] =
         fp32_constrain(CHASSIS.ref.rod_L0[0] - delta_L0, MIN_LEG_LENGTH, MAX_LEG_LENGTH);
     CHASSIS.ref.rod_L0[1] =
@@ -987,8 +997,8 @@ static void ConsoleStandUp(void)
 
 #define DM_DELAY 250
 
-#define DEBUG_KP 10
-#define DEBUG_KD 1
+#define DEBUG_KP 17
+#define DEBUG_KD 2
 
 static void SendJointMotorCmd(void);
 static void SendWheelMotorCmd(void);

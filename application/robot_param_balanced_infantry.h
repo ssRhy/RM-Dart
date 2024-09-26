@@ -214,28 +214,14 @@
     #define KI_CHASSIS_ROLL_ANGLE        (0.003f)
     #define KD_CHASSIS_ROLL_ANGLE        (0.02f)
     #define MAX_IOUT_CHASSIS_ROLL_ANGLE  (0.005f)
-    #define MAX_OUT_CHASSIS_ROLL_ANGLE   (0.15f)
+    #define MAX_OUT_CHASSIS_ROLL_ANGLE   (0.1f)
     
-    //roll轴跟踪角度环PID参数
-    // #define KP_CHASSIS_ROLL_ANGLE        (8.0f)
-    // #define KI_CHASSIS_ROLL_ANGLE        (0.0f)
-    // #define KD_CHASSIS_ROLL_ANGLE        (1.0f)
-    // #define MAX_IOUT_CHASSIS_ROLL_ANGLE  (0.0f)
-    // #define MAX_OUT_CHASSIS_ROLL_ANGLE   (15.0f)
-
-    //pitch轴跟踪角度环PID参数
-    #define KP_CHASSIS_PITCH_ANGLE        (0.0f)
-    #define KI_CHASSIS_PITCH_ANGLE        (0.0f)
-    #define KD_CHASSIS_PITCH_ANGLE        (0.0f)
-    #define MAX_IOUT_CHASSIS_PITCH_ANGLE  (0.0f)
-    #define MAX_OUT_CHASSIS_PITCH_ANGLE   (0.0f)
-
-    //pitch轴跟踪速度环PID参数
-    // #define KP_CHASSIS_PITCH_VELOCITY        (1.5f)
-    // #define KI_CHASSIS_PITCH_VELOCITY        (0.0f)
-    // #define KD_CHASSIS_PITCH_VELOCITY        (0.0f)
-    // #define MAX_IOUT_CHASSIS_PITCH_VELOCITY  (0.0f)
-    // #define MAX_OUT_CHASSIS_PITCH_VELOCITY   (0.0f)
+    //roll轴跟踪速度环PID参数
+    #define KP_CHASSIS_ROLL_VELOCITY        (0.01f)
+    #define KI_CHASSIS_ROLL_VELOCITY        (0.0001f)
+    #define KD_CHASSIS_ROLL_VELOCITY        (0.005f)
+    #define MAX_IOUT_CHASSIS_ROLL_VELOCITY  (0.01f)
+    #define MAX_OUT_CHASSIS_ROLL_VELOCITY   (0.1f)
 
     // 腿长跟踪长度环PID参数
     #define KP_CHASSIS_LEG_LENGTH_LENGTH        (35.0f)
