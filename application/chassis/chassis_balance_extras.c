@@ -189,4 +189,55 @@ void CalcPhi1AndPhi4(float phi0, float l0, float phi1_phi4[2])
     phi1_phi4[1] = phi4;
 }
 
+/**
+ * @brief 通过当前底盘姿态和目标roll角计算两腿长度期望差值
+ * @param[in]  L0l (m)当前左腿长度
+ * @param[in]  L0r (m)当前右腿长度
+ * @param[in]  theta0 (rad)当前底盘roll角
+ * @param[in]  theta1 (rad)目标roll角
+ * @return 两腿长度期望差值(m)(L1l - L1r)
+ */
+float CalcLegLengthDiff(float L0l, float L0r, float theta0, float theta1)
+{
+    float sin_alpha = (WHEEL_BASE * tanf(theta0) - L0l + L0r) * cosf(theta0) / WHEEL_BASE;
+    return WHEEL_BASE * tanf(theta1) - WHEEL_BASE / cosf(theta1) * sin_alpha;
+}
+
+/**
+ * @brief 双腿腿长协调控制，维持腿长目标在范围内，同时尽可能达到两腿目标差值
+ * @param[in]  Ll_ref   (m)左腿长度指针
+ * @param[in]  Lr_ref   (m)右腿长度指针
+ * @param[in]  diff (m)腿长差值
+ * @param[in]  add  (m)腿长差值补偿量
+ */
+void CoordinateLegLength(float * Ll_ref, float * Lr_ref, float diff, float add)
+{
+    *Ll_ref = *Ll_ref + diff * 0.5f + add;
+    *Lr_ref = *Lr_ref - diff * 0.5f - add;
+
+    // float delta = *Ll_ref - *Lr_ref;
+    // if (delta > MAX_LEG_LENGTH - MIN_LEG_LENGTH) {
+    //     *Ll_ref = MAX_LEG_LENGTH;
+    //     *Lr_ref = MIN_LEG_LENGTH;
+    //     return;
+    // } else if (delta < MIN_LEG_LENGTH - MAX_LEG_LENGTH) {
+    //     *Ll_ref = MIN_LEG_LENGTH;
+    //     *Lr_ref = MAX_LEG_LENGTH;
+    //     return;
+    // }
+
+    //先判断短腿范围，再判断长腿范围
+    float * short_leg = *Ll_ref < *Lr_ref ? Ll_ref : Lr_ref;
+    float * long_leg = *Ll_ref < *Lr_ref ? Lr_ref : Ll_ref;
+    float move = 0;
+    move = MIN_LEG_LENGTH - *short_leg;
+    if (move > 0) {
+        *short_leg += move;
+        *long_leg += move;
+    }
+    if (*long_leg > MAX_LEG_LENGTH) {
+        *long_leg = MAX_LEG_LENGTH;
+    }
+}
+
 #endif /* CHASSIS_BALANCE */

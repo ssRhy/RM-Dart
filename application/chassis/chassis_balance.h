@@ -189,7 +189,7 @@ typedef struct
 #else
 
     pid_type_def roll_angle;
-    pid_type_def roll_velocity;
+    // pid_type_def roll_velocity;
 
     pid_type_def pitch_angle;
     // pid_type_def pitch_vel;

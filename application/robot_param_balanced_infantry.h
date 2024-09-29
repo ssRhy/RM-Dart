@@ -81,11 +81,12 @@
 #define LEG_L4 (LEG_L1)  // (m)腿4长度
 #define LEG_L5 (0.150f)  // (m)关节间距
 
-#define BODY_MASS            (12.65813f)    // (kg)机身重量
-#define LEG_MASS             (0.4f)    // (kg)腿重量
-#define WHEEL_MASS           (1.74f)   // (kg)轮子重量
-#define WHEEL_RADIUS         (0.106f)  // (m)轮子半径
-#define WHEEL_START_TORQUE   (0.3f)    // (Nm)轮子起动力矩
+#define BODY_MASS            (12.65813f) // (kg)机身重量
+#define LEG_MASS             (0.4f)      // (kg)腿重量
+#define WHEEL_MASS           (1.74f)     // (kg)轮子重量
+#define WHEEL_RADIUS         (0.106f)    // (m)轮子半径
+#define WHEEL_START_TORQUE   (0.3f)      // (Nm)轮子起动力矩
+#define WHEEL_BASE           (0.51175f)  // (m)驱动轮轴距
 
 #define J0_ANGLE_OFFSET     (-0.19163715f + M_PI) // (rad)关节0角度偏移量(电机0点到水平线的夹角)
 #define J1_ANGLE_OFFSET     (0.19163715f)         // (rad)关节1角度偏移量(电机0点到水平线的夹角)
@@ -214,14 +215,14 @@
     #define KI_CHASSIS_ROLL_ANGLE        (0.003f)
     #define KD_CHASSIS_ROLL_ANGLE        (0.02f)
     #define MAX_IOUT_CHASSIS_ROLL_ANGLE  (0.005f)
-    #define MAX_OUT_CHASSIS_ROLL_ANGLE   (0.1f)
+    #define MAX_OUT_CHASSIS_ROLL_ANGLE   (0.02f)
     
     //roll轴跟踪速度环PID参数
-    #define KP_CHASSIS_ROLL_VELOCITY        (0.6f)
-    #define KI_CHASSIS_ROLL_VELOCITY        (0.0001f)
-    #define KD_CHASSIS_ROLL_VELOCITY        (0.005f)
-    #define MAX_IOUT_CHASSIS_ROLL_VELOCITY  (0.01f)
-    #define MAX_OUT_CHASSIS_ROLL_VELOCITY   (0.1f)
+    // #define KP_CHASSIS_ROLL_VELOCITY        (0.6f)
+    // #define KI_CHASSIS_ROLL_VELOCITY        (0.0001f)
+    // #define KD_CHASSIS_ROLL_VELOCITY        (0.005f)
+    // #define MAX_IOUT_CHASSIS_ROLL_VELOCITY  (0.01f)
+    // #define MAX_OUT_CHASSIS_ROLL_VELOCITY   (0.1f)
 
     // 腿长跟踪长度环PID参数
     #define KP_CHASSIS_LEG_LENGTH_LENGTH        (35.0f)

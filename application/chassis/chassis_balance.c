@@ -155,8 +155,8 @@ void ChassisInit(void)
         MAX_IOUT_CHASSIS_PITCH_VELOCITY);
 #else
     float roll_angle_pid[3] = {KP_CHASSIS_ROLL_ANGLE, KI_CHASSIS_ROLL_ANGLE, KD_CHASSIS_ROLL_ANGLE};
-    float roll_velocity_pid[3] = {
-        KP_CHASSIS_ROLL_VELOCITY, KI_CHASSIS_ROLL_VELOCITY, KD_CHASSIS_ROLL_VELOCITY};
+    // float roll_velocity_pid[3] = {
+    //     KP_CHASSIS_ROLL_VELOCITY, KI_CHASSIS_ROLL_VELOCITY, KD_CHASSIS_ROLL_VELOCITY};
 
     float leg_length_length_pid[3] = {
         KP_CHASSIS_LEG_LENGTH_LENGTH, KI_CHASSIS_LEG_LENGTH_LENGTH, KD_CHASSIS_LEG_LENGTH_LENGTH};
@@ -168,9 +168,9 @@ void ChassisInit(void)
         &CHASSIS.pid.roll_angle, PID_POSITION, roll_angle_pid, MAX_OUT_CHASSIS_ROLL_ANGLE,
         MAX_IOUT_CHASSIS_ROLL_ANGLE);
 
-    PID_init(
-        &CHASSIS.pid.roll_velocity, PID_POSITION, roll_velocity_pid, MAX_OUT_CHASSIS_ROLL_VELOCITY,
-        MAX_IOUT_CHASSIS_ROLL_VELOCITY);
+    // PID_init(
+    //     &CHASSIS.pid.roll_velocity, PID_POSITION, roll_velocity_pid, MAX_OUT_CHASSIS_ROLL_VELOCITY,
+    //     MAX_IOUT_CHASSIS_ROLL_VELOCITY);
 
     PID_init(
         &CHASSIS.pid.leg_length_length[0], PID_POSITION, leg_length_length_pid,
@@ -750,7 +750,7 @@ void ChassisConsole(void)
  */
 static void LocomotionController(void)
 {
-    // 计算LQR增益
+    // 计算LQR增益=============================================
     float k[2][6];
     float x[6];
     float T_Tp[2];
@@ -771,19 +771,20 @@ static void LocomotionController(void)
         CHASSIS.cmd.leg[i].rod.Tp = T_Tp[1];
     }
 
-    // ROLL角控制
-    PID_calc(&CHASSIS.pid.roll_angle, CHASSIS.fdb.body.roll, CHASSIS.ref.body.roll);
+    // ROLL角控制=============================================
+    // 计算腿长差值
+    float L_diff = CalcLegLengthDiff(
+        CHASSIS.fdb.leg[0].rod.L0, CHASSIS.fdb.leg[1].rod.L0, CHASSIS.fdb.body.roll,
+        CHASSIS.ref.body.roll);
+
+    // PID补偿稳态误差
     float delta_L0 =
-        // PID_calc(&CHASSIS.pid.roll_velocity, CHASSIS.fdb.body.roll_dot, CHASSIS.pid.roll_angle.out);
-        PID_calc(
-            &CHASSIS.pid.roll_velocity, CHASSIS.fdb.body.roll_dot, GenerateSinWave(0.1f, 0, 3));
+        PID_calc(&CHASSIS.pid.roll_angle, CHASSIS.fdb.body.roll, CHASSIS.ref.body.roll);
 
-    CHASSIS.ref.rod_L0[0] =
-        fp32_constrain(CHASSIS.ref.rod_L0[0] - delta_L0, MIN_LEG_LENGTH, MAX_LEG_LENGTH);
-    CHASSIS.ref.rod_L0[1] =
-        fp32_constrain(CHASSIS.ref.rod_L0[1] + delta_L0, MIN_LEG_LENGTH, MAX_LEG_LENGTH);
+    // 维持腿长在范围内
+    CoordinateLegLength(&CHASSIS.ref.rod_L0[0], &CHASSIS.ref.rod_L0[1], L_diff, delta_L0);
 
-    // 转向控制
+    // 转向控制================================================
     PID_calc(&CHASSIS.pid.yaw_velocity, CHASSIS.fdb.body.yaw_dot, CHASSIS.ref.speed_vector.wz);
     CHASSIS.cmd.leg[0].wheel.T += CHASSIS.pid.yaw_velocity.out;
     CHASSIS.cmd.leg[1].wheel.T -= CHASSIS.pid.yaw_velocity.out;
