@@ -76,9 +76,7 @@ osThreadId mechanical_armTaskHandle;
 osThreadId customControllerTaskHandle;
 #endif
 
-#if (__MUSIC_ON)
 osThreadId musicTaskHandle;
-#endif
 
 #if (__DEVELOP)
 osThreadId developTaskHandle;
@@ -230,10 +228,8 @@ void MX_FREERTOS_Init(void) {
     customControllerTaskHandle = osThreadCreate(osThread(customControllerTask), NULL);
 #endif
 
-#if (__MUSIC_ON)
     osThreadDef(musicTask, music_task, osPriorityNormal, 0, 256);
     musicTaskHandle = osThreadCreate(osThread(musicTask), NULL);
-#endif
 
 #if (__DEVELOP)
     osThreadDef(developTask, develop_task, osPriorityNormal, 0, 256);

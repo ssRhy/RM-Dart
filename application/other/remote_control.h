@@ -21,6 +21,7 @@
 #define REMOTE_CONTROL_H
 #include "bsp_rc.h"
 #include "struct_typedef.h"
+#include "attribute_typedef.h"
 
 // clang-format off
 #define SBUS_RX_BUF_NUM 36u
@@ -65,7 +66,7 @@ typedef struct __RC_ctrl
         {
                 int16_t ch[5];
                 char s[2];
-        } __attribute__((packed)) rc;
+        } __packed__ rc;
         struct __mouse
         {
                 int16_t x;
@@ -73,13 +74,13 @@ typedef struct __RC_ctrl
                 int16_t z;
                 uint8_t press_l;
                 uint8_t press_r;
-        } __attribute__((packed)) mouse;
+        } __packed__ mouse;
         struct __key
         {
                 uint16_t v;
-        } __attribute__((packed)) key;
+        } __packed__ key;
 
-} __attribute__((packed)) RC_ctrl_t;
+} __packed__ RC_ctrl_t;
 // clang-format on
 
 /* ----------------------- Internal Data ----------------------------------- */

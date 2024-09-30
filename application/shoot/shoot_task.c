@@ -18,17 +18,21 @@
 
 #include "shoot_task.h"
 
+#include "attribute_typedef.h"
 #include "cmsis_os.h"
-#include "shoot.h"
 #include "shoot_fric_trigger.h"
+
+#ifndef SHOOT_TASK_INIT_TIME
+#define SHOOT_TASK_INIT_TIME 201
+#endif  // SHOOT_TASK_INIT_TIME
+
+#ifndef SHOOT_CONTROL_TIME
+#define SHOOT_CONTROL_TIME 1
+#endif  // SHOOT_CONTROL_TIME
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
 uint32_t shoot_high_water;
 #endif
-
-#ifndef __weak
-#define __weak __attribute__((weak))
-#endif /* __weak */
 
 __weak void ShootPublish(void);
 __weak void ShootInit(void);
@@ -68,6 +72,10 @@ void shoot_task(void const * pvParameters)
 
         // 系统延时
         vTaskDelay(SHOOT_CONTROL_TIME);
+
+#if INCLUDE_uxTaskGetStackHighWaterMark
+        shoot_high_water = uxTaskGetStackHighWaterMark(NULL);
+#endif
     }
 }
 

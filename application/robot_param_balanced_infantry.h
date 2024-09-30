@@ -267,15 +267,16 @@
 #define MAX_OUT_CHASSIS_STAND_UP  (2000.0f)
 
 // 轮子停止用的pid
-#define KP_CHASSIS_WHEEL_STOP       (3.0f)
+#define KP_CHASSIS_WHEEL_STOP       (0.5f)
 #define KI_CHASSIS_WHEEL_STOP       (0.0f)
-#define KD_CHASSIS_WHEEL_STOP       (0.5f)
+#define KD_CHASSIS_WHEEL_STOP       (0.1f)
 #define MAX_IOUT_CHASSIS_WHEEL_STOP (0.0f)
-#define MAX_OUT_CHASSIS_WHEEL_STOP  (500.0f)
+#define MAX_OUT_CHASSIS_WHEEL_STOP  (200.0f)
 
 //LPF parameters ---------------------
-#define LEG_DDLENGTH_LPF_ALPHA       (0.1f)
-#define LEG_DDANGLE_LPF_ALPHA        (0.1f)
+#define LEG_DDL0_LPF_ALPHA           (0.1f)
+#define LEG_DDPHI0_LPF_ALPHA         (0.1f)
+#define LEG_DDTHETA_LPF_ALPHA        (0.1f)
 #define LEG_SUPPORT_FORCE_LPF_ALPHA  (0.1f)
 
 //other parameters ---------------------
