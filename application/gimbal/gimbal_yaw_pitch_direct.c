@@ -116,11 +116,12 @@ void GimbalReference(void)
 {
   // warning :不建议键鼠跟遥控器同时使用！
   //读取鼠标的移动
-  gimbal_direct.reference.pitch=loop_fp32_constrain(gimbal_direct.reference.pitch+gimbal_direct.rc->mouse.y*MOUSE_SENSITIVITY,gimbal_direct.lower_limit.pitch,gimbal_direct.upper_limit.pitch);
-  gimbal_direct.reference.yaw  =loop_fp32_constrain(gimbal_direct.reference.yaw+gimbal_direct.rc->mouse.x*MOUSE_SENSITIVITY,gimbal_direct.lower_limit.yaw,gimbal_direct.upper_limit.yaw);
+  gimbal_direct.reference.pitch=fp32_constrain(gimbal_direct.reference.pitch+gimbal_direct.rc->mouse.y*MOUSE_SENSITIVITY,GIMBAL_LOWER_LIMIT_YAW,GIMBAL_UPPER_LIMIT_PITCH);
+  gimbal_direct.reference.yaw  =theta_format(gimbal_direct.reference.yaw+gimbal_direct.rc->mouse.x*MOUSE_SENSITIVITY);
 
   //读取摇杆的数据
-  //gimbal_direct.reference.pitch=
+  gimbal_direct.reference.pitch= fp32_constrain(gimbal_direct.reference.pitch+gimbal_direct.rc->rc.ch[1]/1500,GIMBAL_LOWER_LIMIT_YAW,GIMBAL_UPPER_LIMIT_PITCH);
+  gimbal_direct.reference.yaw  = theta_format(gimbal_direct.reference.yaw+gimbal_direct.rc->rc.ch[0]/1500)
 }
 
 /*-------------------- Console --------------------*/
@@ -140,10 +141,10 @@ void GimbalConsole(void)
   else 
   {
     gimbal_direct.pitch.set.vel=PID_calc(&gimbal_direct_pid.pitch_angle,gimbal_direct.pitch.fdb.pos,gimbal_direct.reference.pitch);
-    gimbal_direct.pitch.set.curr=PID_calc(&gimbal_direct_pid.pitch_velocity,gimbal_direct.pitch.set.vel,gimbal_direct.pitch.set.vel);
+    gimbal_direct.pitch.set.curr=PID_calc(&gimbal_direct_pid.pitch_velocity,gimbal_direct.pitch.fdb.vel,gimbal_direct.pitch.set.vel);
 
     gimbal_direct.yaw.set.vel=PID_calc(&gimbal_direct_pid.yaw_angle,gimbal_direct.yaw.fdb.pos,gimbal_direct.reference.yaw);
-    gimbal_direct.yaw.set.curr=PID_calc(&gimbal_direct_pid.yaw_velocity,gimbal_direct.yaw.set.vel,gimbal_direct.yaw.set.vel);
+    gimbal_direct.yaw.set.curr=PID_calc(&gimbal_direct_pid.yaw_velocity,gimbal_direct.yaw.fdb.vel,gimbal_direct.yaw.set.vel);
 }
   }
   

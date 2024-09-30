@@ -44,7 +44,7 @@
 
 /*-------------------- Gimbal --------------------*/
 //mouse sensitivity ---------------------
-#define MOUSE_SENSITIVITY (1)
+#define MOUSE_SENSITIVITY (0.5)
 //remote controller sensitivity ---------------------
 #define REMOTE_CONTROLLER_SENSITIVITY (1)
 //motor parameters ---------------------
