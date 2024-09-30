@@ -1,6 +1,6 @@
 # 接口标准
 
-version: v1.0.0
+version: v1.0.1
 > 如代码中的内容与本标准冲突，基于本标准修改代码。
 
 - [接口标准](#接口标准)
@@ -830,7 +830,7 @@ version: v1.0.0
 
 上位机：Supervisory Computer
 
-- `ModifyDebugData`
+- `ModifyDebugDataPackage`
   > 修改调试数据包。
 
   | 参数 | 类型 | 备注 |
