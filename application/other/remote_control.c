@@ -18,6 +18,7 @@
   ****************************(C) COPYRIGHT 2019 DJI****************************
   */
 
+// clang-format off
 #include "remote_control.h"
 
 #include "main.h"
@@ -301,3 +302,68 @@ void sbus_to_usart1(uint8_t *sbus)
     usart1_tx_dma_enable(usart_tx_buf, 20);
 }
 
+// clang-format on
+
+/******************************************************************/
+/* API                                                            */
+/*----------------------------------------------------------------*/
+/* function:      GetDt7RcCh                                      */
+/*                GetDt7RcSw                                      */
+/*                GetDt7MouseSpeed                                */
+/*                GetDt7Mouse                                     */
+/*                GetDt7Keyboard                                  */
+/******************************************************************/
+
+/**
+  * @brief          获取DT7遥控器通道值。
+  * @param[in]      ch 通道id，0-右平, 1-右竖, 2-左平, 3-左竖, 4-左滚轮
+  * @retval         DT7遥控器通道值，范围为 [−1,1]
+  */
+inline float GetDt7RcCh(uint8_t ch) { return rc_ctrl.rc.ch[ch] * RC_TO_ONE; }
+/**
+  * @brief          获取DT7遥控器拨杆值，可配合switch_is_xxx系列宏函数使用。
+  * @param[in]      sw 通道id，0-右, 1-左
+  * @retval         DT7遥控器拨杆值，范围为{1,2,3}
+  */
+inline char GetDt7RcSw(uint8_t sw) { return rc_ctrl.rc.s[sw]; }
+/**
+  * @brief          获取鼠标axis轴的移动速度
+  * @param[in]      axis 轴id, 0-, 1-, 2-
+  * @retval         鼠标axis轴移动速度，范围为[,]
+  */
+inline float GetDt7MouseSpeed(uint8_t axis)
+{
+    switch (axis) {
+        case AX_X:
+            return rc_ctrl.mouse.x;
+        case AX_Y:
+            return rc_ctrl.mouse.y;
+        case AX_Z:
+            return rc_ctrl.mouse.z;
+        default:
+            return 0;
+    }
+}
+/**
+  * @brief          获取鼠标按键信息
+  * @param[in]      key 按键id，配合定义好的按键id宏进行使用
+  * @retval         鼠标按键是否被按下
+  */
+inline bool GetDt7Mouse(uint8_t key)
+{
+    switch (key) {
+        case 0:
+            return rc_ctrl.mouse.press_l;
+        case 1:
+            return rc_ctrl.mouse.press_r;
+        default:
+            return 0;
+    }
+}
+/**
+  * @brief          获取键盘按键信息
+  * @param[in]      key 按键id，配合定义好的按键id宏进行使用
+  * @retval         键盘按键是否被按下
+  */
+inline bool GetDt7Keyboard(uint8_t key) { return rc_ctrl.key.v & ((uint16_t)1 << key); }
+/*------------------------------ End of File ------------------------------*/

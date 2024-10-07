@@ -19,11 +19,14 @@
   */
 #ifndef REMOTE_CONTROL_H
 #define REMOTE_CONTROL_H
+// clang-format off
+#include <stdbool.h>
+
 #include "bsp_rc.h"
 #include "struct_typedef.h"
 #include "attribute_typedef.h"
+#include "macro_typedef.h"
 
-// clang-format off
 #define SBUS_RX_BUF_NUM 36u
 
 #define RC_FRAME_LENGTH 18u
@@ -42,6 +45,23 @@
 #define switch_is_mid(s)        (s == RC_SW_MID)
 #define switch_is_up(s)         (s == RC_SW_UP)
 /* ----------------------- PC Key Definition-------------------------------- */
+#define KEY_W     0
+#define KEY_S     1
+#define KEY_A     2
+#define KEY_D     3
+#define KEY_SHIFT 4
+#define KEY_CTRL  5
+#define KEY_Q     6
+#define KEY_E     7
+#define KEY_R     8
+#define KEY_F     9
+#define KEY_G     10
+#define KEY_Z     11
+#define KEY_X     12
+#define KEY_C     13
+#define KEY_V     14
+#define KEY_B     15
+
 #define KEY_PRESSED_OFFSET_W            ((uint16_t)1 << 0)
 #define KEY_PRESSED_OFFSET_S            ((uint16_t)1 << 1)
 #define KEY_PRESSED_OFFSET_A            ((uint16_t)1 << 2)
@@ -91,4 +111,16 @@ extern uint8_t RC_data_is_error(void);
 extern void slove_RC_lost(void);
 extern void slove_data_error(void);
 extern void sbus_to_usart1(uint8_t * sbus);
+
+/******************************************************************/
+/* API                                                            */
+/******************************************************************/
+// inline ModelStatus_e GetRcStatus();
+inline float GetDt7RcCh(uint8_t ch);
+inline char GetDt7RcSw(uint8_t sw);
+inline float GetDt7MouseSpeed(uint8_t axis);
+inline bool GetDt7Mouse(uint8_t key);
+inline bool GetDt7Keyboard(uint8_t key);
+
 #endif
+/*------------------------------ End of File ------------------------------*/
