@@ -23,6 +23,7 @@
 
 #include "IMU_task.h"
 
+#include "IMU.h"
 #include "ahrs.h"
 #include "bmi088driver.h"
 #include "bsp_imu_pwm.h"
@@ -772,3 +773,32 @@ void DMA2_Stream2_IRQHandler(void)
     }
 }
 // clang-format on
+
+/******************************************************************/
+/* API                                                            */
+/*----------------------------------------------------------------*/
+/* function:      GetImuAngle                                     */
+/*                GetImuVelocity                                  */
+/*                GetImuAccel                                     */
+/******************************************************************/
+
+/**
+  * @brief          获取欧拉角
+  * @param[in]      axis:轴id，可配合定义好的轴id宏使用
+  * @retval         (rad) axis轴的角度值
+  */
+inline float GetImuAngle(uint8_t axis) { return INS_angle[2 - axis]; }
+/**
+  * @brief          获取角速度
+  * @param[in]      axis:轴id，可配合定义好的轴id宏使用
+  * @retval         (rad/s) axis轴的角速度
+  */
+inline float GetImuVelocity(uint8_t axis) { return INS_gyro[axis]; }
+/**
+  * @brief          获取角速度
+  * @param[in]      axis:轴id，可配合定义好的轴id宏使用
+  * @retval         (m/s^2) axis轴上的加速度
+  */
+inline float GetImuAccel(uint8_t axis) { return INS_accel[axis]; }
+
+/*------------------------------ End of File ------------------------------*/
