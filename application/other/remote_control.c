@@ -316,19 +316,19 @@ void sbus_to_usart1(uint8_t *sbus)
 
 /**
   * @brief          获取DT7遥控器通道值。
-  * @param[in]      ch 通道id，0-右平, 1-右竖, 2-左平, 3-左竖, 4-左滚轮
+  * @param[in]      ch 通道id，0-右平, 1-右竖, 2-左平, 3-左竖, 4-左滚轮，配合ch id宏进行使用
   * @retval         DT7遥控器通道值，范围为 [−1,1]
   */
 inline float GetDt7RcCh(uint8_t ch) { return rc_ctrl.rc.ch[ch] * RC_TO_ONE; }
 /**
   * @brief          获取DT7遥控器拨杆值，可配合switch_is_xxx系列宏函数使用。
-  * @param[in]      sw 通道id，0-右, 1-左
+  * @param[in]      sw 通道id，0-右, 1-左，配合sw id宏进行使用
   * @retval         DT7遥控器拨杆值，范围为{1,2,3}
   */
 inline char GetDt7RcSw(uint8_t sw) { return rc_ctrl.rc.s[sw]; }
 /**
   * @brief          获取鼠标axis轴的移动速度
-  * @param[in]      axis 轴id, 0-, 1-, 2-
+  * @param[in]      axis 轴id, 0-, 1-, 2-，配合轴id宏进行使用
   * @retval         鼠标axis轴移动速度，范围为[,]
   */
 inline float GetDt7MouseSpeed(uint8_t axis)
@@ -346,15 +346,15 @@ inline float GetDt7MouseSpeed(uint8_t axis)
 }
 /**
   * @brief          获取鼠标按键信息
-  * @param[in]      key 按键id，配合定义好的按键id宏进行使用
+  * @param[in]      key 按键id，配合按键id宏进行使用
   * @retval         鼠标按键是否被按下
   */
 inline bool GetDt7Mouse(uint8_t key)
 {
     switch (key) {
-        case 0:
+        case KEY_LEFT:
             return rc_ctrl.mouse.press_l;
-        case 1:
+        case KEY_RIGHT:
             return rc_ctrl.mouse.press_r;
         default:
             return 0;
@@ -362,7 +362,7 @@ inline bool GetDt7Mouse(uint8_t key)
 }
 /**
   * @brief          获取键盘按键信息
-  * @param[in]      key 按键id，配合定义好的按键id宏进行使用
+  * @param[in]      key 按键id，配合按键id宏进行使用
   * @retval         键盘按键是否被按下
   */
 inline bool GetDt7Keyboard(uint8_t key) { return rc_ctrl.key.v & ((uint16_t)1 << key); }

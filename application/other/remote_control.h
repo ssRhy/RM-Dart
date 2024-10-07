@@ -44,40 +44,52 @@
 #define switch_is_down(s)       (s == RC_SW_DOWN)
 #define switch_is_mid(s)        (s == RC_SW_MID)
 #define switch_is_up(s)         (s == RC_SW_UP)
-/* ----------------------- PC Key Definition-------------------------------- */
-#define KEY_W     0
-#define KEY_S     1
-#define KEY_A     2
-#define KEY_D     3
-#define KEY_SHIFT 4
-#define KEY_CTRL  5
-#define KEY_Q     6
-#define KEY_E     7
-#define KEY_R     8
-#define KEY_F     9
-#define KEY_G     10
-#define KEY_Z     11
-#define KEY_X     12
-#define KEY_C     13
-#define KEY_V     14
-#define KEY_B     15
 
-#define KEY_PRESSED_OFFSET_W            ((uint16_t)1 << 0)
-#define KEY_PRESSED_OFFSET_S            ((uint16_t)1 << 1)
-#define KEY_PRESSED_OFFSET_A            ((uint16_t)1 << 2)
-#define KEY_PRESSED_OFFSET_D            ((uint16_t)1 << 3)
-#define KEY_PRESSED_OFFSET_SHIFT        ((uint16_t)1 << 4)
-#define KEY_PRESSED_OFFSET_CTRL         ((uint16_t)1 << 5)
-#define KEY_PRESSED_OFFSET_Q            ((uint16_t)1 << 6)
-#define KEY_PRESSED_OFFSET_E            ((uint16_t)1 << 7)
-#define KEY_PRESSED_OFFSET_R            ((uint16_t)1 << 8)
-#define KEY_PRESSED_OFFSET_F            ((uint16_t)1 << 9)
-#define KEY_PRESSED_OFFSET_G            ((uint16_t)1 << 10)
-#define KEY_PRESSED_OFFSET_Z            ((uint16_t)1 << 11)
-#define KEY_PRESSED_OFFSET_X            ((uint16_t)1 << 12)
-#define KEY_PRESSED_OFFSET_C            ((uint16_t)1 << 13)
-#define KEY_PRESSED_OFFSET_V            ((uint16_t)1 << 14)
-#define KEY_PRESSED_OFFSET_B            ((uint16_t)1 << 15)
+#define RC_CH_LEFT_HORIZONTAL   ((uint8_t)2)
+#define RC_CH_LEFT_VERTICAL     ((uint8_t)3)
+#define RC_CH_RIGHT_HORIZONTAL  ((uint8_t)0)
+#define RC_CH_RIGHT_VERTICAL    ((uint8_t)1)
+#define RC_CH_LEFT_ROTATE       ((uint8_t)4)
+
+#define RC_SW_LEFT              ((uint8_t)1)
+#define RC_SW_RIGHT             ((uint8_t)0)
+/* ----------------------- PC Key Definition-------------------------------- */
+#define KEY_W     ((uint8_t)0)
+#define KEY_S     ((uint8_t)1)
+#define KEY_A     ((uint8_t)2)
+#define KEY_D     ((uint8_t)3)
+#define KEY_SHIFT ((uint8_t)4)
+#define KEY_CTRL  ((uint8_t)5)
+#define KEY_Q     ((uint8_t)6)
+#define KEY_E     ((uint8_t)7)
+#define KEY_R     ((uint8_t)8)
+#define KEY_F     ((uint8_t)9)
+#define KEY_G     ((uint8_t)10)
+#define KEY_Z     ((uint8_t)11)
+#define KEY_X     ((uint8_t)12)
+#define KEY_C     ((uint8_t)13)
+#define KEY_V     ((uint8_t)14)
+#define KEY_B     ((uint8_t)15)
+
+#define KEY_LEFT  ((uint8_t)0)
+#define KEY_RIGHT ((uint8_t)1)
+
+#define KEY_PRESSED_OFFSET_W            ((uint16_t)1 << KEY_W)
+#define KEY_PRESSED_OFFSET_S            ((uint16_t)1 << KEY_S)
+#define KEY_PRESSED_OFFSET_A            ((uint16_t)1 << KEY_A)
+#define KEY_PRESSED_OFFSET_D            ((uint16_t)1 << KEY_D)
+#define KEY_PRESSED_OFFSET_SHIFT        ((uint16_t)1 << KEY_SHIFT)
+#define KEY_PRESSED_OFFSET_CTRL         ((uint16_t)1 << KEY_CTRL)
+#define KEY_PRESSED_OFFSET_Q            ((uint16_t)1 << KEY_Q)
+#define KEY_PRESSED_OFFSET_E            ((uint16_t)1 << KEY_E)
+#define KEY_PRESSED_OFFSET_R            ((uint16_t)1 << KEY_R)
+#define KEY_PRESSED_OFFSET_F            ((uint16_t)1 << KEY_F)
+#define KEY_PRESSED_OFFSET_G            ((uint16_t)1 << KEY_G)
+#define KEY_PRESSED_OFFSET_Z            ((uint16_t)1 << KEY_Z)
+#define KEY_PRESSED_OFFSET_X            ((uint16_t)1 << KEY_X)
+#define KEY_PRESSED_OFFSET_C            ((uint16_t)1 << KEY_C)
+#define KEY_PRESSED_OFFSET_V            ((uint16_t)1 << KEY_V)
+#define KEY_PRESSED_OFFSET_B            ((uint16_t)1 << KEY_B)
 
 /* ----------------------- Data Struct ------------------------------------- */
 typedef struct __RC_ctrl
