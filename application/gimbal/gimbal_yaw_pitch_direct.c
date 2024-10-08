@@ -121,7 +121,7 @@ void GimbalReference(void)
 
   //读取摇杆的数据
   gimbal_direct.reference.pitch= fp32_constrain(gimbal_direct.reference.pitch+gimbal_direct.rc->rc.ch[1]/1500,GIMBAL_LOWER_LIMIT_YAW,GIMBAL_UPPER_LIMIT_PITCH);
-  gimbal_direct.reference.yaw  = theta_format(gimbal_direct.reference.yaw+gimbal_direct.rc->rc.ch[0]/1500)
+  gimbal_direct.reference.yaw  = theta_format(gimbal_direct.reference.yaw+gimbal_direct.rc->rc.ch[0]/1500);
 }
 
 /*-------------------- Console --------------------*/

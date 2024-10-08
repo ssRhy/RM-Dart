@@ -30,7 +30,7 @@
 #include  "user_lib.h"
 #include "CAN_cmd_dji.h"
 #include "detect_task.h"
-#include "communication.h"
+#include "usb.h"
 
 
 /**
