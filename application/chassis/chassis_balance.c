@@ -415,8 +415,8 @@ static void UpdateBodyStatus(void)
     CHASSIS.fdb.body.phi = CHASSIS.imu->pitch;
     CHASSIS.fdb.body.phi_dot = CHASSIS.imu->pitch_vel;
 
-    CHASSIS.fdb.body.roll = CHASSIS.imu->roll;
-    CHASSIS.fdb.body.roll_dot = CHASSIS.imu->roll_vel;
+    CHASSIS.fdb.body.roll = -CHASSIS.imu->roll;
+    CHASSIS.fdb.body.roll_dot = -CHASSIS.imu->roll_vel;
 
     CHASSIS.fdb.body.yaw = CHASSIS.imu->yaw;
     CHASSIS.fdb.body.yaw_dot = CHASSIS.imu->yaw_vel;
@@ -776,12 +776,17 @@ static void LocomotionController(void)
     float Ld0 = CHASSIS.fdb.leg[0].rod.L0 - CHASSIS.fdb.leg[1].rod.L0;
     float L_diff = CalcLegLengthDiff(Ld0, CHASSIS.fdb.body.roll, CHASSIS.ref.body.roll);
 
+    // ModifyDebugDataPackage(6, Ld0, "Ld0");
+    // ModifyDebugDataPackage(7, L_diff, "L_diff");
+
     // PID补偿稳态误差
     float delta_L0 =
         PID_calc(&CHASSIS.pid.roll_angle, CHASSIS.fdb.body.roll, CHASSIS.ref.body.roll);
 
     // 维持腿长在范围内
     CoordinateLegLength(&CHASSIS.ref.rod_L0[0], &CHASSIS.ref.rod_L0[1], L_diff, delta_L0);
+    // ModifyDebugDataPackage(8, CHASSIS.ref.rod_L0[0], "L0l");
+    // ModifyDebugDataPackage(9, CHASSIS.ref.rod_L0[1], "L0r");
 
     // 转向控制================================================
     PID_calc(&CHASSIS.pid.yaw_velocity, CHASSIS.fdb.body.yaw_dot, CHASSIS.ref.speed_vector.wz);
