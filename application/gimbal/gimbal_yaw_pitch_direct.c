@@ -158,8 +158,8 @@ void GimbalConsole(void)
  */
 void SendGimbalCmd(void) 
 {
-  ModifyDebugDataPackage(0,gimbal_direct.pitch.set.curr,"pitch_current_value");
-  ModifyDebugDataPackage(1,gimbal_direct.yaw.set.curr,"yaw_current_value");
+  ModifyDebugDataPackage(7,gimbal_direct.pitch.set.curr,"pitch_current_value");
+  ModifyDebugDataPackage(8,gimbal_direct.yaw.set.curr,"yaw_current_value");
   if (toe_is_error(DBUS_TOE))
   {
     CanCmdDjiMotor(gimbal_direct.pitch.can,gimbal_direct.pitch.id,gimbal_direct.yaw.set.curr,gimbal_direct.pitch.set.curr,0,0);
