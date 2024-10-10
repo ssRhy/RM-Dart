@@ -773,9 +773,8 @@ static void LocomotionController(void)
 
     // ROLL角控制=============================================
     // 计算腿长差值
-    float L_diff = CalcLegLengthDiff(
-        CHASSIS.fdb.leg[0].rod.L0, CHASSIS.fdb.leg[1].rod.L0, CHASSIS.fdb.body.roll,
-        CHASSIS.ref.body.roll);
+    float Ld0 = CHASSIS.fdb.leg[0].rod.L0 - CHASSIS.fdb.leg[1].rod.L0;
+    float L_diff = CalcLegLengthDiff(Ld0, CHASSIS.fdb.body.roll, CHASSIS.ref.body.roll);
 
     // PID补偿稳态误差
     float delta_L0 =

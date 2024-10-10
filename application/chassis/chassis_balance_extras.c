@@ -191,16 +191,14 @@ void CalcPhi1AndPhi4(float phi0, float l0, float phi1_phi4[2])
 
 /**
  * @brief 通过当前底盘姿态和目标roll角计算两腿长度期望差值
- * @param[in]  L0l (m)当前左腿长度
- * @param[in]  L0r (m)当前右腿长度
+ * @param[in]  Ld0 (m)当前左右腿长度差值(L0l - L0r)
  * @param[in]  theta0 (rad)当前底盘roll角
  * @param[in]  theta1 (rad)目标roll角
  * @return 两腿长度期望差值(m)(L1l - L1r)
  */
-float CalcLegLengthDiff(float L0l, float L0r, float theta0, float theta1)
+inline float CalcLegLengthDiff(float Ld0, float theta0, float theta1)
 {
-    float sin_alpha = (WHEEL_BASE * tanf(theta0) - L0l + L0r) * cosf(theta0) / WHEEL_BASE;
-    return WHEEL_BASE * tanf(theta1) - WHEEL_BASE / cosf(theta1) * sin_alpha;
+    return WHEEL_BASE * tanf(theta1) - cosf(theta0) / cosf(theta1) * (WHEEL_BASE * tanf(theta0) - Ld0);
 }
 
 /**

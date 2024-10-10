@@ -18,7 +18,7 @@ extern void CalcVmc(float F0, float Tp, float J[2][2], float T[2]);
 
 extern void CalcPhi1AndPhi4(float phi0, float l0, float phi1_phi4[2]);
 
-extern float CalcLegLengthDiff(float L0l, float L0r, float theta0, float theta1);
+extern inline float CalcLegLengthDiff(float Ld0, float theta0, float theta1);
 
 extern void CoordinateLegLength(float * Ll_ref, float * Lr_ref, float diff, float add);
 
