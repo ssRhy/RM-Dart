@@ -224,11 +224,11 @@
     // #define MAX_OUT_CHASSIS_ROLL_VELOCITY   (0.1f)
 
     // 腿长跟踪长度环PID参数
-    #define KP_CHASSIS_LEG_LENGTH_LENGTH        (35.0f)
-    #define KI_CHASSIS_LEG_LENGTH_LENGTH        (0.1f)
-    #define KD_CHASSIS_LEG_LENGTH_LENGTH        (2.0f)
-    #define MAX_IOUT_CHASSIS_LEG_LENGTH_LENGTH  (0.5f)
-    #define MAX_OUT_CHASSIS_LEG_LENGTH_LENGTH   (30.0f)
+    #define KP_CHASSIS_LEG_LENGTH_LENGTH        (50.0f)
+    #define KI_CHASSIS_LEG_LENGTH_LENGTH        (0.0f)
+    #define KD_CHASSIS_LEG_LENGTH_LENGTH        (1.0f)
+    #define MAX_IOUT_CHASSIS_LEG_LENGTH_LENGTH  (1.0f)
+    #define MAX_OUT_CHASSIS_LEG_LENGTH_LENGTH   (15.0f)
 
     // 腿长跟踪速度环PID参数
     // #define KP_CHASSIS_LEG_LENGTH_SPEED 0.0f
