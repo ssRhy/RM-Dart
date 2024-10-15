@@ -37,7 +37,7 @@
 // ratio parameters ---------------------
 #define VEL_ADD_RATIO        (0.008f)  // 速度增量比例系数
 #define PITCH_VEL_RATIO      (0.9f)    // pitch轴速度比例系数
-#define FF_RATIO             (0.16f)   // 前馈比例系数
+#define FF_RATIO             (0.25f)   // 前馈比例系数
 #define RC_LENGTH_ADD_RATIO  (0.0000015f) // 遥控器腿长增量比例系数
 #define X_ADD_RATIO          (1.2f) // x增量比例系数
 
@@ -81,8 +81,7 @@
 #define LEG_L4 (LEG_L1)  // (m)腿4长度
 #define LEG_L5 (0.150f)  // (m)关节间距
 
-#define BODY_MASS            (12.65813f) // (kg)机身重量
-#define LEG_MASS             (0.4f)      // (kg)腿重量
+#define BODY_MASS            (8.5f)      // (kg)机身重量
 #define WHEEL_MASS           (1.74f)     // (kg)轮子重量
 #define WHEEL_RADIUS         (0.106f)    // (m)轮子半径
 #define WHEEL_START_TORQUE   (0.3f)      // (Nm)轮子起动力矩

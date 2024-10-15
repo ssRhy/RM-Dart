@@ -680,7 +680,7 @@ void ChassisReference(void)
     CHASSIS.ref.rod_Angle[0] = angle;
     CHASSIS.ref.rod_Angle[1] = angle;
 
-    CHASSIS.ref.body.roll = fp32_constrain(rc_roll * RC_TO_ONE * MAX_ROLL, MIN_ROLL, MAX_ROLL);
+    CHASSIS.ref.body.roll = fp32_constrain(-rc_roll * RC_TO_ONE * MAX_ROLL, MIN_ROLL, MAX_ROLL);
 }
 
 /******************************************************************/
