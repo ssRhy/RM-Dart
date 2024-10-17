@@ -152,7 +152,6 @@ void usb_task(void const * argument)
     UsbInit();
 
     while (1) {
-        ModifyDebugDataPackage(0, ROBOT_CMD_DATA.gimbal.pitch, "pitch");
 
         UsbSendData();
         UsbReceiveData();

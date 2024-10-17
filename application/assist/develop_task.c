@@ -34,9 +34,7 @@ void develop_task(void const * pvParameters)
     p_USB_OFFLINE = Subscribe(USB_OFFLINE_NAME);
 
     while (1) {
-        // code here
-        // ModifyDebugDataPackage(1, imu->yaw, "yaw");
-        // ModifyDebugDataPackage(2, (HAL_GetTick() / 10) % 1000, "data1");
+        
 
         vTaskDelay(1);
 
