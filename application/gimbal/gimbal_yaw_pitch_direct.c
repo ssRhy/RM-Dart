@@ -29,7 +29,7 @@ PID_t gimbal_direct_pid;
  * @param[in]      none
  * @retval         none
  */
-void InitGimbal(void) 
+void GimbalInit(void) 
 {
   //step1 获取所有所需变量指针
    gimbal_direct.rc = get_remote_control_point(); 
@@ -70,7 +70,7 @@ void InitGimbal(void)
  * @param[in]      none
  * @retval         none
  */
-void SetGimbalMode(void)
+void GimbalHandleException(void)
 {
   //加上保险防止出现意外情况
   gimbal_direct.mode=GIMBAL_ZERO_FORCE;
@@ -120,8 +120,13 @@ void GimbalReference(void)
   gimbal_direct.reference.yaw  =theta_format(gimbal_direct.reference.yaw+gimbal_direct.rc->mouse.x*MOUSE_SENSITIVITY);
 
   //读取摇杆的数据
-  gimbal_direct.reference.pitch= fp32_constrain(gimbal_direct.reference.pitch+gimbal_direct.rc->rc.ch[1]/1500,GIMBAL_LOWER_LIMIT_YAW,GIMBAL_UPPER_LIMIT_PITCH);
-  gimbal_direct.reference.yaw  = theta_format(gimbal_direct.reference.yaw+gimbal_direct.rc->rc.ch[0]/1500);
+  gimbal_direct.reference.pitch= fp32_constrain(gimbal_direct.reference.pitch+gimbal_direct.rc->rc.ch[1]/10,GIMBAL_LOWER_LIMIT_YAW,GIMBAL_UPPER_LIMIT_PITCH);
+  gimbal_direct.reference.yaw  = theta_format(gimbal_direct.reference.yaw+gimbal_direct.rc->rc.ch[0]/10);
+
+  ModifyDebugDataPackage(5,gimbal_direct.rc->rc.ch[1],"pitch input");
+  ModifyDebugDataPackage(6,gimbal_direct.rc->rc.ch[0],"yaw input");
+  ModifyDebugDataPackage(7,gimbal_direct.reference.pitch,"pitch value");
+  ModifyDebugDataPackage(8,gimbal_direct.reference.yaw,"yaw value");
 }
 
 /*-------------------- Console --------------------*/
@@ -146,6 +151,7 @@ void GimbalConsole(void)
     gimbal_direct.yaw.set.vel=PID_calc(&gimbal_direct_pid.yaw_angle,gimbal_direct.yaw.fdb.pos,gimbal_direct.reference.yaw);
     gimbal_direct.yaw.set.curr=PID_calc(&gimbal_direct_pid.yaw_velocity,gimbal_direct.yaw.fdb.vel,gimbal_direct.yaw.set.vel);
 }
+ 
   }
   
 
@@ -156,10 +162,8 @@ void GimbalConsole(void)
  * @param[in]      none
  * @retval         none
  */
-void SendGimbalCmd(void) 
+void GimbalSendCmd(void) 
 {
-  ModifyDebugDataPackage(7,gimbal_direct.pitch.set.curr,"pitch_current_value");
-  ModifyDebugDataPackage(8,gimbal_direct.yaw.set.curr,"yaw_current_value");
   if (toe_is_error(DBUS_TOE))
   {
     CanCmdDjiMotor(gimbal_direct.pitch.can,gimbal_direct.pitch.id,gimbal_direct.yaw.set.curr,gimbal_direct.pitch.set.curr,0,0);
