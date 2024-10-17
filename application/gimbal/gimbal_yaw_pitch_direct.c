@@ -50,7 +50,7 @@ void GimbalInit(void)
    const static fp32 gimbal_yaw_angle[3]={KP_GIMBAL_YAW_ANGLE,KI_GIMBAL_YAW_ANGLE,KD_GIMBAL_YAW_ANGLE};
    const static fp32 gimbal_yaw_velocity[3]={KP_GIMBAL_YAW_VELOCITY,KI_GIMBAL_YAW_VELOCITY,KD_GIMBAL_YAW_VELOCITY};
    
-   const static fp32 gimbal_pitch_angle[3]={KP_GIMBAL_PITCH_ANGLE,KI_GIMBAL_PITCH_ANGLE,KD_GIMBAL_PITCH_ANGLE};
+		const static fp32 gimbal_pitch_angle[3]={KP_GIMBAL_PITCH_ANGLE,KI_GIMBAL_PITCH_ANGLE,KD_GIMBAL_PITCH_ANGLE};
    const static fp32 gimbal_pitch_velocity[3]={KP_GIMBAL_PITCH_VELOCITY,KI_GIMBAL_PITCH_VELOCITY,KD_GIMBAL_PITCH_VELOCITY};
 
    PID_init(&gimbal_direct_pid.yaw_angle,PID_POSITION,gimbal_yaw_angle,MAX_OUT_GIMBAL_YAW_ANGLE,MAX_IOUT_GIMBAL_YAW_ANGLE);
@@ -115,9 +115,9 @@ void GimbalObserver(void)
 void GimbalReference(void) 
 {
   // warning :不建议键鼠跟遥控器同时使用！
-  //读取鼠标的移动
+  //读取鼠标的移动（还未测试过鼠标）
   gimbal_direct.pitch.set.pos=fp32_constrain(gimbal_direct.pitch.set.pos+gimbal_direct.rc->mouse.y*MOUSE_SENSITIVITY,GIMBAL_LOWER_LIMIT_YAW,GIMBAL_UPPER_LIMIT_PITCH);
-  gimbal_direct.reference.yaw  =theta_format(gimbal_direct.reference.yaw+gimbal_direct.rc->mouse.x*MOUSE_SENSITIVITY);
+  gimbal_direct.yaw.set.pos  =theta_format(gimbal_direct.reference.yaw+gimbal_direct.rc->mouse.x*MOUSE_SENSITIVITY);
 
   //读取摇杆的数据
   gimbal_direct.pitch.set.pos= fp32_constrain(gimbal_direct.pitch.set.pos+(float)gimbal_direct.rc->rc.ch[1]/1500000,GIMBAL_LOWER_LIMIT_PITCH,GIMBAL_UPPER_LIMIT_PITCH);
@@ -173,7 +173,7 @@ void GimbalSendCmd(void)
   ModifyDebugDataPackage(6,gimbal_direct.pitch.fdb.pos,"pos_ref");
   ModifyDebugDataPackage(7,gimbal_direct.pitch.set.vel,"vel_set");
   ModifyDebugDataPackage(8,gimbal_direct.pitch.fdb.vel,"vel_ref");
-  ModifyDebugDataPackage(9,gimbal_direct.yaw.set.curr,"curr_set");
+  ModifyDebugDataPackage(9,gimbal_direct.pitch.set.curr,"curr_set");
 }
 
 #endif  // GIMBAL_YAW_PITCH
