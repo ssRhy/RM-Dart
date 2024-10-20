@@ -226,7 +226,7 @@
     // 腿长跟踪长度环PID参数
     #define KP_CHASSIS_LEG_LENGTH_LENGTH        (70.0f)
     #define KI_CHASSIS_LEG_LENGTH_LENGTH        (0.0f)
-    #define KD_CHASSIS_LEG_LENGTH_LENGTH        (3.0f)
+    #define KD_CHASSIS_LEG_LENGTH_LENGTH        (15.0f)
     #define MAX_IOUT_CHASSIS_LEG_LENGTH_LENGTH  (1.0f)
     #define MAX_OUT_CHASSIS_LEG_LENGTH_LENGTH   (30.0f)
 
