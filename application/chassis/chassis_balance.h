@@ -90,7 +90,8 @@ typedef struct Leg
     } wheel;
 
     float J[2][2];  // 雅可比矩阵
-    float Fn;       // N
+    float Fn;       // N 支撑力
+    uint32_t take_off_time;   // 离地时间
 } Leg_t;
 
 typedef struct Body

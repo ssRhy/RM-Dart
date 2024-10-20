@@ -228,7 +228,7 @@
     #define KI_CHASSIS_LEG_LENGTH_LENGTH        (0.0f)
     #define KD_CHASSIS_LEG_LENGTH_LENGTH        (1.0f)
     #define MAX_IOUT_CHASSIS_LEG_LENGTH_LENGTH  (1.0f)
-    #define MAX_OUT_CHASSIS_LEG_LENGTH_LENGTH   (15.0f)
+    #define MAX_OUT_CHASSIS_LEG_LENGTH_LENGTH   (30.0f)
 
     // 腿长跟踪速度环PID参数
     // #define KP_CHASSIS_LEG_LENGTH_SPEED 0.0f
@@ -275,6 +275,8 @@
 #define X5_OFFSET (0.0f)  // phi_dot偏移量
 
 //other parameters ---------------------
+#define TAKE_OFF_FN_THRESHOLD (18.0f)  // 支持力阈值，当支持力小于这个值时认为离地
+#define TAKE_OFF_TIME_THRESHOLD (100)  // 离地时间阈值，当离地时间大于这个值时需要做相关措施
 
 /*-------------------- Gimbal --------------------*/
 //physical parameters ---------------------

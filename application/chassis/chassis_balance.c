@@ -391,11 +391,9 @@ void ChassisObserver(void)
 
     ModifyDebugDataPackage(2, CHASSIS.cmd.leg[0].rod.F, "Fl");
     ModifyDebugDataPackage(3, CHASSIS.cmd.leg[1].rod.F, "Fr");
-    // ModifyDebugDataPackage(4, CHASSIS.fdb.leg[0].rod.L0, "L0l");
-    // ModifyDebugDataPackage(5, CHASSIS.fdb.leg[1].rod.L0, "L0r");
-
-    ModifyDebugDataPackage(6, CHASSIS.fdb.leg_state[0].x, "xl");
-    ModifyDebugDataPackage(7, CHASSIS.fdb.leg_state[1].x, "xr");
+    
+    ModifyDebugDataPackage(4, CHASSIS.fdb.leg[0].take_off_time, "TOT_l");
+    ModifyDebugDataPackage(5, CHASSIS.fdb.leg[1].take_off_time, "TOT_r");
 }
 
 /**
@@ -528,13 +526,13 @@ static void UpdateLegStatus(void)
         float F0 = F[0];
         float Tp = F[1];
 
-        if (i == 0) {
-            ModifyDebugDataPackage(4, F0, "F0l");
-            ModifyDebugDataPackage(5, Tp, "Tpl");
-        }
-        
         float P = F0 * arm_cos_f32(theta) + Tp * arm_sin_f32(theta) / l0;
         CHASSIS.fdb.leg[i].Fn = P + WHEEL_MASS * (9.8f + ddot_z_w);
+        if (CHASSIS.fdb.leg[i].Fn < TAKE_OFF_FN_THRESHOLD) {
+            CHASSIS.fdb.leg[i].take_off_time += CHASSIS.duration;
+        } else {
+            CHASSIS.fdb.leg[i].take_off_time = 0;
+        }
     }
     ModifyDebugDataPackage(0, CHASSIS.fdb.leg[0].Fn, "FnL");
     ModifyDebugDataPackage(1, CHASSIS.fdb.leg[1].Fn, "FnR");
@@ -777,7 +775,12 @@ static void LocomotionController(void)
         CalcLQR(k, x, T_Tp);
 
         CHASSIS.cmd.leg[i].wheel.T = T_Tp[0];
-        CHASSIS.cmd.leg[i].rod.Tp = T_Tp[1];
+        
+        if (CHASSIS.fdb.leg[i].take_off_time > TAKE_OFF_TIME_THRESHOLD) {
+            CHASSIS.cmd.leg[i].rod.Tp = 0;
+        } else {
+            CHASSIS.cmd.leg[i].rod.Tp = T_Tp[1];
+        }
     }
 
     // ROLL角控制=============================================
@@ -916,8 +919,17 @@ static void ConsoleNormal(void)
     // 给驱动轮电机赋值
     // QUESTION: 排查电机发送的力矩要反向的问题，这种情况下控制正常
     //不知道为什么要反向，待后续研究
-    CHASSIS.wheel_motor[0].set.tor = -(CHASSIS.cmd.leg[0].wheel.T * (W0_DIRECTION));
-    CHASSIS.wheel_motor[1].set.tor = -(CHASSIS.cmd.leg[1].wheel.T * (W1_DIRECTION));
+    if (CHASSIS.fdb.leg[0].take_off_time > TAKE_OFF_TIME_THRESHOLD) {
+        CHASSIS.wheel_motor[0].set.tor = 0;
+    } else {
+        CHASSIS.wheel_motor[0].set.tor = -(CHASSIS.cmd.leg[0].wheel.T * (W0_DIRECTION));
+    }
+
+    if (CHASSIS.fdb.leg[1].take_off_time > TAKE_OFF_TIME_THRESHOLD) {
+        CHASSIS.wheel_motor[1].set.tor = 0;
+    } else {
+        CHASSIS.wheel_motor[1].set.tor = -(CHASSIS.cmd.leg[1].wheel.T * (W1_DIRECTION));
+    }
 }
 
 static void ConsoleDebug(void)
@@ -961,8 +973,17 @@ static void ConsoleDebug(void)
         fp32_constrain(CHASSIS.joint_motor[3].set.pos, MIN_J3_ANGLE, MAX_J3_ANGLE);
 
     // ===驱动轮控制===
-    CHASSIS.wheel_motor[0].set.tor = -(CHASSIS.cmd.leg[0].wheel.T * (W0_DIRECTION));
-    CHASSIS.wheel_motor[1].set.tor = -(CHASSIS.cmd.leg[1].wheel.T * (W1_DIRECTION));
+    if (CHASSIS.fdb.leg[0].take_off_time > TAKE_OFF_TIME_THRESHOLD) {
+        CHASSIS.wheel_motor[0].set.tor = 0;
+    } else {
+        CHASSIS.wheel_motor[0].set.tor = -(CHASSIS.cmd.leg[0].wheel.T * (W0_DIRECTION));
+    }
+
+    if (CHASSIS.fdb.leg[1].take_off_time > TAKE_OFF_TIME_THRESHOLD) {
+        CHASSIS.wheel_motor[1].set.tor = 0;
+    } else {
+        CHASSIS.wheel_motor[1].set.tor = -(CHASSIS.cmd.leg[1].wheel.T * (W1_DIRECTION));
+    }
 }
 
 static void ConsoleStandUp(void)
