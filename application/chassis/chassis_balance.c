@@ -391,8 +391,8 @@ void ChassisObserver(void)
 
     ModifyDebugDataPackage(2, CHASSIS.cmd.leg[0].rod.F, "Fl");
     ModifyDebugDataPackage(3, CHASSIS.cmd.leg[1].rod.F, "Fr");
-    ModifyDebugDataPackage(4, CHASSIS.fdb.leg[0].rod.L0, "L0l");
-    ModifyDebugDataPackage(5, CHASSIS.fdb.leg[1].rod.L0, "L0r");
+    // ModifyDebugDataPackage(4, CHASSIS.fdb.leg[0].rod.L0, "L0l");
+    // ModifyDebugDataPackage(5, CHASSIS.fdb.leg[1].rod.L0, "L0r");
 
     ModifyDebugDataPackage(6, CHASSIS.fdb.leg_state[0].x, "xl");
     ModifyDebugDataPackage(7, CHASSIS.fdb.leg_state[1].x, "xr");
@@ -527,6 +527,12 @@ static void UpdateLegStatus(void)
             CHASSIS.fdb.leg[i].J, CHASSIS.fdb.leg[i].joint.T1, CHASSIS.fdb.leg[i].joint.T2, F);
         float F0 = F[0];
         float Tp = F[1];
+
+        if (i == 0) {
+            ModifyDebugDataPackage(4, F0, "F0l");
+            ModifyDebugDataPackage(5, Tp, "Tpl");
+        }
+        
         float P = F0 * arm_cos_f32(theta) + Tp * arm_sin_f32(theta) / l0;
         CHASSIS.fdb.leg[i].Fn = P + WHEEL_MASS * (9.8f + ddot_z_w);
     }
