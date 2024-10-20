@@ -392,8 +392,11 @@ void ChassisObserver(void)
     ModifyDebugDataPackage(2, CHASSIS.cmd.leg[0].rod.F, "Fl");
     ModifyDebugDataPackage(3, CHASSIS.cmd.leg[1].rod.F, "Fr");
     
-    ModifyDebugDataPackage(4, CHASSIS.fdb.leg[0].take_off_time, "TOT_l");
-    ModifyDebugDataPackage(5, CHASSIS.fdb.leg[1].take_off_time, "TOT_r");
+    ModifyDebugDataPackage(4, CHASSIS.fdb.leg[0].rod.L0, "L0l_fdb");
+    ModifyDebugDataPackage(5, CHASSIS.fdb.leg[1].rod.L0, "L0r_fdb");
+
+    ModifyDebugDataPackage(6, CHASSIS.ref.rod_L0[0], "L0l_ref");
+    ModifyDebugDataPackage(7, CHASSIS.ref.rod_L0[1], "L0r_ref");
 }
 
 /**
