@@ -393,6 +393,9 @@ void ChassisObserver(void)
     ModifyDebugDataPackage(3, CHASSIS.cmd.leg[1].rod.F, "Fr");
     ModifyDebugDataPackage(4, CHASSIS.fdb.leg[0].rod.L0, "L0l");
     ModifyDebugDataPackage(5, CHASSIS.fdb.leg[1].rod.L0, "L0r");
+
+    ModifyDebugDataPackage(6, CHASSIS.fdb.leg_state[0].x, "xl");
+    ModifyDebugDataPackage(7, CHASSIS.fdb.leg_state[1].x, "xr");
 }
 
 /**
@@ -758,12 +761,12 @@ static void LocomotionController(void)
     for (uint8_t i = 0; i < 2; i++) {
         GetK(CHASSIS.fdb.leg[i].rod.L0, k);
         // clang-format off
-        x[0] = X_0_RATIO * (CHASSIS.fdb.leg_state[i].theta     - CHASSIS.ref.leg_state[i].theta);
-        x[1] = X_1_RATIO * (CHASSIS.fdb.leg_state[i].theta_dot - CHASSIS.ref.leg_state[i].theta_dot);
-        x[2] = X_2_RATIO * (CHASSIS.fdb.leg_state[i].x         - CHASSIS.ref.leg_state[i].x);
-        x[3] = X_3_RATIO * (CHASSIS.fdb.leg_state[i].x_dot     - CHASSIS.ref.leg_state[i].x_dot);
-        x[4] = X_4_RATIO * (CHASSIS.fdb.leg_state[i].phi       - CHASSIS.ref.leg_state[i].phi);
-        x[5] = X_5_RATIO * (CHASSIS.fdb.leg_state[i].phi_dot   - CHASSIS.ref.leg_state[i].phi_dot);
+        x[0] = X0_OFFSET + X_0_RATIO * (CHASSIS.fdb.leg_state[i].theta     - CHASSIS.ref.leg_state[i].theta);
+        x[1] = X1_OFFSET + X_1_RATIO * (CHASSIS.fdb.leg_state[i].theta_dot - CHASSIS.ref.leg_state[i].theta_dot);
+        x[2] = X2_OFFSET + X_2_RATIO * (CHASSIS.fdb.leg_state[i].x         - CHASSIS.ref.leg_state[i].x);
+        x[3] = X3_OFFSET + X_3_RATIO * (CHASSIS.fdb.leg_state[i].x_dot     - CHASSIS.ref.leg_state[i].x_dot);
+        x[4] = X4_OFFSET + X_4_RATIO * (CHASSIS.fdb.leg_state[i].phi       - CHASSIS.ref.leg_state[i].phi);
+        x[5] = X5_OFFSET + X_5_RATIO * (CHASSIS.fdb.leg_state[i].phi_dot   - CHASSIS.ref.leg_state[i].phi_dot);
         // clang-format on
         CalcLQR(k, x, T_Tp);
 

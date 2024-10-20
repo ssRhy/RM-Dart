@@ -265,6 +265,15 @@
 #define LEG_DDTHETA_LPF_ALPHA        (0.1f)
 #define LEG_SUPPORT_FORCE_LPF_ALPHA  (0.1f)
 
+//offest parameters ---------------------
+
+#define X0_OFFSET (0.0f)  // theta偏移量
+#define X1_OFFSET (0.0f)  // theta_dot偏移量
+#define X2_OFFSET (-0.09f)  // x偏移量
+#define X3_OFFSET (0.0f)  // x_dot偏移量
+#define X4_OFFSET (0.0f)  // phi偏移量
+#define X5_OFFSET (0.0f)  // phi_dot偏移量
+
 //other parameters ---------------------
 
 /*-------------------- Gimbal --------------------*/
