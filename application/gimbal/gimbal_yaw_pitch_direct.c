@@ -117,11 +117,11 @@ void GimbalReference(void)
   // warning :不建议键鼠跟遥控器同时使用！
   //读取鼠标的移动（还未测试过鼠标）
   gimbal_direct.pitch.set.pos=fp32_constrain(gimbal_direct.pitch.set.pos+gimbal_direct.rc->mouse.y*MOUSE_SENSITIVITY,GIMBAL_LOWER_LIMIT_YAW,GIMBAL_UPPER_LIMIT_PITCH);
-  gimbal_direct.yaw.set.pos  =theta_format(gimbal_direct.reference.yaw+gimbal_direct.rc->mouse.x*MOUSE_SENSITIVITY);
+  gimbal_direct.yaw.set.pos  =loop_fp32_constrain(gimbal_direct.yaw.set.pos+gimbal_direct.rc->mouse.x*MOUSE_SENSITIVITY,-PI,PI);
 
   //读取摇杆的数据
   gimbal_direct.pitch.set.pos= fp32_constrain(gimbal_direct.pitch.set.pos+(float)gimbal_direct.rc->rc.ch[1]/1500000,GIMBAL_LOWER_LIMIT_PITCH,GIMBAL_UPPER_LIMIT_PITCH);
-  gimbal_direct.yaw.set.pos = theta_format(gimbal_direct.reference.yaw+gimbal_direct.rc->rc.ch[0]/1500000);
+  gimbal_direct.yaw.set.pos = loop_fp32_constrain(gimbal_direct.yaw.set.pos-(float)gimbal_direct.rc->rc.ch[0]/1500000,-PI,PI);
 
   
 }
@@ -145,7 +145,8 @@ void GimbalConsole(void)
     gimbal_direct.pitch.set.vel=PID_calc(&gimbal_direct_pid.pitch_angle,gimbal_direct.pitch.fdb.pos,gimbal_direct.pitch.set.pos);
     gimbal_direct.pitch.set.curr=PID_calc(&gimbal_direct_pid.pitch_velocity,gimbal_direct.pitch.fdb.vel,gimbal_direct.pitch.set.vel);
 
-    gimbal_direct.yaw.set.vel=PID_calc(&gimbal_direct_pid.yaw_angle,gimbal_direct.yaw.fdb.pos,gimbal_direct.reference.yaw);
+    fp32 delta_yaw=loop_fp32_constrain(gimbal_direct.yaw.set.pos-gimbal_direct.yaw.fdb.pos,-PI,PI);
+    gimbal_direct.yaw.set.vel=PID_calc(&gimbal_direct_pid.yaw_angle,0,delta_yaw);
     gimbal_direct.yaw.set.curr=PID_calc(&gimbal_direct_pid.yaw_velocity,gimbal_direct.yaw.fdb.vel,gimbal_direct.yaw.set.vel);
 }
  
@@ -167,13 +168,13 @@ void GimbalSendCmd(void)
   }
   else
   {
-    CanCmdDjiMotor(2,0x1FF,0,gimbal_direct.pitch.set.curr,0,0);
+    CanCmdDjiMotor(2,0x1FF,gimbal_direct.yaw.set.curr,gimbal_direct.pitch.set.curr,0,0);
   }
-  ModifyDebugDataPackage(5,gimbal_direct.pitch.set.pos,"pos_set");
-  ModifyDebugDataPackage(6,gimbal_direct.pitch.fdb.pos,"pos_ref");
-  ModifyDebugDataPackage(7,gimbal_direct.pitch.set.vel,"vel_set");
-  ModifyDebugDataPackage(8,gimbal_direct.pitch.fdb.vel,"vel_ref");
-  ModifyDebugDataPackage(9,gimbal_direct.pitch.set.curr,"curr_set");
+  ModifyDebugDataPackage(5,(double)gimbal_direct.pitch.set.pos,"pos_set");
+  ModifyDebugDataPackage(6,(double)gimbal_direct.pitch.fdb.pos,"pos_ref");
+  ModifyDebugDataPackage(7,(double)gimbal_direct.pitch.set.vel,"vel_set");
+  ModifyDebugDataPackage(8,(double)gimbal_direct.pitch.fdb.vel,"vel_ref");
+  ModifyDebugDataPackage(9,(double)gimbal_direct.pitch.set.curr,"curr_set");
 }
 
 #endif  // GIMBAL_YAW_PITCH
