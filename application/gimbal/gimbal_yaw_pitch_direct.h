@@ -27,6 +27,10 @@
 #include "remote_control.h"
 #include "robot_param.h"
 #include "struct_typedef.h"
+#include  "user_lib.h"
+#include "CAN_cmd_dji.h"
+#include "detect_task.h"
+#include "usb_debug.h"
 
 
 /**
@@ -76,9 +80,9 @@ typedef struct
     PID_t pid;  // PID控制器
 } Gimbal_s;
 
-extern void InitGimbal(void);
+extern void GimbalInit(void);
 
-extern void SetGimbalMode(void);
+extern void GimbalHandleException(void);
 
 extern void GimbalObserver(void);
 
@@ -86,7 +90,7 @@ extern void GimbalReference(void);
 
 extern void GimbalConsole(void);
 
-extern void SendGimbalCmd(void);
+extern void GimbalSendCmd(void);
 
 #endif  // GIMBAL_YAW_PITCH_H
 #endif  // GIMBAL_YAW_PITCH

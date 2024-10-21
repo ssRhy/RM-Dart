@@ -29,7 +29,7 @@ PID_t gimbal_direct_pid;
  * @param[in]      none
  * @retval         none
  */
-void InitGimbal(void) 
+void GimbalInit(void) 
 {
   //step1 获取所有所需变量指针
    gimbal_direct.rc = get_remote_control_point(); 
@@ -50,7 +50,7 @@ void InitGimbal(void)
    const static fp32 gimbal_yaw_angle[3]={KP_GIMBAL_YAW_ANGLE,KI_GIMBAL_YAW_ANGLE,KD_GIMBAL_YAW_ANGLE};
    const static fp32 gimbal_yaw_velocity[3]={KP_GIMBAL_YAW_VELOCITY,KI_GIMBAL_YAW_VELOCITY,KD_GIMBAL_YAW_VELOCITY};
    
-   const static fp32 gimbal_pitch_angle[3]={KP_GIMBAL_PITCH_ANGLE,KI_GIMBAL_PITCH_ANGLE,KD_GIMBAL_PITCH_ANGLE};
+		const static fp32 gimbal_pitch_angle[3]={KP_GIMBAL_PITCH_ANGLE,KI_GIMBAL_PITCH_ANGLE,KD_GIMBAL_PITCH_ANGLE};
    const static fp32 gimbal_pitch_velocity[3]={KP_GIMBAL_PITCH_VELOCITY,KI_GIMBAL_PITCH_VELOCITY,KD_GIMBAL_PITCH_VELOCITY};
 
    PID_init(&gimbal_direct_pid.yaw_angle,PID_POSITION,gimbal_yaw_angle,MAX_OUT_GIMBAL_YAW_ANGLE,MAX_IOUT_GIMBAL_YAW_ANGLE);
@@ -70,23 +70,23 @@ void InitGimbal(void)
  * @param[in]      none
  * @retval         none
  */
-void SetGimbalMode(void)
+void GimbalHandleException(void)
 {
   //加上保险防止出现意外情况
   gimbal_direct.mode=GIMBAL_ZERO_FORCE;
 
   //下档无力
-  if (switch_is_down(gimbal_direct.rc->rc.s[1]))
+  if (switch_is_down(gimbal_direct.rc->rc.s[0]))
   {
     gimbal_direct.mode=GIMBAL_ZERO_FORCE;
   }
   //中档陀螺仪控制
-  else if(switch_is_mid(gimbal_direct.rc->rc.s[1]))
+  else if(switch_is_mid(gimbal_direct.rc->rc.s[0]))
   {
     gimbal_direct.mode=GIMBAL_GYRO;
   }
   //上档直接控制
-  else if(switch_is_up(gimbal_direct.rc->rc.s[1]))
+  else if(switch_is_up(gimbal_direct.rc->rc.s[0]))
   {
     gimbal_direct.mode=GIMBAL_OPEN;
   }
@@ -115,12 +115,15 @@ void GimbalObserver(void)
 void GimbalReference(void) 
 {
   // warning :不建议键鼠跟遥控器同时使用！
-  //读取鼠标的移动
-  gimbal_direct.reference.pitch=loop_fp32_constrain(gimbal_direct.reference.pitch+gimbal_direct.rc->mouse.y*MOUSE_SENSITIVITY,gimbal_direct.lower_limit.pitch,gimbal_direct.upper_limit.pitch);
-  gimbal_direct.reference.yaw  =loop_fp32_constrain(gimbal_direct.reference.yaw+gimbal_direct.rc->mouse.x*MOUSE_SENSITIVITY,gimbal_direct.lower_limit.yaw,gimbal_direct.upper_limit.yaw);
+  //读取鼠标的移动（还未测试过鼠标）
+  gimbal_direct.pitch.set.pos=fp32_constrain(gimbal_direct.pitch.set.pos+gimbal_direct.rc->mouse.y*MOUSE_SENSITIVITY,GIMBAL_LOWER_LIMIT_YAW,GIMBAL_UPPER_LIMIT_PITCH);
+  gimbal_direct.yaw.set.pos  =loop_fp32_constrain(gimbal_direct.yaw.set.pos+gimbal_direct.rc->mouse.x*MOUSE_SENSITIVITY,-PI,PI);
 
   //读取摇杆的数据
-  //gimbal_direct.reference.pitch=
+  gimbal_direct.pitch.set.pos= fp32_constrain(gimbal_direct.pitch.set.pos+(float)gimbal_direct.rc->rc.ch[1]/1500000,GIMBAL_LOWER_LIMIT_PITCH,GIMBAL_UPPER_LIMIT_PITCH);
+  gimbal_direct.yaw.set.pos = loop_fp32_constrain(gimbal_direct.yaw.set.pos-(float)gimbal_direct.rc->rc.ch[0]/1500000,-PI,PI);
+
+  
 }
 
 /*-------------------- Console --------------------*/
@@ -139,12 +142,14 @@ void GimbalConsole(void)
   }
   else 
   {
-    gimbal_direct.pitch.set.vel=PID_calc(&gimbal_direct_pid.pitch_angle,gimbal_direct.pitch.fdb.pos,gimbal_direct.reference.pitch);
-    gimbal_direct.pitch.set.curr=PID_calc(&gimbal_direct_pid.pitch_velocity,gimbal_direct.pitch.set.vel,gimbal_direct.pitch.set.vel);
+    gimbal_direct.pitch.set.vel=PID_calc(&gimbal_direct_pid.pitch_angle,gimbal_direct.pitch.fdb.pos,gimbal_direct.pitch.set.pos);
+    gimbal_direct.pitch.set.curr=PID_calc(&gimbal_direct_pid.pitch_velocity,gimbal_direct.pitch.fdb.vel,gimbal_direct.pitch.set.vel);
 
-    gimbal_direct.yaw.set.vel=PID_calc(&gimbal_direct_pid.yaw_angle,gimbal_direct.yaw.fdb.pos,gimbal_direct.reference.yaw);
-    gimbal_direct.yaw.set.curr=PID_calc(&gimbal_direct_pid.yaw_velocity,gimbal_direct.yaw.set.vel,gimbal_direct.yaw.set.vel);
+    fp32 delta_yaw=loop_fp32_constrain(gimbal_direct.yaw.set.pos-gimbal_direct.yaw.fdb.pos,-PI,PI);
+    gimbal_direct.yaw.set.vel=PID_calc(&gimbal_direct_pid.yaw_angle,0,delta_yaw);
+    gimbal_direct.yaw.set.curr=PID_calc(&gimbal_direct_pid.yaw_velocity,gimbal_direct.yaw.fdb.vel,gimbal_direct.yaw.set.vel);
 }
+ 
   }
   
 
@@ -155,10 +160,21 @@ void GimbalConsole(void)
  * @param[in]      none
  * @retval         none
  */
-void SendGimbalCmd(void) 
+void GimbalSendCmd(void) 
 {
-  MultipleCurrentControl(gimbal_direct.pitch.can,gimbal_direct.pitch.id,gimbal_direct.pitch.set.curr,0,0,0);
-  MultipleCurrentControl(gimbal_direct.yaw.can,gimbal_direct.yaw.id,gimbal_direct.yaw.set.curr,0,0,0);
+  if (toe_is_error(DBUS_TOE))
+  {
+    CanCmdDjiMotor(2,0x1FF,0,0,0,0);
+  }
+  else
+  {
+    CanCmdDjiMotor(2,0x1FF,gimbal_direct.yaw.set.curr,gimbal_direct.pitch.set.curr,0,0);
+  }
+  ModifyDebugDataPackage(5,(double)gimbal_direct.pitch.set.pos,"pos_set");
+  ModifyDebugDataPackage(6,(double)gimbal_direct.pitch.fdb.pos,"pos_ref");
+  ModifyDebugDataPackage(7,(double)gimbal_direct.pitch.set.vel,"vel_set");
+  ModifyDebugDataPackage(8,(double)gimbal_direct.pitch.fdb.vel,"vel_ref");
+  ModifyDebugDataPackage(9,(double)gimbal_direct.pitch.set.curr,"curr_set");
 }
 
 #endif  // GIMBAL_YAW_PITCH

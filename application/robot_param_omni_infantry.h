@@ -11,7 +11,7 @@
 #define GIMBAL_TYPE GIMBAL_YAW_PITCH_DIRECT    // 选择云台类型
 #define SHOOT_TYPE SHOOT_NONE            // 选择发射机构类型
 #define CONTROL_TYPE CHASSIS_AND_GIMBAL  // 选择控制类型
-#define MECHANICAL_ARM_NONE  //选择机械臂类型
+#define MECHANICAL_ARM_TYPE MECHANICAL_ARM_NONE  //选择机械臂类型
 
 /*-------------------- Chassis --------------------*/
 //physical parameters ---------------------
@@ -44,7 +44,7 @@
 
 /*-------------------- Gimbal --------------------*/
 //mouse sensitivity ---------------------
-#define MOUSE_SENSITIVITY (1)
+#define MOUSE_SENSITIVITY (0.5)
 //remote controller sensitivity ---------------------
 #define REMOTE_CONTROLLER_SENSITIVITY (1)
 //motor parameters ---------------------
@@ -53,7 +53,7 @@
 #define GIMBAL_DIRECT_PITCH_ID ((uint8_t)2)
 
 //电机can口
-#define GIMBAL_DIRECT_YAW_CAN ((uint8_t)1)
+#define GIMBAL_DIRECT_YAW_CAN ((uint8_t)2)
 #define GIMBAL_DIRECT_PITCH_CAN ((uint8_t)2) 
 
 //电机种类        
@@ -73,36 +73,36 @@
 #define GIMBAL_DIRECT_PITCH_MODE (0)
 
 //physical parameters ---------------------
-#define GIMBAL_UPPER_LIMIT_PITCH (0.0f)
-#define GIMBAL_UPPER_LIMIT_YAW (0.0f)
-#define GIMBAL_LOWER_LIMIT_PITCH (0.0f)
+#define GIMBAL_UPPER_LIMIT_PITCH (1.4)
+#define GIMBAL_UPPER_LIMIT_YAW (0.6f)
+#define GIMBAL_LOWER_LIMIT_PITCH (0.6f)
 #define GIMBAL_LOWER_LIMIT_YAW (0.0f)
 //PID parameters ---------------------
 //YAW ANGLE
-#define KP_GIMBAL_YAW_ANGLE (0.0f)
-#define KI_GIMBAL_YAW_ANGLE (0.0f)
-#define KD_GIMBAL_YAW_ANGLE (0.0f)
-#define MAX_IOUT_GIMBAL_YAW_ANGLE (0.0f)
-#define MAX_OUT_GIMBAL_YAW_ANGLE (0.0f)
+#define KP_GIMBAL_YAW_ANGLE (3.0f)
+#define KI_GIMBAL_YAW_ANGLE (0.003f)
+#define KD_GIMBAL_YAW_ANGLE (0.8f)
+#define MAX_IOUT_GIMBAL_YAW_ANGLE (0.05f)
+#define MAX_OUT_GIMBAL_YAW_ANGLE (20.0f)
 //VELOCITY:角速度
-#define KP_GIMBAL_YAW_VELOCITY (0.0f)
-#define KI_GIMBAL_YAW_VELOCITY (0.0f)
-#define KD_GIMBAL_YAW_VELOCITY (0.0f)
-#define MAX_IOUT_GIMBAL_YAW_VELOCITY (0.0f)
-#define MAX_OUT_GIMBAL_YAW_VELOCITY (0.0f)
+#define KP_GIMBAL_YAW_VELOCITY (800.0f)
+#define KI_GIMBAL_YAW_VELOCITY (20.0f)
+#define KD_GIMBAL_YAW_VELOCITY (100.0f)
+#define MAX_IOUT_GIMBAL_YAW_VELOCITY (10000.0f)
+#define MAX_OUT_GIMBAL_YAW_VELOCITY (30000.0f)
 
 //PITCH ANGLE
-#define KP_GIMBAL_PITCH_ANGLE (0.0f)
+#define KP_GIMBAL_PITCH_ANGLE (1.0f)
 #define KI_GIMBAL_PITCH_ANGLE (0.0f)
 #define KD_GIMBAL_PITCH_ANGLE (0.0f)
-#define MAX_IOUT_GIMBAL_PITCH_ANGLE (0.0f)
-#define MAX_OUT_GIMBAL_PITCH_ANGLE (0.0f)
+#define MAX_IOUT_GIMBAL_PITCH_ANGLE (1.0f)
+#define MAX_OUT_GIMBAL_PITCH_ANGLE (10.0f)
 //VELOCITY:角速度
-#define KP_GIMBAL_PITCH_VELOCITY (0.0f)
-#define KI_GIMBAL_PITCH_VELOCITY (0.0f)
-#define KD_GIMBAL_PITCH_VELOCITY (0.0f)
-#define MAX_IOUT_GIMBAL_PITCH_VELOCITY (0.0f)
-#define MAX_OUT_GIMBAL_PITCH_VELOCITY (0.0f)
+#define KP_GIMBAL_PITCH_VELOCITY (7400.0f)
+#define KI_GIMBAL_PITCH_VELOCITY (80.0f)
+#define KD_GIMBAL_PITCH_VELOCITY (40.0f)
+#define MAX_IOUT_GIMBAL_PITCH_VELOCITY (18000.0f)
+#define MAX_OUT_GIMBAL_PITCH_VELOCITY (30000.0f)
 /*-------------------- Shoot --------------------*/
 //physical parameters ---------------------
 #define FRIC_RADIUS 0.03f  // (m)摩擦轮半径

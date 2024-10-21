@@ -83,7 +83,7 @@
 
 extern void IMU_task(void const * pvParameters);
 
-extern void INS_cali_gyro(fp32 cali_scale[3], fp32 cali_offset[3], uint16_t * time_count);
+extern void INS_cali_gyro(fp32 cali_scale[3], fp32 cali_offset[3], uint32_t * time_count);
 
 extern void INS_set_cali_gyro(fp32 cali_scale[3], fp32 cali_offset[3]);
 
