@@ -85,10 +85,10 @@ void GimbalHandleException(void)
   {
     gimbal_direct.mode=GIMBAL_GYRO;
   }
-  //上档直接控制
+  //上档角度控制
   else if(switch_is_up(gimbal_direct.rc->rc.s[0]))
   {
-    gimbal_direct.mode=GIMBAL_OPEN;
+    gimbal_direct.mode=GIMBAL_ANGLE;
   }
 }
 
@@ -103,6 +103,16 @@ void GimbalObserver(void)
 {
   GetMotorMeasure(&gimbal_direct.yaw);
   GetMotorMeasure(&gimbal_direct.pitch);
+
+  if (gimbal_direct.mode==GIMBAL_ANGLE)
+  {
+    gimbal_direct.reference.pitch=gimbal_direct.pitch.fdb.pos;
+    gimbal_direct.reference.yaw=gimbal_direct.yaw.fdb.pos;
+  }
+  else if (gimbal_direct.mode==GIMBAL_GYRO)
+  {
+
+  }
 }
 
 /*-------------------- Reference --------------------*/
@@ -142,15 +152,15 @@ void GimbalConsole(void)
   }
   else 
   {
-    gimbal_direct.pitch.set.vel=PID_calc(&gimbal_direct_pid.pitch_angle,gimbal_direct.pitch.fdb.pos,gimbal_direct.pitch.set.pos);
+    gimbal_direct.pitch.set.vel=PID_calc(&gimbal_direct_pid.pitch_angle,gimbal_direct.reference.pitch,gimbal_direct.pitch.set.pos);
     gimbal_direct.pitch.set.curr=PID_calc(&gimbal_direct_pid.pitch_velocity,gimbal_direct.pitch.fdb.vel,gimbal_direct.pitch.set.vel);
 
-    fp32 delta_yaw=loop_fp32_constrain(gimbal_direct.yaw.set.pos-gimbal_direct.yaw.fdb.pos,-PI,PI);
+    fp32 delta_yaw=loop_fp32_constrain(gimbal_direct.yaw.set.pos-gimbal_direct.reference.yaw,-PI,PI);
     gimbal_direct.yaw.set.vel=PID_calc(&gimbal_direct_pid.yaw_angle,0,delta_yaw);
     gimbal_direct.yaw.set.curr=PID_calc(&gimbal_direct_pid.yaw_velocity,gimbal_direct.yaw.fdb.vel,gimbal_direct.yaw.set.vel);
-}
- 
   }
+ 
+}
   
 
 /*-------------------- Cmd --------------------*/
