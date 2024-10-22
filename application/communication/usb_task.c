@@ -152,15 +152,6 @@ void usb_task(void const * argument)
     UsbInit();
 
     while (1) {
-        ModifyDebugDataPackage(0, ROBOT_CMD_DATA.gimbal.pitch, "pitch");
-
-        // ModifyDebugDataPackage(1, VIRTUAL_RC_CTRL.rc.ch[0], "ch0");
-        // ModifyDebugDataPackage(2, VIRTUAL_RC_CTRL.rc.ch[1], "ch1");
-        // ModifyDebugDataPackage(3, VIRTUAL_RC_CTRL.rc.ch[2], "ch2");
-        // ModifyDebugDataPackage(4, VIRTUAL_RC_CTRL.rc.ch[3], "ch3");
-        // ModifyDebugDataPackage(5, VIRTUAL_RC_CTRL.rc.ch[4], "ch4");
-        // ModifyDebugDataPackage(6, VIRTUAL_RC_CTRL.rc.s[0], "s0");
-        // ModifyDebugDataPackage(7, VIRTUAL_RC_CTRL.rc.s[1], "s1");
 
         UsbSendData();
         UsbReceiveData();
