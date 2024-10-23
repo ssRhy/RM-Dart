@@ -111,7 +111,8 @@ void GimbalObserver(void)
   }
   else if (gimbal_direct.mode==GIMBAL_GYRO)
   {
-
+    gimbal_direct.reference.pitch=gimbal_direct.imu->pitch;
+    gimbal_direct.reference.yaw=gimbal_direct.imu->yaw;
   }
 }
 
