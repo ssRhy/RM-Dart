@@ -39,7 +39,7 @@
 typedef enum {
     GIMBAL_ZERO_FORCE,  // 云台无力，所有控制量置0
     GIMBAL_GYRO,        // 云台陀螺仪控制
-    GIMBAL_OPEN,        // 遥控器的值乘以比例成电流值开环控制
+    GIMBAL_ANGLE,        // 遥控器的值乘以比例成电流值开环控制
 } GimbalMode_e;
 
 
