@@ -62,7 +62,7 @@
 
 //旋转方向
 #define GIMBAL_DIRECT_YAW_DIRECTION (1) 
-#define GIMBAL_DIRECT_PITCH_DIRECTION (1)
+#define GIMBAL_DIRECT_PITCH_DIRECTION (-1)
 
 //减速比
 #define GIMBAL_DIRECT_YAW_REDUCTION_RATIO (1)
@@ -73,10 +73,8 @@
 #define GIMBAL_DIRECT_PITCH_MODE (0)
 
 //physical parameters ---------------------
-#define GIMBAL_UPPER_LIMIT_PITCH (1.4)
-#define GIMBAL_UPPER_LIMIT_YAW (0.6f)
-#define GIMBAL_LOWER_LIMIT_PITCH (0.6f)
-#define GIMBAL_LOWER_LIMIT_YAW (0.0f)
+#define GIMBAL_UPPER_LIMIT_PITCH (0.6f)
+#define GIMBAL_LOWER_LIMIT_PITCH (-0.4f)
 //PID parameters ---------------------
 //YAW ANGLE
 #define KP_GIMBAL_YAW_ANGLE (3.0f)
@@ -98,10 +96,10 @@
 #define MAX_IOUT_GIMBAL_PITCH_ANGLE (1.0f)
 #define MAX_OUT_GIMBAL_PITCH_ANGLE (10.0f)
 //VELOCITY:角速度
-#define KP_GIMBAL_PITCH_VELOCITY (7400.0f)
-#define KI_GIMBAL_PITCH_VELOCITY (80.0f)
-#define KD_GIMBAL_PITCH_VELOCITY (40.0f)
-#define MAX_IOUT_GIMBAL_PITCH_VELOCITY (18000.0f)
+#define KP_GIMBAL_PITCH_VELOCITY (10000.0f)
+#define KI_GIMBAL_PITCH_VELOCITY (0.0f)
+#define KD_GIMBAL_PITCH_VELOCITY (10.0f)
+#define MAX_IOUT_GIMBAL_PITCH_VELOCITY (2000.0f)
 #define MAX_OUT_GIMBAL_PITCH_VELOCITY (30000.0f)
 /*-------------------- Shoot --------------------*/
 //physical parameters ---------------------
