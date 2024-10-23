@@ -5,7 +5,7 @@
 ![Logo](./doc/pic/Logo6.png)
 
 [![Author](https://img.shields.io/badge/Author-小企鹅-orange.svg)](https://gitee.com/Ljw0401)
-[![Author](https://img.shields.io/badge/Author-YZX-orange.svg)](https://gitee.com/yuan-zaixiu)
+[![Maintainer](https://img.shields.io/badge/Maintainer-YZX-orange.svg)](https://gitee.com/yuan-zaixiu)
 
 ![language](https://img.shields.io/badge/language-C-blue.svg)
 ![license](https://img.shields.io/badge/license-MIT-green.svg)
@@ -19,7 +19,7 @@
 
 ## 简介
 
-> 也许不是最好的？但一定是最适合上手的电控开源！
+> 也许不是最好的？但一定是最适合上手的C板电控框架！
 
 本项目的计划是基于 DJI StandardRobot 的基础上改造成一个更适合北极熊uu们的通用型机器人代码框架。
 
@@ -42,8 +42,6 @@
   - [ ] 全向轮底盘
   - [ ] 舵轮底盘
   - [x] 平衡底盘
-  
-  详细信息请参考 [CHASSIS_README](./application/chassis/CHASSIS_README.md)
 
 - **Gimbal**\
   云台模块：
@@ -51,14 +49,10 @@
   - [ ] yaw直连-pitch丝杆 云台
   - [ ] yaw-pitch 丝杆云台
   
-  详细信息请参考 [GIMBAL_README](./application/gimbal/GIMBAL_README.md)
-
 - **Shoot**\
   发射机构模块：
   - [ ] 摩擦轮+拨弹盘
   - [ ] 摩擦轮+弹鼓+推杆
-
-  详细信息请参考 [SHOOT_README](./application/shoot/SHOOT_README.md)
 
 <!-- - **Mechanical arm**\
   支持以下机械臂类型：
@@ -87,6 +81,12 @@
 >
 > 编写代码时可以参考[代码编写指南](./doc/代码编写指南.md)
 
+## 开发日志
+
+[LOG.md](./doc/LOG.md) 记录了大家在开发过程中的各种奇思妙想和经验。多翻一翻或许能发现惊喜哦。大家有什么想法也都可以往里面写。
+
+[API.md](./doc/API.md) 为开发过程中所使用的模块接口标准，若在编写代码时发现代码与标准冲突，基于本标准修改代码。
+
 ## 后续计划
 
 具体要做的事情在[TODO](./doc/TODO.md)中
@@ -96,11 +96,7 @@
 
 ## 致谢
 
-感谢 DJI C板示例程序和各个战队的代码开源
-
-- DJI [Development-Board-C-Examples](https://github.com/RoboMaster/Development-Board-C-Examples)
-- 跃鹿 [basic_framework-dev](https://gitee.com/hnuyuelurm/basic_framework)
-- 未来战队 [XRobot仓库](https://github.com/xrobot-org/XRobot) , [XRobot文档](https://xrobot-org.github.io/)
+感谢各个战队的代码开源，所有本框架涉及到的主要的参考资料位于[reference.md](./doc/reference.md)
 
 ## 附录
 
