@@ -1,6 +1,6 @@
 # 接口标准
 
-version: v1.0.0
+version: v1.0.2
 > 如代码中的内容与本标准冲突，基于本标准修改代码。
 
 - [接口标准](#接口标准)
@@ -781,7 +781,7 @@ version: v1.0.0
 
   | 参数 | 类型 | 备注 |
   |------|------|-----|
-  |channel|uint8_t|通道id，0-右平, 1-右竖, 2-左平, 3-左竖, 4-左滚轮|
+  |ch|uint8_t|通道id，0-右平, 1-右竖, 2-左平, 3-左竖, 4-左滚轮，配合ch id宏进行使用|
   |返回|float|DT7遥控器通道值，范围为 $[-1,1]$|
 
 - `GetDt7RcSw`
@@ -789,31 +789,31 @@ version: v1.0.0
 
   | 参数 | 类型 | 备注 |
   |------|------|-----|
-  |channel|uint8_t|通道id，0-右, 1-左|
+  |sw|uint8_t|通道id，0-右, 1-左，配合sw id宏进行使用|
   |返回|char|DT7遥控器拨杆值，范围为 $\{1,2,3\}$|
 
-- `GetMouseSpeed`
+- `GetDt7MouseSpeed`
   > 获取鼠标axis轴的移动速度
 
   | 参数 | 类型 | 备注 |
   |------|------|-----|
-  |axis|uint8_t|轴id, 0-, 1-, 2-|
+  |axis|uint8_t|轴id, 0-, 1-, 2-，配合轴id宏进行使用|
   |返回|float|鼠标axis轴，范围为 $[,]$|
 
-- `GetMouse`
+- `GetDt7Mouse`
   > 获取鼠标按键信息
 
   | 参数 | 类型 | 备注 |
   |------|------|-----|
-  |key|uint8_t|按键id，配合定义好的按键id宏进行使用|
+  |key|uint8_t|按键id，配合按键id宏进行使用|
   |返回|bool|鼠标按键是否被按下|
 
-- `GetKeyboard`
+- `GetDt7Keyboard`
   > 获取键盘按键信息
 
   | 参数 | 类型 | 备注 |
   |------|------|-----|
-  |key|uint8_t|按键id，配合定义好的按键id宏进行使用|
+  |key|uint8_t|按键id，配合按键id宏进行使用|
   |返回|bool|键盘按键是否被按下|
 
 ## 通信模块（COMMUNICATION）
@@ -830,7 +830,7 @@ version: v1.0.0
 
 上位机：Supervisory Computer
 
-- `ModifyDebugData`
+- `ModifyDebugDataPackage`
   > 修改调试数据包。
 
   | 参数 | 类型 | 备注 |

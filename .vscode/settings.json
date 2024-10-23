@@ -122,7 +122,9 @@
         "robot_param_engineer_controller.h": "c",
         "custom_controller_engineer.h": "c",
         "shoot_fric_trigger.h": "c",
-        "calibrate_task.h": "c"
+        "calibrate_task.h": "c",
+        "bsp_rc.h": "c",
+        "macro_typedef.h": "c"
     },
     "C_Cpp.codeAnalysis.clangTidy.enabled": true,
     "[cpp]": {
