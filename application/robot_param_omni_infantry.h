@@ -75,6 +75,9 @@
 //physical parameters ---------------------
 #define GIMBAL_UPPER_LIMIT_PITCH (0.6f)
 #define GIMBAL_LOWER_LIMIT_PITCH (-0.4f)
+
+#define GIMBAL_DIRECT_YAW_MID (-2.825f) //云台初始化正对齐的时候使用的yaw轴正中心量
+
 //PID parameters ---------------------
 //YAW ANGLE
 #define KP_GIMBAL_YAW_ANGLE (3.0f)
