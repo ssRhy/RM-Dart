@@ -23,18 +23,21 @@
 
 #include "IMU_task.h"
 
+#include "IMU.h"
 #include "ahrs.h"
 #include "bmi088driver.h"
 #include "bsp_imu_pwm.h"
 #include "bsp_spi.h"
 #include "calibrate_task.h"
 #include "cmsis_os.h"
+#include "data_exchange.h"
 #include "detect_task.h"
 #include "ist8310driver.h"
 #include "main.h"
 #include "math.h"
 #include "pid.h"
-#include "usb_task.h"
+#include "robot_param.h"
+#include "usb_debug.h"
 
 // clang-format off
 #define IMU_temp_PWM(pwm)  imu_pwm_set(pwm)                    //pwm给定
@@ -100,7 +103,7 @@ static void imu_temp_control(fp32 temp);
   */
 static void imu_cmd_spi_dma(void);
 
-static void AutoCaliImuData(void);
+// static void AutoCaliImuData(void);
 static void UpdateImuData(void);
 
 // clang-format off
@@ -177,36 +180,36 @@ static Imu_t IMU_DATA = {
     .z_accel = 0.0f,
 };
 
-typedef struct ImuCaliData
-{
-    struct reference
-    {
-        float ax, ay, az;
-        float r, p, y1, y2;
-    } ref;
+// typedef struct ImuCaliData
+// {
+//     struct reference
+//     {
+//         float ax, ay, az;
+//         float r, p, y1, y2;
+//     } ref;
 
-    struct time
-    {
-        uint32_t start;
-        uint32_t end;
-    } time;
+//     struct time
+//     {
+//         uint32_t start;
+//         uint32_t end;
+//     } time;
 
-    struct offect
-    {
-        float roll;
-        float pitch;
-        float yaw;
-        float yaw_drift_rate;
-    } offect;
+//     struct offect
+//     {
+//         float roll;
+//         float pitch;
+//         float yaw;
+//         float yaw_drift_rate;
+//     } offect;
 
-    uint8_t read_cnt;
-} ImuCaliData_t;
+//     uint8_t read_cnt;
+// } ImuCaliData_t;
 
-static ImuCaliData_t IMU_CALI_DATA = {
-    .ref = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
-    .offect = {0.0f, 0.0f, 0.0f, 0.0f},
-    .read_cnt = 0,
-};
+// static ImuCaliData_t IMU_CALI_DATA = {
+//     .ref = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
+//     .offect = {0.0f, 0.0f, 0.0f, 0.0f},
+//     .read_cnt = 0,
+// };
 
 /**
   * @brief          imu task, init bmi088, ist8310, calculate the euler angle
@@ -220,6 +223,9 @@ static ImuCaliData_t IMU_CALI_DATA = {
   */
 void IMU_task(void const * pvParameters)
 {
+    // 发布IMU数据
+    Publish(&IMU_DATA, IMU_NAME);
+
     // clang-format off
     //wait a time
     osDelay(INS_TASK_INIT_TIME);
@@ -322,7 +328,7 @@ void IMU_task(void const * pvParameters)
 //            ist8310_read_mag(ist8310_real_data.mag);
         }
         // clang-format on
-        AutoCaliImuData();
+        // AutoCaliImuData();
         UpdateImuData();
     }
 }
@@ -331,59 +337,59 @@ void IMU_task(void const * pvParameters)
  * @brief 自动校准IMU数据，每次上电时，读取一定数量的数据，计算出静态角度
  * @param  
  */
-static void AutoCaliImuData(void)
-{
-    if (HAL_GetTick() < 100) {
-        return;
-    }
+// static void AutoCaliImuData(void)
+// {
+//     if (HAL_GetTick() < 100) {
+//         return;
+//     }
 
-    if (IMU_CALI_DATA.read_cnt > IMU_CALI_MAX_COUNT) {
-        return;
-    }
+//     if (IMU_CALI_DATA.read_cnt > IMU_CALI_MAX_COUNT) {
+//         return;
+//     }
 
-    if (IMU_CALI_DATA.read_cnt < IMU_CALI_MAX_COUNT) {
-        IMU_CALI_DATA.ref.ax += INS_accel[INS_ACCEL_X_ADDRESS_OFFSET];
-        IMU_CALI_DATA.ref.ay += INS_accel[INS_ACCEL_Y_ADDRESS_OFFSET];
-        IMU_CALI_DATA.ref.az += INS_accel[INS_ACCEL_Z_ADDRESS_OFFSET];
+//     if (IMU_CALI_DATA.read_cnt < IMU_CALI_MAX_COUNT) {
+//         IMU_CALI_DATA.ref.ax += INS_accel[INS_ACCEL_X_ADDRESS_OFFSET];
+//         IMU_CALI_DATA.ref.ay += INS_accel[INS_ACCEL_Y_ADDRESS_OFFSET];
+//         IMU_CALI_DATA.ref.az += INS_accel[INS_ACCEL_Z_ADDRESS_OFFSET];
 
-        IMU_CALI_DATA.ref.r += INS_angle[INS_ROLL_ADDRESS_OFFSET];
-        IMU_CALI_DATA.ref.p += INS_angle[INS_PITCH_ADDRESS_OFFSET];
+//         IMU_CALI_DATA.ref.r += INS_angle[INS_ROLL_ADDRESS_OFFSET];
+//         IMU_CALI_DATA.ref.p += INS_angle[INS_PITCH_ADDRESS_OFFSET];
 
-        if (IMU_CALI_DATA.read_cnt == 0) {
-            IMU_CALI_DATA.ref.y1 = INS_angle[INS_YAW_ADDRESS_OFFSET];
-            IMU_CALI_DATA.time.start = HAL_GetTick();
-        }
+//         if (IMU_CALI_DATA.read_cnt == 0) {
+//             IMU_CALI_DATA.ref.y1 = INS_angle[INS_YAW_ADDRESS_OFFSET];
+//             IMU_CALI_DATA.time.start = HAL_GetTick();
+//         }
 
-        IMU_CALI_DATA.read_cnt++;
-    } else if (IMU_CALI_DATA.read_cnt == IMU_CALI_MAX_COUNT) {
-        IMU_CALI_DATA.time.end = HAL_GetTick();
-        IMU_CALI_DATA.ref.y2 = INS_angle[INS_YAW_ADDRESS_OFFSET];
+//         IMU_CALI_DATA.read_cnt++;
+//     } else if (IMU_CALI_DATA.read_cnt == IMU_CALI_MAX_COUNT) {
+//         IMU_CALI_DATA.time.end = HAL_GetTick();
+//         IMU_CALI_DATA.ref.y2 = INS_angle[INS_YAW_ADDRESS_OFFSET];
 
-        IMU_CALI_DATA.ref.ax = IMU_CALI_DATA.ref.ax / IMU_CALI_MAX_COUNT;
-        IMU_CALI_DATA.ref.ay = IMU_CALI_DATA.ref.ay / IMU_CALI_MAX_COUNT;
-        IMU_CALI_DATA.ref.az = IMU_CALI_DATA.ref.az / IMU_CALI_MAX_COUNT;
+//         IMU_CALI_DATA.ref.ax = IMU_CALI_DATA.ref.ax / IMU_CALI_MAX_COUNT;
+//         IMU_CALI_DATA.ref.ay = IMU_CALI_DATA.ref.ay / IMU_CALI_MAX_COUNT;
+//         IMU_CALI_DATA.ref.az = IMU_CALI_DATA.ref.az / IMU_CALI_MAX_COUNT;
 
-        IMU_CALI_DATA.ref.r = IMU_CALI_DATA.ref.r / IMU_CALI_MAX_COUNT;
-        IMU_CALI_DATA.ref.p = IMU_CALI_DATA.ref.p / IMU_CALI_MAX_COUNT;
+//         IMU_CALI_DATA.ref.r = IMU_CALI_DATA.ref.r / IMU_CALI_MAX_COUNT;
+//         IMU_CALI_DATA.ref.p = IMU_CALI_DATA.ref.p / IMU_CALI_MAX_COUNT;
 
-        float static_roll = atan2f(IMU_CALI_DATA.ref.ay, IMU_CALI_DATA.ref.az);
-        float static_pitch = atan2f(
-            -IMU_CALI_DATA.ref.ax, sqrtf(
-                                       IMU_CALI_DATA.ref.ay * IMU_CALI_DATA.ref.ay +
-                                       IMU_CALI_DATA.ref.az * IMU_CALI_DATA.ref.az));
+//         float static_roll = atan2f(IMU_CALI_DATA.ref.ay, IMU_CALI_DATA.ref.az);
+//         float static_pitch = atan2f(
+//             -IMU_CALI_DATA.ref.ax, sqrtf(
+//                                        IMU_CALI_DATA.ref.ay * IMU_CALI_DATA.ref.ay +
+//                                        IMU_CALI_DATA.ref.az * IMU_CALI_DATA.ref.az));
 
-        IMU_CALI_DATA.offect.roll = static_roll - IMU_CALI_DATA.ref.r;
-        IMU_CALI_DATA.offect.pitch = static_pitch - IMU_CALI_DATA.ref.p;
+//         IMU_CALI_DATA.offect.roll = static_roll - IMU_CALI_DATA.ref.r;
+//         IMU_CALI_DATA.offect.pitch = static_pitch - IMU_CALI_DATA.ref.p;
 
-        IMU_CALI_DATA.read_cnt++;
-    }
-}
+//         IMU_CALI_DATA.read_cnt++;
+//     }
+// }
 
 static void UpdateImuData(void)
 {
     // clang-format off
-    IMU_DATA.pitch = INS_angle[INS_PITCH_ADDRESS_OFFSET] + IMU_CALI_DATA.offect.pitch;
-    IMU_DATA.roll  = INS_angle[INS_ROLL_ADDRESS_OFFSET]  + IMU_CALI_DATA.offect.roll;
+    IMU_DATA.pitch = INS_angle[INS_PITCH_ADDRESS_OFFSET];
+    IMU_DATA.roll  = INS_angle[INS_ROLL_ADDRESS_OFFSET];
     IMU_DATA.yaw   = INS_angle[INS_YAW_ADDRESS_OFFSET];
 
     IMU_DATA.roll_vel  = INS_gyro[INS_GYRO_X_ADDRESS_OFFSET];
@@ -398,8 +404,6 @@ static void UpdateImuData(void)
     // OutputPCData.packets[19].data = INS_angle[INS_PITCH_ADDRESS_OFFSET];
     // clang-format on
 }
-
-const Imu_t * GetImuDataPoint(void) { return &IMU_DATA; }
 
 // clang-format off
 
@@ -446,7 +450,12 @@ static void imu_temp_control(fp32 temp)
 {
     uint16_t tempPWM;
     static uint8_t temp_constant_time = 0;
-    if (first_temperate)
+    
+    if (!__HEAT_IMU)
+    {
+        return;
+    }
+    else if (first_temperate)
     {
         PID_calc(&imu_temp_pid, temp, get_control_temperature());
         if (imu_temp_pid.out < 0.0f)
@@ -477,22 +486,14 @@ static void imu_temp_control(fp32 temp)
 }
 
 /**
-  * @brief          calculate gyro zero drift
-  * @param[out]     gyro_offset:zero drift
-  * @param[in]      gyro:gyro data
-  * @param[out]     offset_time_count: +1 auto
-  * @retval         none
-  */
-/**
   * @brief          计算陀螺仪零漂
   * @param[out]     gyro_offset:计算零漂
   * @param[in]      gyro:角速度数据
-  * @param[out]     offset_time_count: 自动加1
   * @retval         none
   */
-void gyro_offset_calc(fp32 gyro_offset[3], fp32 gyro[3], uint16_t *offset_time_count)
+void gyro_offset_calc(fp32 gyro_offset[3], fp32 gyro[3])
 {
-    if (gyro_offset == NULL || gyro == NULL || offset_time_count == NULL)
+    if (gyro_offset == NULL || gyro == NULL)
     {
         return;
     }
@@ -500,24 +501,16 @@ void gyro_offset_calc(fp32 gyro_offset[3], fp32 gyro[3], uint16_t *offset_time_c
         gyro_offset[0] = gyro_offset[0] - 0.0003f * gyro[0];
         gyro_offset[1] = gyro_offset[1] - 0.0003f * gyro[1];
         gyro_offset[2] = gyro_offset[2] - 0.0003f * gyro[2];
-        (*offset_time_count)++;
 }
 
-/**
-  * @brief          calculate gyro zero drift
-  * @param[out]     cali_scale:scale, default 1.0
-  * @param[out]     cali_offset:zero drift, collect the gyro ouput when in still
-  * @param[out]     time_count: time, when call gyro_offset_calc 
-  * @retval         none
-  */
 /**
   * @brief          校准陀螺仪
   * @param[out]     陀螺仪的比例因子，1.0f为默认值，不修改
   * @param[out]     陀螺仪的零漂，采集陀螺仪的静止的输出作为offset
-  * @param[out]     陀螺仪的时刻，每次在gyro_offset调用会加1,
+  * @param[out]     陀螺仪的时刻
   * @retval         none
   */
-void INS_cali_gyro(fp32 cali_scale[3], fp32 cali_offset[3], uint16_t *time_count)
+void INS_cali_gyro(fp32 cali_scale[3], fp32 cali_offset[3], uint32_t *time_count)
 {
         if( *time_count == 0)
         {
@@ -525,7 +518,7 @@ void INS_cali_gyro(fp32 cali_scale[3], fp32 cali_offset[3], uint16_t *time_count
             gyro_offset[1] = gyro_cali_offset[1];
             gyro_offset[2] = gyro_cali_offset[2];
         }
-        gyro_offset_calc(gyro_offset, INS_gyro, time_count);
+        gyro_offset_calc(gyro_offset, INS_gyro);
 
         cali_offset[0] = gyro_offset[0];
         cali_offset[1] = gyro_offset[1];
@@ -780,3 +773,32 @@ void DMA2_Stream2_IRQHandler(void)
     }
 }
 // clang-format on
+
+/******************************************************************/
+/* API                                                            */
+/*----------------------------------------------------------------*/
+/* function:      GetImuAngle                                     */
+/*                GetImuVelocity                                  */
+/*                GetImuAccel                                     */
+/******************************************************************/
+
+/**
+  * @brief          获取欧拉角
+  * @param[in]      axis:轴id，可配合定义好的轴id宏使用
+  * @retval         (rad) axis轴的角度值
+  */
+inline float GetImuAngle(uint8_t axis) { return INS_angle[2 - axis]; }
+/**
+  * @brief          获取角速度
+  * @param[in]      axis:轴id，可配合定义好的轴id宏使用
+  * @retval         (rad/s) axis轴的角速度
+  */
+inline float GetImuVelocity(uint8_t axis) { return INS_gyro[axis]; }
+/**
+  * @brief          获取角速度
+  * @param[in]      axis:轴id，可配合定义好的轴id宏使用
+  * @retval         (m/s^2) axis轴上的加速度
+  */
+inline float GetImuAccel(uint8_t axis) { return INS_accel[axis]; }
+
+/*------------------------------ End of File ------------------------------*/

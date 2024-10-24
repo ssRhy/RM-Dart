@@ -26,7 +26,7 @@
 #include "robot_param.h"
 
 /* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */     
+/* USER CODE BEGIN Includes */
 
 #include "calibrate_task.h"
 #include "chassis_task.h"
@@ -44,6 +44,7 @@
 #include "music_task.h"
 #include "develop_task.h"
 #include "custom_controller_task.h"
+#include "communication_task.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -52,6 +53,8 @@
 osThreadId calibrate_tast_handle;
 
 osThreadId detect_handle;
+
+osThreadId communication_handle;
 
 #if (CHASSIS_TYPE != CHASSIS_NONE)
 osThreadId chassisTaskHandle;
@@ -73,9 +76,7 @@ osThreadId mechanical_armTaskHandle;
 osThreadId customControllerTaskHandle;
 #endif
 
-#if (__MUSIC_ON)
 osThreadId musicTaskHandle;
-#endif
 
 #if (__DEVELOP)
 osThreadId developTaskHandle;
@@ -90,6 +91,10 @@ osThreadId oled_handle;
 osThreadId referee_usart_task_handle;
 
 osThreadId usb_task_handle;
+
+// osThreadId usb_send_task_handle;
+
+// osThreadId usb_receive_task_handle;
 
 osThreadId battery_voltage_handle;
 
@@ -195,6 +200,9 @@ void MX_FREERTOS_Init(void) {
     osThreadDef(DETECT, detect_task, osPriorityNormal, 0, 256);
     detect_handle = osThreadCreate(osThread(DETECT), NULL);
 
+    osThreadDef(COMMUNICATION, communication_task, osPriorityNormal, 0, 256);
+    communication_handle = osThreadCreate(osThread(COMMUNICATION), NULL);
+
 #if (CHASSIS_TYPE != CHASSIS_NONE)
     osThreadDef(ChassisTask, chassis_task, osPriorityAboveNormal, 0, 512);
     chassisTaskHandle = osThreadCreate(osThread(ChassisTask), NULL);
@@ -220,10 +228,8 @@ void MX_FREERTOS_Init(void) {
     customControllerTaskHandle = osThreadCreate(osThread(customControllerTask), NULL);
 #endif
 
-#if (__MUSIC_ON)
     osThreadDef(musicTask, music_task, osPriorityNormal, 0, 256);
     musicTaskHandle = osThreadCreate(osThread(musicTask), NULL);
-#endif
 
 #if (__DEVELOP)
     osThreadDef(developTask, develop_task, osPriorityNormal, 0, 256);
@@ -245,9 +251,8 @@ void MX_FREERTOS_Init(void) {
     osThreadDef(REFEREE, referee_usart_task, osPriorityNormal, 0, 128);
     referee_usart_task_handle = osThreadCreate(osThread(REFEREE), NULL);
 
-
-    osThreadDef(USBTask, usb_task, osPriorityNormal, 0, 128);
-    usb_task_handle = osThreadCreate(osThread(USBTask), NULL);
+    osThreadDef(USB_Task, usb_task, osPriorityNormal, 0, 128);
+    usb_task_handle = osThreadCreate(osThread(USB_Task), NULL);
 
     osThreadDef(BATTERY_VOLTAGE, battery_voltage_task, osPriorityNormal, 0, 128);
     battery_voltage_handle = osThreadCreate(osThread(BATTERY_VOLTAGE), NULL);

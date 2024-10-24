@@ -16,7 +16,7 @@
 #include "custom_controller_penguin_mini.h"
 #if (CUSTOM_CONTROLLER_TYPE == CUSTOM_CONTROLLER_PENGUIN_MINI)
 #include "CAN_communication.h"
-#include "usb_task.h"
+#include "usb_debug.h"
 #include "user_lib.h"
 
 #define BIG_ARM_DATA_ID 1
@@ -62,10 +62,10 @@ void CustomControllerSetMode(void) {}
  */
 void CustomControllerObserver(void)
 {
-    OutputPCData.packets[17].data = uint_to_float(CUSTOM_CONTROLLER.ctrl_data.yaw, -M_PI, M_PI, 16);
-    OutputPCData.packets[18].data = uint_to_float(CUSTOM_CONTROLLER.ctrl_data.big_arm_pitch, -M_PI_2, M_PI_2, 16);
-    OutputPCData.packets[19].data = CUSTOM_CONTROLLER.ctrl_data.small_arm_pitch;
-    OutputPCData.packets[20].data = CUSTOM_CONTROLLER.ctrl_data.small_arm_roll;
+    // OutputPCData.packets[17].data = uint_to_float(CUSTOM_CONTROLLER.ctrl_data.yaw, -M_PI, M_PI, 16);
+    // OutputPCData.packets[18].data = uint_to_float(CUSTOM_CONTROLLER.ctrl_data.big_arm_pitch, -M_PI_2, M_PI_2, 16);
+    // OutputPCData.packets[19].data = CUSTOM_CONTROLLER.ctrl_data.small_arm_pitch;
+    // OutputPCData.packets[20].data = CUSTOM_CONTROLLER.ctrl_data.small_arm_roll;
 }
 
 /*-------------------- Reference --------------------*/

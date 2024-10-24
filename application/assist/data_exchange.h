@@ -17,6 +17,7 @@
 #ifndef __DATA_EXCHANGE_H
 #define __DATA_EXCHANGE_H
 #include "struct_typedef.h"
+#include "custom_typedef.h"
 
 typedef enum __DataExchangeIndex {
     TEST_DATA = 0,
@@ -35,7 +36,16 @@ typedef enum __Data_Type {
     Data_Type_NUM
 } DataType_e;
 
-extern void Publish(DataExchangeIndex_e index, uint8_t* data, DataType_e data_type);
-extern void Subscribe(DataExchangeIndex_e index, uint8_t * out);
+typedef enum DataPublishStatus {
+    PUBLISH_FAIL = 0,
+    PUBLISH_OK,
+    PUBLISH_ALREADY_EXIST,
+    PUBLISH_ALREADY_FULL
+} DataPublishStatus_e;
+
+typedef enum DataSubscribeStatus { SUBSCRIBE_FAIL = 0, SUBSCRIBE_OK } DataSubscribeStatus_e;
+
+extern uint8_t Publish(void * address, char * name);
+extern const void * Subscribe(char * name);
 
 #endif  // __DATA_EXCHANGE_H

@@ -19,10 +19,14 @@
   */
 #ifndef REMOTE_CONTROL_H
 #define REMOTE_CONTROL_H
+// clang-format off
+#include <stdbool.h>
+
 #include "bsp_rc.h"
 #include "struct_typedef.h"
+#include "attribute_typedef.h"
+#include "macro_typedef.h"
 
-// clang-format off
 #define SBUS_RX_BUF_NUM 36u
 
 #define RC_FRAME_LENGTH 18u
@@ -40,23 +44,52 @@
 #define switch_is_down(s)       (s == RC_SW_DOWN)
 #define switch_is_mid(s)        (s == RC_SW_MID)
 #define switch_is_up(s)         (s == RC_SW_UP)
+
+#define RC_CH_LEFT_HORIZONTAL   ((uint8_t)2)
+#define RC_CH_LEFT_VERTICAL     ((uint8_t)3)
+#define RC_CH_RIGHT_HORIZONTAL  ((uint8_t)0)
+#define RC_CH_RIGHT_VERTICAL    ((uint8_t)1)
+#define RC_CH_LEFT_ROTATE       ((uint8_t)4)
+
+#define RC_SW_LEFT              ((uint8_t)1)
+#define RC_SW_RIGHT             ((uint8_t)0)
 /* ----------------------- PC Key Definition-------------------------------- */
-#define KEY_PRESSED_OFFSET_W            ((uint16_t)1 << 0)
-#define KEY_PRESSED_OFFSET_S            ((uint16_t)1 << 1)
-#define KEY_PRESSED_OFFSET_A            ((uint16_t)1 << 2)
-#define KEY_PRESSED_OFFSET_D            ((uint16_t)1 << 3)
-#define KEY_PRESSED_OFFSET_SHIFT        ((uint16_t)1 << 4)
-#define KEY_PRESSED_OFFSET_CTRL         ((uint16_t)1 << 5)
-#define KEY_PRESSED_OFFSET_Q            ((uint16_t)1 << 6)
-#define KEY_PRESSED_OFFSET_E            ((uint16_t)1 << 7)
-#define KEY_PRESSED_OFFSET_R            ((uint16_t)1 << 8)
-#define KEY_PRESSED_OFFSET_F            ((uint16_t)1 << 9)
-#define KEY_PRESSED_OFFSET_G            ((uint16_t)1 << 10)
-#define KEY_PRESSED_OFFSET_Z            ((uint16_t)1 << 11)
-#define KEY_PRESSED_OFFSET_X            ((uint16_t)1 << 12)
-#define KEY_PRESSED_OFFSET_C            ((uint16_t)1 << 13)
-#define KEY_PRESSED_OFFSET_V            ((uint16_t)1 << 14)
-#define KEY_PRESSED_OFFSET_B            ((uint16_t)1 << 15)
+#define KEY_W     ((uint8_t)0)
+#define KEY_S     ((uint8_t)1)
+#define KEY_A     ((uint8_t)2)
+#define KEY_D     ((uint8_t)3)
+#define KEY_SHIFT ((uint8_t)4)
+#define KEY_CTRL  ((uint8_t)5)
+#define KEY_Q     ((uint8_t)6)
+#define KEY_E     ((uint8_t)7)
+#define KEY_R     ((uint8_t)8)
+#define KEY_F     ((uint8_t)9)
+#define KEY_G     ((uint8_t)10)
+#define KEY_Z     ((uint8_t)11)
+#define KEY_X     ((uint8_t)12)
+#define KEY_C     ((uint8_t)13)
+#define KEY_V     ((uint8_t)14)
+#define KEY_B     ((uint8_t)15)
+
+#define KEY_LEFT  ((uint8_t)0)
+#define KEY_RIGHT ((uint8_t)1)
+
+#define KEY_PRESSED_OFFSET_W            ((uint16_t)1 << KEY_W)
+#define KEY_PRESSED_OFFSET_S            ((uint16_t)1 << KEY_S)
+#define KEY_PRESSED_OFFSET_A            ((uint16_t)1 << KEY_A)
+#define KEY_PRESSED_OFFSET_D            ((uint16_t)1 << KEY_D)
+#define KEY_PRESSED_OFFSET_SHIFT        ((uint16_t)1 << KEY_SHIFT)
+#define KEY_PRESSED_OFFSET_CTRL         ((uint16_t)1 << KEY_CTRL)
+#define KEY_PRESSED_OFFSET_Q            ((uint16_t)1 << KEY_Q)
+#define KEY_PRESSED_OFFSET_E            ((uint16_t)1 << KEY_E)
+#define KEY_PRESSED_OFFSET_R            ((uint16_t)1 << KEY_R)
+#define KEY_PRESSED_OFFSET_F            ((uint16_t)1 << KEY_F)
+#define KEY_PRESSED_OFFSET_G            ((uint16_t)1 << KEY_G)
+#define KEY_PRESSED_OFFSET_Z            ((uint16_t)1 << KEY_Z)
+#define KEY_PRESSED_OFFSET_X            ((uint16_t)1 << KEY_X)
+#define KEY_PRESSED_OFFSET_C            ((uint16_t)1 << KEY_C)
+#define KEY_PRESSED_OFFSET_V            ((uint16_t)1 << KEY_V)
+#define KEY_PRESSED_OFFSET_B            ((uint16_t)1 << KEY_B)
 
 /* ----------------------- Data Struct ------------------------------------- */
 typedef struct __RC_ctrl
@@ -65,7 +98,7 @@ typedef struct __RC_ctrl
         {
                 int16_t ch[5];
                 char s[2];
-        } __attribute__((packed)) rc;
+        } __packed__ rc;
         struct __mouse
         {
                 int16_t x;
@@ -73,13 +106,13 @@ typedef struct __RC_ctrl
                 int16_t z;
                 uint8_t press_l;
                 uint8_t press_r;
-        } __attribute__((packed)) mouse;
+        } __packed__ mouse;
         struct __key
         {
                 uint16_t v;
-        } __attribute__((packed)) key;
+        } __packed__ key;
 
-} __attribute__((packed)) RC_ctrl_t;
+} __packed__ RC_ctrl_t;
 // clang-format on
 
 /* ----------------------- Internal Data ----------------------------------- */
@@ -90,4 +123,16 @@ extern uint8_t RC_data_is_error(void);
 extern void slove_RC_lost(void);
 extern void slove_data_error(void);
 extern void sbus_to_usart1(uint8_t * sbus);
+
+/******************************************************************/
+/* API                                                            */
+/******************************************************************/
+// inline ModelStatus_e GetRcStatus();
+extern inline float GetDt7RcCh(uint8_t ch);
+extern inline char GetDt7RcSw(uint8_t sw);
+extern inline float GetDt7MouseSpeed(uint8_t axis);
+extern inline bool GetDt7Mouse(uint8_t key);
+extern inline bool GetDt7Keyboard(uint8_t key);
+
 #endif
+/*------------------------------ End of File ------------------------------*/

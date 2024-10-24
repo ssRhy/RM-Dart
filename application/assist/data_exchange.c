@@ -11,59 +11,80 @@
 
   ==============================================================================
   @endverbatim
+  @todo 
   ****************************(C) COPYRIGHT 2024 Polarbear****************************
   */
 #include "data_exchange.h"
 
+#include "clist.h"
+#include "stdlib.h"
 #include "string.h"
 
-#define DATA_LEN 4
+#define DATA_LIST_LEN 10
+#define NAME_LEN 20
+
 typedef struct
 {
-    uint8_t data[DATA_LEN];
-    DataType_e data_type;
+    void * data_address;
+    uint32_t data_size;
+    char data_name[NAME_LEN];
 } Data_t;
 
-static Data_t DATA_BUFFER[Data_Exchange_INDEX_NUM] = {0};
+// static Data_t DATA_LIST[DATA_LIST_LEN] = {0};
+static List * DATA_LIST = NULL;
+static uint8_t USED_LEN = 0;  // 已经使用的数据量
 
 /**
  * @brief          发布数据
- * @param[in]      index 数据索引
- * @param[in]      data 发布的数据（统一存储为4个字节）
- * @retval         none
+ * @param[in]      address 数据地址
+ * @param[in]      name 数据名称(最大长度为19字符)
+ * @retval         数据发布状态
  */
-void Publish(DataExchangeIndex_e index, uint8_t * data, DataType_e data_type)
+uint8_t Publish(void * address, char * name)
 {
-    memcpy(&DATA_BUFFER[index], data, DATA_LEN);
-    DATA_BUFFER[index].data_type = data_type;
+    if (DATA_LIST == NULL) {
+        DATA_LIST = ListCreate();
+    }
+
+    Node * node = ListGetHead(DATA_LIST);
+    // 遍历链表判断数据是否已经存在
+    while (node != NULL) {
+        if (strcmp(((Data_t *)node->data)->data_name, name) == 0) {
+            return PUBLISH_ALREADY_EXIST;
+        }
+        node = ListGetNodeNext(node);
+    }
+
+    // 保存数据
+    Data_t * data = (Data_t *)malloc(sizeof(Data_t));
+    memcpy(&data->data_address, &address, 4);
+    memcpy(data->data_name, name, NAME_LEN);
+    USED_LEN++;
+
+    ListPushBack(DATA_LIST, data);
+
+    return PUBLISH_OK;
 }
 
 /**
  * @brief          订阅数据
- * @param[in]      index 数据索引
- * @param[in]      out 输出数据的地址
- * @retval         订阅数据的起始地址，需使用memcpy将值拷贝出来
+ * @param[in]      name 数据名称
+ * @retval         订阅数据的地址
  */
-void Subscribe(DataExchangeIndex_e index, uint8_t * out)
+const void * Subscribe(char * name)
 {
-    uint8_t data_len = 0;
-    switch (DATA_BUFFER[index].data_type) {
-        case DE_INT8:
-        case DE_UINT8: {
-            data_len = 1;
-        } break;
-        case DE_INT16:
-        case DE_UINT16: {
-            data_len = 2;
-        } break;
-        case DE_INT32:
-        case DE_UINT32:
-        case DE_FLOAT: {
-            data_len = 4;
-        } break;
-        default:
-            break;
+    if (DATA_LIST == NULL) {
+        return NULL;
     }
 
-    memcpy(out, &DATA_BUFFER[index + DATA_LEN - data_len], data_len);
+    // 遍历链表寻找数据
+    Node * node = ListGetHead(DATA_LIST);
+    while (node != NULL) {
+        if (strcmp(((Data_t *)node->data)->data_name, name) == 0) {
+            return ((Data_t *)node->data)->data_address;
+        }
+        node = ListGetNodeNext(node);
+    }
+
+    return NULL;
 }

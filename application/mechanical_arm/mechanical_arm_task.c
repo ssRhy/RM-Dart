@@ -17,18 +17,24 @@
 
 #include "mechanical_arm_task.h"
 
+#include "attribute_typedef.h"
 #include "cmsis_os.h"
-#include "mechanical_arm.h"
 #include "mechanical_arm_penguin_mini.h"
+#include "mechanical_arm_engineer.h"
+
+#ifndef MECHANICAL_ARM_TASK_INIT_TIME
+#define MECHANICAL_ARM_TASK_INIT_TIME 201
+#endif  // MECHANICAL_ARM_TASK_INIT_TIME
+
+#ifndef MECHANICAL_ARM_CONTROL_TIME
+#define MECHANICAL_ARM_CONTROL_TIME 1
+#endif  // MECHANICAL_ARM_CONTROL_TIME
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
 uint32_t mechanical_arm_high_water;
 #endif
 
-#ifndef __weak
-#define __weak __attribute__((weak))
-#endif /* __weak */
-
+__weak void MechanicalArmPublish(void);
 __weak void MechanicalArmInit(void);
 __weak void MechanicalArmHandleException(void);
 __weak void MechanicalArmSetMode(void);
@@ -44,15 +50,16 @@ __weak void MechanicalArmSendCmd(void);
  */
 void mechanical_arm_task(void const * pvParameters)
 {
+    MechanicalArmPublish();
     vTaskDelay(MECHANICAL_ARM_TASK_INIT_TIME);
     // 初始化
     MechanicalArmInit();
 
     while (1) {
-        // 处理异常
-        MechanicalArmHandleException();
         // 更新状态量
         MechanicalArmObserver();
+        // 处理异常
+        MechanicalArmHandleException();
         // 设置模式
         MechanicalArmSetMode();
         // 设置目标量
@@ -64,9 +71,19 @@ void mechanical_arm_task(void const * pvParameters)
 
         // 系统延时
         vTaskDelay(MECHANICAL_ARM_CONTROL_TIME);
+
+#if INCLUDE_uxTaskGetStackHighWaterMark
+        mechanical_arm_high_water = uxTaskGetStackHighWaterMark(NULL);
+#endif
     }
 }
 
+__weak void MechanicalArmPublish(void)
+{
+    /* 
+     NOTE : 在其他文件中定义具体内容
+    */
+}
 __weak void MechanicalArmInit(void)
 {
     /* 

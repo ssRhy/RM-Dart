@@ -1,29 +1,30 @@
 #ifndef USER_LIB_H
 #define USER_LIB_H
+#include "attribute_typedef.h"
 #include "struct_typedef.h"
 
-typedef __packed struct
+typedef struct
 {
     fp32 input;         //输入数据
     fp32 out;           //输出数据
     fp32 min_value;     //限幅最小值
     fp32 max_value;     //限幅最大值
     fp32 frame_period;  //时间间隔
-} ramp_function_source_t;
+} __packed__ ramp_function_source_t;
 
-typedef __packed struct
+typedef struct
 {
     fp32 input;         //输入数据
     fp32 out;           //滤波输出的数据
     fp32 num[1];        //滤波参数
     fp32 frame_period;  //滤波的时间间隔 单位 s
-} first_order_filter_type_t;
+} __packed__ first_order_filter_type_t;
 
 // 定义一阶低通滤波器结构体
 typedef struct LowPassFilter
 {
-    float alpha;     // 平滑系数
-    float out;       // 输出
+    float alpha;  // 平滑系数
+    float out;    // 输出
 } LowPassFilter_t;
 
 //快速开方
@@ -64,6 +65,8 @@ extern float uint_to_float(int x_int, float x_min, float x_max, int bits);
 extern void LowPassFilterInit(LowPassFilter_t * filter, float alpha);
 
 extern float LowPassFilterCalc(LowPassFilter_t * filter, float input);
+
+extern float ThetaRangeLimit(float theta, float max, float min, uint8_t return_value);
 
 //弧度格式化为-PI~PI
 #define rad_format(Ang) loop_fp32_constrain((Ang), -PI, PI)

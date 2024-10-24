@@ -38,11 +38,11 @@
   * @brief For Usb device.
   * @{
   */
-  
+
 /** @defgroup USBD_CDC_IF USBD_CDC_IF
   * @brief Usb VCP device module
   * @{
-  */ 
+  */
 
 /** @defgroup USBD_CDC_IF_Exported_Defines USBD_CDC_IF_Exported_Defines
   * @brief Defines.
@@ -104,9 +104,11 @@ extern USBD_CDC_ItfTypeDef USBD_Interface_fops_FS;
   */
 
 uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len);
-
-int8_t CDC_Receive_FS(uint8_t* pbuf, uint32_t *Len);
 /* USER CODE BEGIN EXPORTED_FUNCTIONS */
+
+extern uint8_t USB_Transmit(uint8_t* Buf, uint16_t Len);
+
+extern int8_t USB_Receive(uint8_t* Buf, uint32_t *Len);
 
 /* USER CODE END EXPORTED_FUNCTIONS */
 
