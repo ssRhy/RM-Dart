@@ -46,7 +46,7 @@
 //mouse sensitivity ---------------------
 #define MOUSE_SENSITIVITY (0.5)
 //remote controller sensitivity ---------------------
-#define REMOTE_CONTROLLER_SENSITIVITY (1/1500000)
+#define REMOTE_CONTROLLER_SENSITIVITY (1500000.0f)
 //motor parameters ---------------------
 //电机id
 #define GIMBAL_DIRECT_YAW_ID ((uint8_t)1)
@@ -76,7 +76,8 @@
 #define GIMBAL_UPPER_LIMIT_PITCH (0.6f)
 #define GIMBAL_LOWER_LIMIT_PITCH (-0.4f)
 
-#define GIMBAL_DIRECT_YAW_MID (-2.825f) //云台初始化正对齐的时候使用的yaw轴正中心量
+#define GIMBAL_DIRECT_PITCH_MID (0.0f) //云台初始电机角度中值暂时为0，以后有需要就更改，校正模式pitch已关闭
+#define GIMBAL_DIRECT_YAW_MID (-2.76f) //云台初始化正对齐的时候使用的yaw轴正中心量
 
 //PID parameters ---------------------
 //YAW ANGLE
@@ -99,9 +100,9 @@
 #define MAX_IOUT_GIMBAL_PITCH_ANGLE (1.0f)
 #define MAX_OUT_GIMBAL_PITCH_ANGLE (10.0f)
 //VELOCITY:角速度
-#define KP_GIMBAL_PITCH_VELOCITY (10000.0f)
+#define KP_GIMBAL_PITCH_VELOCITY (500.0f)
 #define KI_GIMBAL_PITCH_VELOCITY (0.0f)
-#define KD_GIMBAL_PITCH_VELOCITY (10.0f)
+#define KD_GIMBAL_PITCH_VELOCITY (0.0f)
 #define MAX_IOUT_GIMBAL_PITCH_VELOCITY (2000.0f)
 #define MAX_OUT_GIMBAL_PITCH_VELOCITY (30000.0f)
 /*-------------------- Shoot --------------------*/
