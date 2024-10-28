@@ -383,16 +383,21 @@ static void UpdateMotorStatus(void)
 
 static void UpdateBodyStatus(void)
 {
-    CHASSIS.fdb.body.phi = CHASSIS.imu->pitch;
-    CHASSIS.fdb.body.phi_dot = CHASSIS.imu->pitch_vel;
+    CHASSIS.fdb.body.phi = -CHASSIS.imu->pitch;
+    CHASSIS.fdb.body.phi_dot = -CHASSIS.imu->pitch_vel;
 
-    CHASSIS.fdb.body.roll = -CHASSIS.imu->roll;
-    CHASSIS.fdb.body.roll_dot = -CHASSIS.imu->roll_vel;
+    CHASSIS.fdb.body.pitch = CHASSIS.imu->pitch;
+    CHASSIS.fdb.body.pitch_dot = CHASSIS.imu->pitch_vel;
+
+    CHASSIS.fdb.body.roll = CHASSIS.imu->roll;
+    CHASSIS.fdb.body.roll_dot = CHASSIS.imu->roll_vel;
 
     CHASSIS.fdb.body.yaw = CHASSIS.imu->yaw;
     CHASSIS.fdb.body.yaw_dot = CHASSIS.imu->yaw_vel;
 
     // CHASSIS.fdb.body.x_accel = -CHASSIS.imu->x_accel;
+    // CHASSIS.fdb.body.y_accel = CHASSIS.imu->y_accel;
+    // CHASSIS.fdb.body.z_accel = -CHASSIS.imu->x_accel;
 }
 
 /**
