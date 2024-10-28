@@ -59,11 +59,6 @@ static Calibrate_s CALIBRATE = {
     .calibrated = false,
 };
 
-static GroundTouch_s GROUND_TOUCH = {
-    .touch_time = 0,
-    .touch = false,
-};
-
 static Observer_t OBSERVER;
 
 Chassis_s CHASSIS = {
@@ -230,10 +225,8 @@ void ChassisInit(void)
 /* Handle exception                                               */
 /*----------------------------------------------------------------*/
 /* main function:      ChassisHandleException                     */
-/* auxiliary function: GroundTouchDectect                         */
+/* auxiliary function:                                            */
 /******************************************************************/
-
-static void GroundTouchDectect(void);
 
 /**
  * @brief          异常处理
@@ -264,26 +257,6 @@ void ChassisHandleException(void)
     if ((CHASSIS.mode == CHASSIS_OFF || CHASSIS.mode == CHASSIS_SAFE) &&
         fabs(CHASSIS.pid.stand_up.max_out) != 0.0f) {
         PID_clear(&CHASSIS.pid.stand_up);
-    }
-
-    GroundTouchDectect();  // 离地检测
-}
-
-/**
- * @brief 离地检测
- * @param  
- */
-static void GroundTouchDectect(void)
-{
-    for (uint8_t i = 0; i < 2; i++) {
-    }
-
-    uint32_t now = HAL_GetTick();
-    if (now - GROUND_TOUCH.touch_time < MAX_TOUCH_INTERVAL) {
-        //若上次触地时间距离现在不超过 MAX_TOUCH_INTERVAL ms，则认为当前瞬间接地，避免弹跳导致误判
-        GROUND_TOUCH.touch = true;
-    } else {
-        GROUND_TOUCH.touch = false;
     }
 }
 
@@ -389,14 +362,8 @@ void ChassisObserver(void)
 
     BodyMotionObserve();
 
-    ModifyDebugDataPackage(2, CHASSIS.cmd.leg[0].rod.F, "Fl");
-    ModifyDebugDataPackage(3, CHASSIS.cmd.leg[1].rod.F, "Fr");
-    
-    ModifyDebugDataPackage(4, CHASSIS.fdb.leg[0].rod.L0, "L0l_fdb");
-    ModifyDebugDataPackage(5, CHASSIS.fdb.leg[1].rod.L0, "L0r_fdb");
-
-    ModifyDebugDataPackage(6, CHASSIS.ref.rod_L0[0], "L0l_ref");
-    ModifyDebugDataPackage(7, CHASSIS.ref.rod_L0[1], "L0r_ref");
+    ModifyDebugDataPackage(2, CHASSIS.fdb.body.x_accel, "x_acc");
+    ModifyDebugDataPackage(3, CHASSIS.imu->x_accel, "x_ac_imu");
 }
 
 /**
@@ -425,15 +392,7 @@ static void UpdateBodyStatus(void)
     CHASSIS.fdb.body.yaw = CHASSIS.imu->yaw;
     CHASSIS.fdb.body.yaw_dot = CHASSIS.imu->yaw_vel;
 
-    CHASSIS.fdb.body.x_dot =
-        WHEEL_RADIUS * (CHASSIS.fdb.leg[0].wheel.Velocity + CHASSIS.fdb.leg[1].wheel.Velocity) / 2;
-
-    if (fabs(CHASSIS.ref.speed_vector.vx) < WHEEL_DEADZONE && fabs(CHASSIS.fdb.body.x_dot) < 0.8f) {
-        // 当目标速度为0，且速度小于阈值时，计算反馈距离
-        CHASSIS.fdb.body.x += CHASSIS.fdb.body.x_dot * CHASSIS_CONTROL_TIME_S;
-    } else {
-        //CHASSIS.fdb.body.x = 0;
-    }
+    // CHASSIS.fdb.body.x_accel = -CHASSIS.imu->x_accel;
 }
 
 /**
@@ -576,12 +535,22 @@ static void BodyMotionObserve(void)
 {
     // 使用kf同时估计加速度和速度,滤波更新
     // TODO：使用xz平面上的加速度作为输入？
-    OBSERVER.body.v_kf.MeasuredVector[0] = CHASSIS.fdb.body.x_dot;
-    OBSERVER.body.v_kf.MeasuredVector[1] = CHASSIS.fdb.body.x_accel;
+    OBSERVER.body.v_kf.MeasuredVector[0] =
+        WHEEL_RADIUS * (CHASSIS.fdb.leg[0].wheel.Velocity + CHASSIS.fdb.leg[1].wheel.Velocity) /
+        2;                                                            // 输入轮速
+    OBSERVER.body.v_kf.MeasuredVector[1] = CHASSIS.fdb.body.x_accel;  // 输入加速度
     OBSERVER.body.v_kf.F_data[1] = CHASSIS.duration;
     Kalman_Filter_Update(&OBSERVER.body.v_kf);
     CHASSIS.fdb.body.x_dot = OBSERVER.body.v_kf.xhat_data[0];
     CHASSIS.fdb.body.x_accel = OBSERVER.body.v_kf.xhat_data[1];
+
+    // 更新行驶距离
+    if (fabs(CHASSIS.ref.speed_vector.vx) < WHEEL_DEADZONE && fabs(CHASSIS.fdb.body.x_dot) < 0.8f) {
+        // 当目标速度为0，且速度小于阈值时，计算反馈距离
+        CHASSIS.fdb.body.x += CHASSIS.fdb.body.x_dot * CHASSIS.duration * 0.001f;
+    } else {
+        //CHASSIS.fdb.body.x = 0;
+    }
 
     // 更新2条腿的状态向量
     uint8_t i = 0;
@@ -768,17 +737,17 @@ static void LocomotionController(void)
     for (uint8_t i = 0; i < 2; i++) {
         GetK(CHASSIS.fdb.leg[i].rod.L0, k);
         // clang-format off
-        x[0] = X0_OFFSET + X_0_RATIO * (CHASSIS.fdb.leg_state[i].theta     - CHASSIS.ref.leg_state[i].theta);
-        x[1] = X1_OFFSET + X_1_RATIO * (CHASSIS.fdb.leg_state[i].theta_dot - CHASSIS.ref.leg_state[i].theta_dot);
-        x[2] = X2_OFFSET + X_2_RATIO * (CHASSIS.fdb.leg_state[i].x         - CHASSIS.ref.leg_state[i].x);
-        x[3] = X3_OFFSET + X_3_RATIO * (CHASSIS.fdb.leg_state[i].x_dot     - CHASSIS.ref.leg_state[i].x_dot);
-        x[4] = X4_OFFSET + X_4_RATIO * (CHASSIS.fdb.leg_state[i].phi       - CHASSIS.ref.leg_state[i].phi);
-        x[5] = X5_OFFSET + X_5_RATIO * (CHASSIS.fdb.leg_state[i].phi_dot   - CHASSIS.ref.leg_state[i].phi_dot);
+        x[0] = X0_OFFSET + (CHASSIS.fdb.leg_state[i].theta     - CHASSIS.ref.leg_state[i].theta);
+        x[1] = X1_OFFSET + (CHASSIS.fdb.leg_state[i].theta_dot - CHASSIS.ref.leg_state[i].theta_dot);
+        x[2] = X2_OFFSET + (CHASSIS.fdb.leg_state[i].x         - CHASSIS.ref.leg_state[i].x);
+        x[3] = X3_OFFSET + (CHASSIS.fdb.leg_state[i].x_dot     - CHASSIS.ref.leg_state[i].x_dot);
+        x[4] = X4_OFFSET + (CHASSIS.fdb.leg_state[i].phi       - CHASSIS.ref.leg_state[i].phi);
+        x[5] = X5_OFFSET + (CHASSIS.fdb.leg_state[i].phi_dot   - CHASSIS.ref.leg_state[i].phi_dot);
         // clang-format on
         CalcLQR(k, x, T_Tp);
 
         CHASSIS.cmd.leg[i].wheel.T = T_Tp[0];
-        
+
         if (CHASSIS.fdb.leg[i].take_off_time > TAKE_OFF_TIME_THRESHOLD) {
             CHASSIS.cmd.leg[i].rod.Tp = 0;
         } else {
@@ -791,17 +760,12 @@ static void LocomotionController(void)
     float Ld0 = CHASSIS.fdb.leg[0].rod.L0 - CHASSIS.fdb.leg[1].rod.L0;
     float L_diff = CalcLegLengthDiff(Ld0, CHASSIS.fdb.body.roll, CHASSIS.ref.body.roll);
 
-    // ModifyDebugDataPackage(6, Ld0, "Ld0");
-    // ModifyDebugDataPackage(7, L_diff, "L_diff");
-
     // PID补偿稳态误差
     float delta_L0 =
         PID_calc(&CHASSIS.pid.roll_angle, CHASSIS.fdb.body.roll, CHASSIS.ref.body.roll);
 
     // 维持腿长在范围内
     CoordinateLegLength(&CHASSIS.ref.rod_L0[0], &CHASSIS.ref.rod_L0[1], L_diff, delta_L0);
-    // ModifyDebugDataPackage(8, CHASSIS.ref.rod_L0[0], "L0l");
-    // ModifyDebugDataPackage(9, CHASSIS.ref.rod_L0[1], "L0r");
 
     // 转向控制================================================
     PID_calc(&CHASSIS.pid.yaw_velocity, CHASSIS.fdb.body.yaw_dot, CHASSIS.ref.speed_vector.wz);

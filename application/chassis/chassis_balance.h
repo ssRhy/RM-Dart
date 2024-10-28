@@ -89,19 +89,26 @@ typedef struct Leg
         float Velocity;  // rad/s
     } wheel;
 
-    float J[2][2];  // 雅可比矩阵
-    float Fn;       // N 支撑力
-    uint32_t take_off_time;   // 离地时间
+    float J[2][2];           // 雅可比矩阵
+    float Fn;                // N 支撑力
+    uint32_t take_off_time;  // 离地时间
 } Leg_t;
 
 typedef struct Body
 {
     float x;
     float x_dot;
-    float x_accel;
+    float x_accel;  // 前后
+
+    float y_accel;  // 左右
+    float z_accel;  // 上下
+    float xz_accel;  // 运动平面
+
     float phi;
     float phi_dot;
 
+    float pitch;
+    float pitch_dot;
     float roll;
     float roll_dot;
     float yaw;
@@ -239,8 +246,8 @@ typedef struct
 
     Ratio_t ratio;  // 比例系数
 
-    uint32_t last_time;  // 上一次更新时间
-    uint32_t duration;   // 任务周期
+    uint32_t last_time;  // (ms)上一次更新时间
+    uint32_t duration;   // (ms)任务周期
     float dyaw;  // (rad)(feedback)当前位置与云台中值角度差（用于坐标转换）
     uint16_t yaw_mid;  // (ecd)(preset)云台中值角度
 } Chassis_s;
