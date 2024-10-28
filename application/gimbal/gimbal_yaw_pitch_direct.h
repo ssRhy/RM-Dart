@@ -78,6 +78,8 @@ typedef struct
     Values_t lower_limit;  // 下限值
 
     PID_t pid;  // PID控制器
+
+    bool mode_change; //用来标记是否需要应为模式切换而转换角度目标量（矫正模式）和 imu目标量（imu模式）
 } Gimbal_s;
 
 extern void GimbalInit(void);
