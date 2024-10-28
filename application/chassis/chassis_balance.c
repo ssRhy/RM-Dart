@@ -362,8 +362,25 @@ void ChassisObserver(void)
 
     BodyMotionObserve();
 
-    ModifyDebugDataPackage(2, CHASSIS.fdb.body.x_accel, "x_acc");
-    ModifyDebugDataPackage(3, CHASSIS.imu->x_accel, "x_ac_imu");
+    ModifyDebugDataPackage(2, CHASSIS.imu->x_accel, "x_a_imu");
+    ModifyDebugDataPackage(3, CHASSIS.imu->y_accel, "y_a_imu");
+    ModifyDebugDataPackage(4, CHASSIS.imu->z_accel, "z_a_imu");
+    
+    float ax, ay, az;
+    
+    // 计算重力加速度在各个轴上的分量相反值
+    CHASSIS.fdb.body.gx = GRAVITY * sinf(CHASSIS.imu->pitch);
+    CHASSIS.fdb.body.gy = GRAVITY * sinf(CHASSIS.imu->roll) * cosf(CHASSIS.imu->pitch);
+    CHASSIS.fdb.body.gz = -GRAVITY * cosf(CHASSIS.imu->roll) * cosf(CHASSIS.imu->pitch);
+
+    // 消除重力加速度的影响
+    ax = CHASSIS.imu->x_accel + CHASSIS.fdb.body.gx;
+    ay = CHASSIS.imu->y_accel + CHASSIS.fdb.body.gy;
+    az = CHASSIS.imu->z_accel + CHASSIS.fdb.body.gz;
+    
+    ModifyDebugDataPackage(5, ax, "x_a_cal");
+    ModifyDebugDataPackage(6, ay, "y_a_cal");
+    ModifyDebugDataPackage(7, az, "z_a_cal");
 }
 
 /**

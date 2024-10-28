@@ -103,6 +103,8 @@ typedef struct Body
     float y_accel;  // 左右
     float z_accel;  // 上下
     float xz_accel;  // 运动平面
+    
+    float gx, gy, gz; //重力加速度在机体坐标系下的分量，用于消除重力加速度对加速度计的影响
 
     float phi;
     float phi_dot;
