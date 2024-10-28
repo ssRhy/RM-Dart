@@ -71,7 +71,7 @@ void GimbalInit(void)
  * @param[in]      none
  * @retval         none
  */
-void GimbalHandleException(void)
+void GimbalSetMode(void)
 {
   //初始校准模式
   if (gimbal_direct.mode==GIMBAL_INIT)  //校准模式目前个人设想是比较高的优先级
@@ -89,18 +89,12 @@ void GimbalHandleException(void)
   {
     gimbal_direct.mode=GIMBAL_ZERO_FORCE;
   }
-  //中档陀螺仪控制
-  else if(switch_is_mid(gimbal_direct.rc->rc.s[0]))
-  {
-    gimbal_direct.mode=GIMBAL_IMU;
-  }
-  //上档陀螺仪控制
-  else if(switch_is_up(gimbal_direct.rc->rc.s[0]))
+  //上，中档陀螺仪控制
+  else //if(switch_is_mid(gimbal_direct.rc->rc.s[0]))
   {
     gimbal_direct.mode=GIMBAL_IMU;
   }
 }
-
 /*-------------------- Observe --------------------*/
  
 /**
@@ -113,8 +107,8 @@ void GimbalObserver(void)
   GetMotorMeasure(&gimbal_direct.yaw);
   GetMotorMeasure(&gimbal_direct.pitch);
 
-  gimbal_direct.reference.pitch=gimbal_direct.imu->pitch;
-  gimbal_direct.reference.yaw=gimbal_direct.imu->yaw;
+  gimbal_direct.feedback.pitch=gimbal_direct.imu->pitch;
+  gimbal_direct.feedback.yaw=gimbal_direct.imu->yaw;
  
 }
 
@@ -137,8 +131,8 @@ void GimbalReference(void)
     //gimbal_direct.yaw.set.pos  =loop_fp32_constrain(gimbal_direct.yaw.set.pos+gimbal_direct.rc->mouse.x*MOUSE_SENSITIVITY,-PI,PI);
 
     //读取摇杆的数据
-     gimbal_direct.pitch.set.pos= fp32_constrain(gimbal_direct.pitch.set.pos-(float)gimbal_direct.rc->rc.ch[1]/1500000,GIMBAL_LOWER_LIMIT_PITCH,GIMBAL_UPPER_LIMIT_PITCH);
-    gimbal_direct.yaw.set.pos = loop_fp32_constrain(gimbal_direct.yaw.set.pos-(float)gimbal_direct.rc->rc.ch[0]/1500000,-PI,PI);
+     gimbal_direct.pitch.set.pos= fp32_constrain(gimbal_direct.pitch.set.pos-(float)gimbal_direct.rc->rc.ch[1]*REMOTE_CONTROLLER_SENSITIVITY,GIMBAL_LOWER_LIMIT_PITCH,GIMBAL_UPPER_LIMIT_PITCH);
+    gimbal_direct.yaw.set.pos = loop_fp32_constrain(gimbal_direct.yaw.set.pos-(float)gimbal_direct.rc->rc.ch[0]*REMOTE_CONTROLLER_SENSITIVITY,-PI,PI);
   }
   
 
@@ -161,10 +155,10 @@ void GimbalConsole(void)
   }
   else if (gimbal_direct.mode == GIMBAL_IMU)
   {
-    gimbal_direct.pitch.set.vel=PID_calc(&gimbal_direct_pid.pitch_angle,gimbal_direct.reference.pitch,gimbal_direct.pitch.set.pos);
+    gimbal_direct.pitch.set.vel=PID_calc(&gimbal_direct_pid.pitch_angle,gimbal_direct.feedback.pitch,gimbal_direct.pitch.set.pos);
     gimbal_direct.pitch.set.curr=PID_calc(&gimbal_direct_pid.pitch_velocity,gimbal_direct.imu->pitch_vel,gimbal_direct.pitch.set.vel);
 
-    fp32 delta_yaw=loop_fp32_constrain(gimbal_direct.yaw.set.pos-gimbal_direct.reference.yaw,-PI,PI);
+    fp32 delta_yaw=loop_fp32_constrain(gimbal_direct.yaw.set.pos-gimbal_direct.feedback.yaw,-PI,PI);
     gimbal_direct.yaw.set.vel=PID_calc(&gimbal_direct_pid.yaw_angle,0,delta_yaw);
     gimbal_direct.yaw.set.curr=PID_calc(&gimbal_direct_pid.yaw_velocity,gimbal_direct.imu->yaw_vel,gimbal_direct.yaw.set.vel);
   }

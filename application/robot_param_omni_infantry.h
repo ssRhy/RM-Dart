@@ -46,7 +46,7 @@
 //mouse sensitivity ---------------------
 #define MOUSE_SENSITIVITY (0.5)
 //remote controller sensitivity ---------------------
-#define REMOTE_CONTROLLER_SENSITIVITY (1)
+#define REMOTE_CONTROLLER_SENSITIVITY (1/1500000)
 //motor parameters ---------------------
 //电机id
 #define GIMBAL_DIRECT_YAW_ID ((uint8_t)1)
