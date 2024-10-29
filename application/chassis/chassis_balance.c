@@ -365,22 +365,10 @@ void ChassisObserver(void)
     ModifyDebugDataPackage(2, CHASSIS.imu->x_accel, "x_a_imu");
     ModifyDebugDataPackage(3, CHASSIS.imu->y_accel, "y_a_imu");
     ModifyDebugDataPackage(4, CHASSIS.imu->z_accel, "z_a_imu");
-    
-    float ax, ay, az;
-    
-    // 计算重力加速度在各个轴上的分量相反值
-    CHASSIS.fdb.body.gx = GRAVITY * sinf(CHASSIS.imu->pitch);
-    CHASSIS.fdb.body.gy = GRAVITY * sinf(CHASSIS.imu->roll) * cosf(CHASSIS.imu->pitch);
-    CHASSIS.fdb.body.gz = -GRAVITY * cosf(CHASSIS.imu->roll) * cosf(CHASSIS.imu->pitch);
 
-    // 消除重力加速度的影响
-    ax = CHASSIS.imu->x_accel + CHASSIS.fdb.body.gx;
-    ay = CHASSIS.imu->y_accel + CHASSIS.fdb.body.gy;
-    az = CHASSIS.imu->z_accel + CHASSIS.fdb.body.gz;
-    
-    ModifyDebugDataPackage(5, ax, "x_a_cal");
-    ModifyDebugDataPackage(6, ay, "y_a_cal");
-    ModifyDebugDataPackage(7, az, "z_a_cal");
+    ModifyDebugDataPackage(5, CHASSIS.fdb.body.x_accel, "x_a_cal");
+    ModifyDebugDataPackage(6, CHASSIS.fdb.body.y_accel, "y_a_cal");
+    ModifyDebugDataPackage(7, CHASSIS.fdb.body.z_accel, "z_a_cal");
 }
 
 /**
@@ -400,21 +388,31 @@ static void UpdateMotorStatus(void)
 
 static void UpdateBodyStatus(void)
 {
-    CHASSIS.fdb.body.phi = -CHASSIS.imu->pitch;
-    CHASSIS.fdb.body.phi_dot = -CHASSIS.imu->pitch_vel;
+    // 更新陀螺仪反馈数据
+    CHASSIS.fdb.body.roll = CHASSIS.imu->roll;
+    CHASSIS.fdb.body.roll_dot = CHASSIS.imu->roll_vel;
 
     CHASSIS.fdb.body.pitch = CHASSIS.imu->pitch;
     CHASSIS.fdb.body.pitch_dot = CHASSIS.imu->pitch_vel;
 
-    CHASSIS.fdb.body.roll = CHASSIS.imu->roll;
-    CHASSIS.fdb.body.roll_dot = CHASSIS.imu->roll_vel;
-
     CHASSIS.fdb.body.yaw = CHASSIS.imu->yaw;
     CHASSIS.fdb.body.yaw_dot = CHASSIS.imu->yaw_vel;
 
-    // CHASSIS.fdb.body.x_accel = -CHASSIS.imu->x_accel;
-    // CHASSIS.fdb.body.y_accel = CHASSIS.imu->y_accel;
-    // CHASSIS.fdb.body.z_accel = -CHASSIS.imu->x_accel;
+    // 计算重力加速度在各个轴上的分量相反值
+    CHASSIS.fdb.body.gx = GRAVITY * sinf(CHASSIS.imu->pitch);
+    CHASSIS.fdb.body.gy = GRAVITY * sinf(CHASSIS.imu->roll) * cosf(CHASSIS.imu->pitch);
+    CHASSIS.fdb.body.gz = -GRAVITY * cosf(CHASSIS.imu->roll) * cosf(CHASSIS.imu->pitch);
+
+    // 消除重力加速度的影响
+    CHASSIS.fdb.body.x_accel = CHASSIS.imu->x_accel + CHASSIS.fdb.body.gx;
+    CHASSIS.fdb.body.y_accel = CHASSIS.imu->y_accel + CHASSIS.fdb.body.gy;
+    CHASSIS.fdb.body.z_accel = CHASSIS.imu->z_accel + CHASSIS.fdb.body.gz;
+
+    // 更新...
+    CHASSIS.fdb.body.phi = -CHASSIS.fdb.body.pitch;
+    CHASSIS.fdb.body.phi_dot = -CHASSIS.fdb.body.pitch_dot;
+
+    CHASSIS.fdb.body.x_acc = CHASSIS.fdb.body.x_accel;
 }
 
 /**
@@ -517,6 +515,8 @@ static void UpdateLegStatus(void)
         } else {
             CHASSIS.fdb.leg[i].take_off_time = 0;
         }
+        // TEMP:临时调试数据，防止测试时的一些抽风
+        CHASSIS.fdb.leg[i].take_off_time = 0;
     }
     ModifyDebugDataPackage(0, CHASSIS.fdb.leg[0].Fn, "FnL");
     ModifyDebugDataPackage(1, CHASSIS.fdb.leg[1].Fn, "FnR");
@@ -560,11 +560,15 @@ static void BodyMotionObserve(void)
     OBSERVER.body.v_kf.MeasuredVector[0] =
         WHEEL_RADIUS * (CHASSIS.fdb.leg[0].wheel.Velocity + CHASSIS.fdb.leg[1].wheel.Velocity) /
         2;                                                            // 输入轮速
-    OBSERVER.body.v_kf.MeasuredVector[1] = CHASSIS.fdb.body.x_accel;  // 输入加速度
-    OBSERVER.body.v_kf.F_data[1] = CHASSIS.duration;
+    OBSERVER.body.v_kf.MeasuredVector[1] = CHASSIS.fdb.body.x_acc;  // 输入加速度
+    /*sqrt(
+        CHASSIS.fdb.body.x_accel * CHASSIS.fdb.body.x_accel +
+        CHASSIS.fdb.body.z_accel * CHASSIS.fdb.body.z_accel);  */
+    OBSERVER.body.v_kf.F_data[1] = CHASSIS.duration * 0.001f;  // 更新采样时间
+
     Kalman_Filter_Update(&OBSERVER.body.v_kf);
-    CHASSIS.fdb.body.x_dot = OBSERVER.body.v_kf.xhat_data[0];
-    CHASSIS.fdb.body.x_accel = OBSERVER.body.v_kf.xhat_data[1];
+    CHASSIS.fdb.body.x_dot_obv = OBSERVER.body.v_kf.xhat_data[0];
+    CHASSIS.fdb.body.x_acc_obv = OBSERVER.body.v_kf.xhat_data[1];
 
     // 更新行驶距离
     if (fabs(CHASSIS.ref.speed_vector.vx) < WHEEL_DEADZONE && fabs(CHASSIS.fdb.body.x_dot) < 0.8f) {
@@ -581,7 +585,7 @@ static void BodyMotionObserve(void)
         CHASSIS.fdb.leg_state[i].theta     =  M_PI_2 - CHASSIS.fdb.leg[i].rod.Phi0 - CHASSIS.fdb.body.phi;
         CHASSIS.fdb.leg_state[i].theta_dot = -CHASSIS.fdb.leg[i].rod.dPhi0 - CHASSIS.fdb.body.phi_dot;
         CHASSIS.fdb.leg_state[i].x         =  CHASSIS.fdb.body.x;
-        CHASSIS.fdb.leg_state[i].x_dot     =  CHASSIS.fdb.body.x_dot;
+        CHASSIS.fdb.leg_state[i].x_dot     =  CHASSIS.fdb.body.x_dot_obv;
         CHASSIS.fdb.leg_state[i].phi       =  CHASSIS.fdb.body.phi;
         CHASSIS.fdb.leg_state[i].phi_dot   =  CHASSIS.fdb.body.phi_dot;
         // clang-format on

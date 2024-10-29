@@ -96,26 +96,35 @@ typedef struct Leg
 
 typedef struct Body
 {
-    float x;
-    float x_dot;
-    float x_accel;  // 前后
+    float x;          // (m)机体位移距离
+    float x_dot;      // (m/s)机体速度直接反馈值
+    float x_dot_obv;  // (m/s)机体速度观测值
+    float x_acc;        // (m/s^2)机体x轴加速度直接反馈值
+    float x_acc_obv;    // (m/s^2)机体x轴加速度观测值
 
-    float y_accel;  // 左右
-    float z_accel;  // 上下
-    float xz_accel;  // 运动平面
-    
-    float gx, gy, gz; //重力加速度在机体坐标系下的分量，用于消除重力加速度对加速度计的影响
+    float x_accel;   // 机体坐标系下x轴加速度
+    float y_accel;   // 机体坐标系下y轴加速度
+    float z_accel;   // 机体坐标系下z轴加速度
+
+    float gx, gy, gz;  //重力加速度在机体坐标系下的分量，用于消除重力加速度对加速度计的影响
 
     float phi;
     float phi_dot;
 
-    float pitch;
-    float pitch_dot;
     float roll;
     float roll_dot;
+    float pitch;
+    float pitch_dot;
     float yaw;
     float yaw_dot;
 } Body_t;
+
+typedef struct
+{
+    float x_accel;   // 世界坐标系下x轴加速度
+    float y_accel;   // 世界坐标系下y轴加速度
+    float z_accel;   // 世界坐标系下z轴加速度
+} World_t;
 
 //状态向量
 typedef struct LegState
@@ -146,6 +155,7 @@ typedef struct
 typedef struct
 {
     Body_t body;
+    World_t world;
     Leg_t leg[2];             // 0-左 1-右
     LegState_t leg_state[2];  // 0-左 1-右
     ChassisSpeedVector_t speed_vector;
