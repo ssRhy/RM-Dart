@@ -311,7 +311,7 @@ void ChassisSetMode(void)
         // CHASSIS.mode = CHASSIS_FREE;
         CHASSIS.mode = CHASSIS_CUSTOM;
     } else if (switch_is_mid(CHASSIS.rc->rc.s[CHASSIS_MODE_CHANNEL])) {
-        CHASSIS.mode = CHASSIS_DEBUG;
+        CHASSIS.mode = CHASSIS_POS_DEBUG;
     } else if (switch_is_down(CHASSIS.rc->rc.s[CHASSIS_MODE_CHANNEL])) {
         // 在安全模式时，遥控器摇杆打成左下，右上进入脱困模式
         if (CHASSIS.rc->rc.ch[0] > RC_OFF_HOOK_VALUE_HOLE &&
@@ -362,9 +362,9 @@ void ChassisObserver(void)
 
     BodyMotionObserve();
 
-    // ModifyDebugDataPackage(0, CHASSIS.imu->x_accel, "x_a_imu");
-    // ModifyDebugDataPackage(1, CHASSIS.imu->y_accel, "y_a_imu");
-    // ModifyDebugDataPackage(2, CHASSIS.imu->z_accel, "z_a_imu");
+    ModifyDebugDataPackage(0, CHASSIS.fdb.leg[0].rod.dTheta, "dth0");
+    ModifyDebugDataPackage(1, CHASSIS.fdb.leg[1].rod.dTheta, "dth1");
+    ModifyDebugDataPackage(2, CHASSIS.imu->z_accel, "z_a_imu");
 
     ModifyDebugDataPackage(3, CHASSIS.fdb.body.x_accel, "x_a_b");
     ModifyDebugDataPackage(4, CHASSIS.fdb.body.y_accel, "y_a_b");
@@ -547,8 +547,8 @@ static void UpdateLegStatus(void)
         // TEMP:临时调试数据，防止测试时的一些抽风
         CHASSIS.fdb.leg[i].take_off_time = 0;
     }
-    ModifyDebugDataPackage(0, CHASSIS.fdb.leg[0].Fn, "FnL");
-    ModifyDebugDataPackage(1, CHASSIS.fdb.leg[1].Fn, "FnR");
+    // ModifyDebugDataPackage(0, CHASSIS.fdb.leg[0].Fn, "FnL");
+    // ModifyDebugDataPackage(1, CHASSIS.fdb.leg[1].Fn, "FnR");
 }
 
 static void UpdateCalibrateStatus(void)
@@ -690,7 +690,7 @@ void ChassisReference(void)
             angle = M_PI_2;
         } break;
         case CHASSIS_CUSTOM:
-        case CHASSIS_DEBUG: {
+        case CHASSIS_POS_DEBUG: {
             angle = M_PI_2 + rc_angle * RC_TO_ONE * 0.3f;
             length = 0.22f + rc_length * RC_TO_ONE * 0.1f;
         } break;
@@ -761,7 +761,7 @@ void ChassisConsole(void)
         case CHASSIS_FREE: {
             ConsoleNormal();
         } break;
-        case CHASSIS_DEBUG: {
+        case CHASSIS_POS_DEBUG: {
             ConsoleDebug();
         } break;
         case CHASSIS_STAND_UP: {
@@ -1144,7 +1144,7 @@ static void SendJointMotorCmd(void)
                 DmMitCtrlVelocity(&CHASSIS.joint_motor[2], CALIBRATE_VEL_KP);
                 DmMitCtrlVelocity(&CHASSIS.joint_motor[3], CALIBRATE_VEL_KP);
             } break;
-            case CHASSIS_DEBUG: {
+            case CHASSIS_POS_DEBUG: {
                 DmMitCtrlPosition(&CHASSIS.joint_motor[0], DEBUG_KP, DEBUG_KD);
                 DmMitCtrlPosition(&CHASSIS.joint_motor[1], DEBUG_KP, DEBUG_KD);
                 delay_us(DM_DELAY);
@@ -1199,7 +1199,7 @@ static void SendWheelMotorCmd(void)
         case CHASSIS_OFF: {
             LkMultipleTorqueControl(WHEEL_CAN, 0, 0, 0, 0);
         } break;
-        case CHASSIS_DEBUG: {
+        case CHASSIS_POS_DEBUG: {
             LkMultipleTorqueControl(
                 WHEEL_CAN, CHASSIS.wheel_motor[0].set.tor, CHASSIS.wheel_motor[1].set.tor, 0, 0);
         } break;

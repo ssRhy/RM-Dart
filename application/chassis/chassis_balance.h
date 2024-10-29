@@ -47,13 +47,14 @@ typedef enum {
     CHASSIS_STAND_UP,   // 底盘起立，从倒地状态到站立状态的中间过程
     CHASSIS_CALIBRATE,  // 底盘校准
     CHASSIS_FOLLOW_GIMBAL_YAW,  // 底盘跟随云台（运动方向为云台坐标系方向，需进行坐标转换）
-    CHASSIS_FLOATING,  // 底盘悬空状态
-    CHASSIS_CRASHING,  // 底盘接地状态，进行缓冲
-    CHASSIS_FREE,      // 底盘不跟随云台
-    CHASSIS_AUTO,      // 底盘自动模式
-    CHASSIS_OFF_HOOK,  // 底盘脱困模式
-    CHASSIS_DEBUG,     // 调试模式
-    CHASSIS_CUSTOM     // 自定义模式
+    CHASSIS_FLOATING,   // 底盘悬空状态
+    CHASSIS_CRASHING,   // 底盘接地状态，进行缓冲
+    CHASSIS_FREE,       // 底盘不跟随云台
+    CHASSIS_AUTO,       // 底盘自动模式
+    CHASSIS_OFF_HOOK,   // 底盘脱困模式
+    CHASSIS_DEBUG,      // 调试模式
+    CHASSIS_POS_DEBUG,  // 位控调试模式
+    CHASSIS_CUSTOM      // 自定义模式
 } ChassisMode_e;
 
 typedef struct Leg
@@ -99,12 +100,12 @@ typedef struct Body
     float x;          // (m)机体位移距离
     float x_dot;      // (m/s)机体速度直接反馈值
     float x_dot_obv;  // (m/s)机体速度观测值
-    float x_acc;        // (m/s^2)机体x轴加速度直接反馈值
-    float x_acc_obv;    // (m/s^2)机体x轴加速度观测值
+    float x_acc;      // (m/s^2)机体x轴加速度直接反馈值
+    float x_acc_obv;  // (m/s^2)机体x轴加速度观测值
 
-    float x_accel;   // 机体坐标系下x轴加速度
-    float y_accel;   // 机体坐标系下y轴加速度
-    float z_accel;   // 机体坐标系下z轴加速度
+    float x_accel;  // 机体坐标系下x轴加速度
+    float y_accel;  // 机体坐标系下y轴加速度
+    float z_accel;  // 机体坐标系下z轴加速度
 
     float gx, gy, gz;  //重力加速度在机体坐标系下的分量，用于消除重力加速度对加速度计的影响
 
@@ -121,9 +122,9 @@ typedef struct Body
 
 typedef struct
 {
-    float x_accel;   // 世界坐标系下x轴加速度
-    float y_accel;   // 世界坐标系下y轴加速度
-    float z_accel;   // 世界坐标系下z轴加速度
+    float x_accel;  // 世界坐标系下x轴加速度
+    float y_accel;  // 世界坐标系下y轴加速度
+    float z_accel;  // 世界坐标系下z轴加速度
 } World_t;
 
 //状态向量
