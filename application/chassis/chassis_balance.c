@@ -362,9 +362,9 @@ void ChassisObserver(void)
 
     BodyMotionObserve();
 
-    ModifyDebugDataPackage(0, CHASSIS.imu->x_accel, "x_a_imu");
-    ModifyDebugDataPackage(1, CHASSIS.imu->y_accel, "y_a_imu");
-    ModifyDebugDataPackage(2, CHASSIS.imu->z_accel, "z_a_imu");
+    // ModifyDebugDataPackage(0, CHASSIS.imu->x_accel, "x_a_imu");
+    // ModifyDebugDataPackage(1, CHASSIS.imu->y_accel, "y_a_imu");
+    // ModifyDebugDataPackage(2, CHASSIS.imu->z_accel, "z_a_imu");
 
     ModifyDebugDataPackage(3, CHASSIS.fdb.body.x_accel, "x_a_b");
     ModifyDebugDataPackage(4, CHASSIS.fdb.body.y_accel, "y_a_b");
@@ -514,8 +514,7 @@ static void UpdateLegStatus(void)
             LowPassFilterCalc(&CHASSIS.lpf.leg_theta_accel_filter[i], accel);
 
         // 差分计算腿长变化率和腿角速度
-        // TODO：结合姿态矩阵消去重力加速度得到更为精确的机体竖直方向运动加速度
-        float ddot_z_M = CHASSIS.imu->z_accel - 9.8f;
+        float ddot_z_M = CHASSIS.fdb.world.z_accel;
         float l0 = CHASSIS.fdb.leg[i].rod.L0;
         float v_l0 = CHASSIS.fdb.leg[i].rod.dL0;
         float theta = CHASSIS.fdb.leg[i].rod.Theta;
@@ -548,8 +547,8 @@ static void UpdateLegStatus(void)
         // TEMP:临时调试数据，防止测试时的一些抽风
         CHASSIS.fdb.leg[i].take_off_time = 0;
     }
-    // ModifyDebugDataPackage(0, CHASSIS.fdb.leg[0].Fn, "FnL");
-    // ModifyDebugDataPackage(1, CHASSIS.fdb.leg[1].Fn, "FnR");
+    ModifyDebugDataPackage(0, CHASSIS.fdb.leg[0].Fn, "FnL");
+    ModifyDebugDataPackage(1, CHASSIS.fdb.leg[1].Fn, "FnR");
 }
 
 static void UpdateCalibrateStatus(void)
