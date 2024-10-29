@@ -362,13 +362,17 @@ void ChassisObserver(void)
 
     BodyMotionObserve();
 
-    ModifyDebugDataPackage(2, CHASSIS.imu->x_accel, "x_a_imu");
-    ModifyDebugDataPackage(3, CHASSIS.imu->y_accel, "y_a_imu");
-    ModifyDebugDataPackage(4, CHASSIS.imu->z_accel, "z_a_imu");
+    ModifyDebugDataPackage(0, CHASSIS.imu->x_accel, "x_a_imu");
+    ModifyDebugDataPackage(1, CHASSIS.imu->y_accel, "y_a_imu");
+    ModifyDebugDataPackage(2, CHASSIS.imu->z_accel, "z_a_imu");
 
-    ModifyDebugDataPackage(5, CHASSIS.fdb.body.x_accel, "x_a_cal");
-    ModifyDebugDataPackage(6, CHASSIS.fdb.body.y_accel, "y_a_cal");
-    ModifyDebugDataPackage(7, CHASSIS.fdb.body.z_accel, "z_a_cal");
+    ModifyDebugDataPackage(3, CHASSIS.fdb.body.x_accel, "x_a_b");
+    ModifyDebugDataPackage(4, CHASSIS.fdb.body.y_accel, "y_a_b");
+    ModifyDebugDataPackage(5, CHASSIS.fdb.body.z_accel, "z_a_b");
+
+    ModifyDebugDataPackage(6, CHASSIS.fdb.world.x_accel, "x_a_w");
+    ModifyDebugDataPackage(7, CHASSIS.fdb.world.y_accel, "y_a_w");
+    ModifyDebugDataPackage(8, CHASSIS.fdb.world.z_accel, "z_a_w");
 }
 
 /**
@@ -398,15 +402,41 @@ static void UpdateBodyStatus(void)
     CHASSIS.fdb.body.yaw = CHASSIS.imu->yaw;
     CHASSIS.fdb.body.yaw_dot = CHASSIS.imu->yaw_vel;
 
-    // 计算重力加速度在各个轴上的分量相反值
-    CHASSIS.fdb.body.gx = GRAVITY * sinf(CHASSIS.imu->pitch);
-    CHASSIS.fdb.body.gy = GRAVITY * sinf(CHASSIS.imu->roll) * cosf(CHASSIS.imu->pitch);
-    CHASSIS.fdb.body.gz = -GRAVITY * cosf(CHASSIS.imu->roll) * cosf(CHASSIS.imu->pitch);
+    // 更新加速度反馈数据，记录下来方便使用
+    float ax = CHASSIS.imu->x_accel;
+    float ay = CHASSIS.imu->y_accel;
+    float az = CHASSIS.imu->z_accel;
+    // 计算几个常用的三角函数值，减少重复计算
+    float cos_roll = cosf(CHASSIS.fdb.body.roll);
+    float sin_roll = sinf(CHASSIS.fdb.body.roll);
+    float cos_pitch = cosf(CHASSIS.fdb.body.pitch);
+    float sin_pitch = sinf(CHASSIS.fdb.body.pitch);
+    float cos_yaw = cosf(CHASSIS.fdb.body.yaw);
+    float sin_yaw = sinf(CHASSIS.fdb.body.yaw);
 
-    // 消除重力加速度的影响
-    CHASSIS.fdb.body.x_accel = CHASSIS.imu->x_accel + CHASSIS.fdb.body.gx;
-    CHASSIS.fdb.body.y_accel = CHASSIS.imu->y_accel + CHASSIS.fdb.body.gy;
-    CHASSIS.fdb.body.z_accel = CHASSIS.imu->z_accel + CHASSIS.fdb.body.gz;
+    // 计算重力加速度在各个轴上的分量相反值
+    CHASSIS.fdb.body.gx = GRAVITY * sin_pitch;
+    CHASSIS.fdb.body.gy = -GRAVITY * sin_roll * cos_pitch;
+    CHASSIS.fdb.body.gz = -GRAVITY * cos_roll * cos_pitch;
+
+    // 消除重力加速度的影响，获取机体坐标系下的加速度
+    CHASSIS.fdb.body.x_accel = ax + CHASSIS.fdb.body.gx;
+    CHASSIS.fdb.body.y_accel = ay + CHASSIS.fdb.body.gy;
+    CHASSIS.fdb.body.z_accel = az + CHASSIS.fdb.body.gz;
+
+    // 计算从机体坐标系到大地坐标系的旋转矩阵
+    // clang-format off
+    float R[3][3] = {
+        {cos_pitch * cos_yaw, sin_roll * sin_pitch * cos_yaw - cos_roll * sin_yaw, cos_roll * sin_pitch * cos_yaw + sin_roll * sin_yaw},
+        {cos_pitch * sin_yaw, sin_roll * sin_pitch * sin_yaw + cos_roll * cos_yaw, cos_roll * sin_pitch * sin_yaw - sin_roll * cos_yaw},
+        {-sin_pitch         , sin_roll * cos_pitch                               , cos_roll * cos_pitch                               }
+    };
+    // clang-format on
+
+    // 更新大地坐标系下的加速度
+    CHASSIS.fdb.world.x_accel = R[0][0] * ax + R[0][1] * ay + R[0][2] * az;
+    CHASSIS.fdb.world.y_accel = R[1][0] * ax + R[1][1] * ay + R[1][2] * az;
+    CHASSIS.fdb.world.z_accel = R[2][0] * ax + R[2][1] * ay + R[2][2] * az - GRAVITY;
 
     // 更新...
     CHASSIS.fdb.body.phi = -CHASSIS.fdb.body.pitch;
@@ -518,8 +548,8 @@ static void UpdateLegStatus(void)
         // TEMP:临时调试数据，防止测试时的一些抽风
         CHASSIS.fdb.leg[i].take_off_time = 0;
     }
-    ModifyDebugDataPackage(0, CHASSIS.fdb.leg[0].Fn, "FnL");
-    ModifyDebugDataPackage(1, CHASSIS.fdb.leg[1].Fn, "FnR");
+    // ModifyDebugDataPackage(0, CHASSIS.fdb.leg[0].Fn, "FnL");
+    // ModifyDebugDataPackage(1, CHASSIS.fdb.leg[1].Fn, "FnR");
 }
 
 static void UpdateCalibrateStatus(void)
@@ -556,14 +586,10 @@ static void UpdateCalibrateStatus(void)
 static void BodyMotionObserve(void)
 {
     // 使用kf同时估计加速度和速度,滤波更新
-    // TODO：使用xz平面上的加速度作为输入？
     OBSERVER.body.v_kf.MeasuredVector[0] =
         WHEEL_RADIUS * (CHASSIS.fdb.leg[0].wheel.Velocity + CHASSIS.fdb.leg[1].wheel.Velocity) /
         2;                                                            // 输入轮速
     OBSERVER.body.v_kf.MeasuredVector[1] = CHASSIS.fdb.body.x_acc;  // 输入加速度
-    /*sqrt(
-        CHASSIS.fdb.body.x_accel * CHASSIS.fdb.body.x_accel +
-        CHASSIS.fdb.body.z_accel * CHASSIS.fdb.body.z_accel);  */
     OBSERVER.body.v_kf.F_data[1] = CHASSIS.duration * 0.001f;  // 更新采样时间
 
     Kalman_Filter_Update(&OBSERVER.body.v_kf);
