@@ -584,12 +584,16 @@ static void UpdateCalibrateStatus(void)
  */
 static void BodyMotionObserve(void)
 {
+    // clang-format off
+    float speed = WHEEL_RADIUS * (CHASSIS.fdb.leg[0].wheel.Velocity + CHASSIS.fdb.leg[1].wheel.Velocity) / 2;
+    // speed -= (CHASSIS.fdb.leg[0].rod.dTheta * CHASSIS.fdb.leg[0].rod.L0 * cosf(CHASSIS.fdb.leg[0].rod.Theta)  +
+    //           CHASSIS.fdb.leg[1].rod.dTheta * CHASSIS.fdb.leg[1].rod.L0 * cosf(CHASSIS.fdb.leg[1].rod.Theta)) / 2;
+    // clang-format on
+
     // 使用kf同时估计加速度和速度,滤波更新
-    OBSERVER.body.v_kf.MeasuredVector[0] =
-        WHEEL_RADIUS * (CHASSIS.fdb.leg[0].wheel.Velocity + CHASSIS.fdb.leg[1].wheel.Velocity) /
-        2;                                                            // 输入轮速
+    OBSERVER.body.v_kf.MeasuredVector[0] = speed;                   // 输入轮速
     OBSERVER.body.v_kf.MeasuredVector[1] = CHASSIS.fdb.body.x_acc;  // 输入加速度
-    OBSERVER.body.v_kf.F_data[1] = CHASSIS.duration * 0.001f;  // 更新采样时间
+    OBSERVER.body.v_kf.F_data[1] = CHASSIS.duration * 0.001f;       // 更新采样时间
 
     Kalman_Filter_Update(&OBSERVER.body.v_kf);
     CHASSIS.fdb.body.x_dot_obv = OBSERVER.body.v_kf.xhat_data[0];
