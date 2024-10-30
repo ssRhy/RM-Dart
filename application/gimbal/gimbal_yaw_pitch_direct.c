@@ -22,6 +22,29 @@
 #include "AHRS_middleware.h"
 Gimbal_s gimbal_direct;
 PID_t gimbal_direct_pid;
+
+
+/*--------------------------------Internal functions---------------------------------------*/
+/**以下函数均不会被外部调用，请注意！**/
+
+/*----------------angle_solution--------------------*/
+
+/**
+ * @brief          解算imu和电机角度的差值（用于更新云台的限位范围）,确认新的电机中值对应的imu值
+ * @param[in]      none
+ * @retval         none
+ */
+
+void Angle_solution(void)
+{
+  float motor_feedback=gimbal_direct.pitch.fdb.pos,imu_feedback=gimbal_direct.imu->pitch,motor_mid=GIMBAL_DIRECT_PITCH_MID,imu_mid=0.0;
+  float motor_delta=GIMBAL_DIRECT_PITCH_DIRECTION*(motor_feedback-motor_mid),imu_delta=imu_feedback-imu_mid;
+  gimbal_direct.angle_zero_for_imu=imu_delta-motor_delta;
+}
+
+
+/*-------------------------The end of internl functions--------------------------------------*/
+
 /*-------------------- Init --------------------*/
 
 /**
@@ -109,7 +132,9 @@ void GimbalObserver(void)
 
   gimbal_direct.feedback.pitch=gimbal_direct.imu->pitch;
   gimbal_direct.feedback.yaw=gimbal_direct.imu->yaw;
- 
+
+  Angle_solution();
+
 }
 
 /*-------------------- Reference --------------------*/
@@ -143,7 +168,7 @@ void GimbalReference(void)
       //gimbal_direct.reference.yaw  =loop_fp32_constrain(gimbal_direct.reference.yaw+gimbal_direct.rc->mouse.x*MOUSE_SENSITIVITY,-PI,PI);
 
       //读取摇杆的数据
-      gimbal_direct.reference.pitch= fp32_constrain(gimbal_direct.reference.pitch-(float)gimbal_direct.rc->rc.ch[1]/REMOTE_CONTROLLER_SENSITIVITY,GIMBAL_LOWER_LIMIT_PITCH,GIMBAL_UPPER_LIMIT_PITCH);
+      gimbal_direct.reference.pitch= fp32_constrain(gimbal_direct.reference.pitch-(float)gimbal_direct.rc->rc.ch[1]/REMOTE_CONTROLLER_SENSITIVITY,GIMBAL_LOWER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu,GIMBAL_UPPER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu);
       gimbal_direct.reference.yaw = loop_fp32_constrain(gimbal_direct.reference.yaw-(float)gimbal_direct.rc->rc.ch[0]/REMOTE_CONTROLLER_SENSITIVITY,-PI,PI);
     }
     
@@ -205,11 +230,13 @@ void GimbalSendCmd(void)
   {
     CanCmdDjiMotor(2,0x1FF,gimbal_direct.yaw.set.curr,gimbal_direct.pitch.set.curr,0,0);
   }
-  ModifyDebugDataPackage(5,(double)gimbal_direct.yaw.fdb.pos,"pos");
-  ModifyDebugDataPackage(6,(double)gimbal_direct.reference.yaw,"pos_set");
-  ModifyDebugDataPackage(7,(double)gimbal_direct.yaw.fdb.vel,"vel");
-  ModifyDebugDataPackage(8,(double)gimbal_direct.yaw.set.vel,"vel_set");
+  ModifyDebugDataPackage(5,(double)gimbal_direct.imu->pitch,"pos");
+  ModifyDebugDataPackage(6,(double)gimbal_direct.angle_zero_for_imu+GIMBAL_LOWER_LIMIT_PITCH,"down");
+  ModifyDebugDataPackage(7,(double)gimbal_direct.angle_zero_for_imu+GIMBAL_UPPER_LIMIT_PITCH,"up");
+  ModifyDebugDataPackage(8,(double)gimbal_direct.pitch.fdb.pos,"pitch_motor_pos");
   ModifyDebugDataPackage(9,(double)gimbal_direct.yaw.set.curr,"curr_set");
 }
+
+
 
 #endif  // GIMBAL_YAW_PITCH
