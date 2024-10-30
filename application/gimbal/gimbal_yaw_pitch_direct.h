@@ -79,6 +79,8 @@ typedef struct
 
     PID_t pid;  // PID控制器
 
+    float angle_zero_for_imu; //pitch电机处于中值时imupitch的角度
+
     bool mode_change; //用来标记是否需要应为模式切换而转换角度目标量（矫正模式）和 imu目标量（imu模式）
 } Gimbal_s;
 
