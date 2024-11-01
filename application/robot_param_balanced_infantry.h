@@ -203,10 +203,10 @@
     #define MAX_OUT_CHASSIS_PITCH_VELOCITY   (0.2f)
 #else
     //roll轴跟踪角度环PID参数
-    #define KP_CHASSIS_ROLL_ANGLE        (0.1f)
-    #define KI_CHASSIS_ROLL_ANGLE        (0.003f)
-    #define KD_CHASSIS_ROLL_ANGLE        (0.02f)
-    #define MAX_IOUT_CHASSIS_ROLL_ANGLE  (0.005f)
+    #define KP_CHASSIS_ROLL_ANGLE        (0.005f)
+    #define KI_CHASSIS_ROLL_ANGLE        (0.0001f)
+    #define KD_CHASSIS_ROLL_ANGLE        (0.01f)
+    #define MAX_IOUT_CHASSIS_ROLL_ANGLE  (0.001f)
     #define MAX_OUT_CHASSIS_ROLL_ANGLE   (0.005f)
     
     //roll轴跟踪速度环PID参数
@@ -217,9 +217,9 @@
     // #define MAX_OUT_CHASSIS_ROLL_VELOCITY   (0.1f)
 
     // 腿长跟踪长度环PID参数
-    #define KP_CHASSIS_LEG_LENGTH_LENGTH        (200.0f)
+    #define KP_CHASSIS_LEG_LENGTH_LENGTH        (450.0f)
     #define KI_CHASSIS_LEG_LENGTH_LENGTH        (0.0f)
-    #define KD_CHASSIS_LEG_LENGTH_LENGTH        (1100.0f)
+    #define KD_CHASSIS_LEG_LENGTH_LENGTH        (2100.0f)
     #define MAX_IOUT_CHASSIS_LEG_LENGTH_LENGTH  (0.0f)
     #define MAX_OUT_CHASSIS_LEG_LENGTH_LENGTH   (40.0f)
     #define N_LEG_LENGTH_LENGTH                 (0.1f)
@@ -247,7 +247,7 @@
 #define MAX_OUT_CHASSIS_STAND_UP  (2000.0f)
 
 // 轮子停止用的pid
-#define KP_CHASSIS_WHEEL_STOP       (0.5f)
+#define KP_CHASSIS_WHEEL_STOP       (0.3f)
 #define KI_CHASSIS_WHEEL_STOP       (0.0f)
 #define KD_CHASSIS_WHEEL_STOP       (0.1f)
 #define MAX_IOUT_CHASSIS_WHEEL_STOP (0.0f)
