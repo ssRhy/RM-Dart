@@ -117,9 +117,9 @@
 #define MAX_SPEED            (2.5f)
 #define MAX_SPEED_VECTOR_VX  (2.5f)
 #define MAX_SPEED_VECTOR_VY  (2.5f)
-#define MAX_SPEED_VECTOR_WZ  (3.0f)
+#define MAX_SPEED_VECTOR_WZ  (6.0f)
 
-#define MAX_JOINT_TORQUE   (5.0f)  // (Nm)关节最大扭矩
+#define MAX_JOINT_TORQUE   (20.0f)  // (Nm)关节最大扭矩
 #define MAX_VEL_ADD        (1.0f)  // (m/s)速度增量上限
 #define MAX_PITCH_VEL      (0.1f)  // (rad/s)pitch轴速度上限
 
@@ -217,11 +217,11 @@
     // #define MAX_OUT_CHASSIS_ROLL_VELOCITY   (0.1f)
 
     // 腿长跟踪长度环PID参数
-    #define KP_CHASSIS_LEG_LENGTH_LENGTH        (70.0f)
+    #define KP_CHASSIS_LEG_LENGTH_LENGTH        (150.0f)
     #define KI_CHASSIS_LEG_LENGTH_LENGTH        (0.0f)
-    #define KD_CHASSIS_LEG_LENGTH_LENGTH        (15.0f)
-    #define MAX_IOUT_CHASSIS_LEG_LENGTH_LENGTH  (1.0f)
-    #define MAX_OUT_CHASSIS_LEG_LENGTH_LENGTH   (30.0f)
+    #define KD_CHASSIS_LEG_LENGTH_LENGTH        (400.0f)
+    #define MAX_IOUT_CHASSIS_LEG_LENGTH_LENGTH  (0.0f)
+    #define MAX_OUT_CHASSIS_LEG_LENGTH_LENGTH   (40.0f)
 
     // 腿长跟踪速度环PID参数
     // #define KP_CHASSIS_LEG_LENGTH_SPEED 0.0f
@@ -260,12 +260,12 @@
 
 //offest parameters ---------------------
 
-#define X0_OFFSET (0.0f)  // theta偏移量
-#define X1_OFFSET (0.0f)  // theta_dot偏移量
-#define X2_OFFSET (-0.09f)  // x偏移量
-#define X3_OFFSET (0.0f)  // x_dot偏移量
-#define X4_OFFSET (0.0f)  // phi偏移量
-#define X5_OFFSET (0.0f)  // phi_dot偏移量
+#define X0_OFFSET (0.0f)   // 目标theta偏移量
+#define X1_OFFSET (0.0f)   // 目标theta_dot偏移量
+#define X2_OFFSET (-0.09f) // 目标x偏移量
+#define X3_OFFSET (0.0f)   // 目标x_dot偏移量
+#define X4_OFFSET (0.0f)   // 目标phi偏移量
+#define X5_OFFSET (0.0f)   // 目标phi_dot偏移量
 
 //other parameters ---------------------
 #define TAKE_OFF_FN_THRESHOLD (18.0f)  // 支持力阈值，当支持力小于这个值时认为离地

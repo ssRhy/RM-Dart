@@ -362,9 +362,9 @@ void ChassisObserver(void)
 
     BodyMotionObserve();
 
-    ModifyDebugDataPackage(0, CHASSIS.fdb.leg[0].rod.dTheta, "dth0");
-    ModifyDebugDataPackage(1, CHASSIS.fdb.leg[1].rod.dTheta, "dth1");
-    ModifyDebugDataPackage(2, CHASSIS.imu->z_accel, "z_a_imu");
+    ModifyDebugDataPackage(0, CHASSIS.fdb.body.x_acc, "ax");
+    ModifyDebugDataPackage(1, CHASSIS.fdb.body.x_acc_obv, "ax_obv");
+    ModifyDebugDataPackage(2, CHASSIS.fdb.body.x_dot_obv, "x_dot_o");
 
     ModifyDebugDataPackage(3, CHASSIS.fdb.body.x_accel, "x_a_b");
     ModifyDebugDataPackage(4, CHASSIS.fdb.body.y_accel, "y_a_b");
