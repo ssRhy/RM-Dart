@@ -217,9 +217,9 @@
     // #define MAX_OUT_CHASSIS_ROLL_VELOCITY   (0.1f)
 
     // 腿长跟踪长度环PID参数
-    #define KP_CHASSIS_LEG_LENGTH_LENGTH        (450.0f)
+    #define KP_CHASSIS_LEG_LENGTH_LENGTH        (500.0f)
     #define KI_CHASSIS_LEG_LENGTH_LENGTH        (0.0f)
-    #define KD_CHASSIS_LEG_LENGTH_LENGTH        (2100.0f)
+    #define KD_CHASSIS_LEG_LENGTH_LENGTH        (2200.0f)
     #define MAX_IOUT_CHASSIS_LEG_LENGTH_LENGTH  (0.0f)
     #define MAX_OUT_CHASSIS_LEG_LENGTH_LENGTH   (40.0f)
     #define N_LEG_LENGTH_LENGTH                 (0.1f)
