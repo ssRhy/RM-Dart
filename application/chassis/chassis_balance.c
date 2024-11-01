@@ -170,10 +170,12 @@ void ChassisInit(void)
     PID_init(
         &CHASSIS.pid.leg_length_length[0], PID_POSITION, leg_length_length_pid,
         MAX_OUT_CHASSIS_LEG_LENGTH_LENGTH, MAX_IOUT_CHASSIS_LEG_LENGTH_LENGTH);
+    CHASSIS.pid.leg_length_length[0].N = N_LEG_LENGTH_LENGTH;
 
     PID_init(
         &CHASSIS.pid.leg_length_length[1], PID_POSITION, leg_length_length_pid,
         MAX_OUT_CHASSIS_LEG_LENGTH_LENGTH, MAX_IOUT_CHASSIS_LEG_LENGTH_LENGTH);
+    CHASSIS.pid.leg_length_length[1].N = N_LEG_LENGTH_LENGTH;
 
     PID_init(
         &CHASSIS.pid.leg_angle_angle, PID_POSITION, leg_angle_angle_pid,

@@ -47,6 +47,7 @@ void PID_init(pid_type_def * pid, uint8_t mode, const fp32 PID[3], fp32 max_out,
     pid->Kp = PID[0];
     pid->Ki = PID[1];
     pid->Kd = PID[2];
+    pid->N = 0.0f;
     pid->max_out = max_out;
     pid->max_iout = max_iout;
     pid->Dbuf[0] = pid->Dbuf[1] = pid->Dbuf[2] = 0.0f;
@@ -77,7 +78,8 @@ fp32 PID_calc(pid_type_def * pid, fp32 ref, fp32 set)
         pid->Iout += pid->Ki * pid->error[0];
         pid->Dbuf[2] = pid->Dbuf[1];
         pid->Dbuf[1] = pid->Dbuf[0];
-        pid->Dbuf[0] = (pid->error[0] - pid->error[1]);
+        // 对 Dbuf[0] 进行低通滤波
+        pid->Dbuf[0] = pid->N * pid->Dbuf[1] + (1.0f - pid->N) * (pid->error[0] - pid->error[1]);
         pid->Dout = pid->Kd * pid->Dbuf[0];
         LimitMax(pid->Iout, pid->max_iout);
         pid->out = pid->Pout + pid->Iout + pid->Dout;
@@ -157,7 +159,7 @@ void SinglePidCalc(Pid_t * pid, fp32 error, fp32 dt)
     pid->Iout += pid->Ki * error * dt;
     pid->Dout = pid->Kd * (pid->N * pid->Pout - pid->Dout);
     pid->out = pid->Pout + pid->Iout + pid->Dout;
-    
+
     if (pid->out > pid->max_out) {
         pid->out = pid->max_out;
     } else if (pid->out < -pid->max_out) {
