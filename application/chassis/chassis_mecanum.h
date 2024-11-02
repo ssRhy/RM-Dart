@@ -30,6 +30,7 @@
 #include  "user_lib.h"
 #include "CAN_cmd_dji.h"
 
+
 /*-------------------- Structural definition --------------------*/
 
 typedef enum {
@@ -85,12 +86,16 @@ typedef struct
     Values_t lower_limit;  // 下限值
 
     pid_type_def pid;  // PID控制器
+    pid_type_def motor_chassis[4];               //chassis motor data.底盘电机数据
     pid_type_def motor_speed_pid[4];             //motor speed PID.底盘电机速度pid
     pid_type_def chassis_angle_pid;              //follow angle PID.底盘跟随角度pid
 
     float dyaw;  // (rad)(feedback)当前位置与云台中值角度差（用于坐标转换）
     uint16_t yaw_mid;  // (ecd)(preset)云台中值角度
     uint16_t current_set;
+    fp32 vx_set;                      //底盘设定速度 前进方向 前为正，单位 m/s
+    fp32 vy_set;                      //底盘设定速度 左右方向 左为正，单位 m/s
+    fp32 wz_set;                      //底盘设定旋转角速度，逆时针为正 单位 rad/s
     
 } Chassis_s;
 
