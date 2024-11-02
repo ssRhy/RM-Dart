@@ -79,12 +79,17 @@ typedef enum {
 #define CHASSIS_WZ_SET_SCALE 0.1f
 #define MOTOR_DISTANCE_TO_CENTER 0.2f
 
+#define CHASSIA_SPIN_SPEED 1.5f        //小陀螺旋转速度设定
+
 //chassis forward or back max speed
 //底盘运动过程最大前进速度
-#define NORMAL_MAX_CHASSIS_SPEED_X 2.0f
+#define NORMAL_MAX_CHASSIS_SPEED_X 250.0f
 //chassis left or right max speed
 //底盘运动过程最大平移速度
-#define NORMAL_MAX_CHASSIS_SPEED_Y 1.5f
+#define NORMAL_MAX_CHASSIS_SPEED_Y 250.5f
+//底盘小陀螺速度
+#define NORMAL_MAX_CHASSIS_SPEED_WX 250.0f
+
 
 /*-------------------- Gimbal --------------------*/
 //physical parameters ---------------------

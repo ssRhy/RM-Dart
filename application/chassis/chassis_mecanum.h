@@ -58,7 +58,7 @@ typedef struct
 typedef struct
 {
     pid_type_def wheel_pid_speed[4];
-    pid_type_def gimbal_follow_pid_angle;
+    pid_type_def gimbal_follow_pid_angle[4];
 } PID_t;
 
 
@@ -88,7 +88,7 @@ typedef struct
     pid_type_def pid;  // PID控制器
     pid_type_def motor_chassis[4];               //chassis motor data.底盘电机数据
     pid_type_def motor_speed_pid[4];             //motor speed PID.底盘电机速度pid
-    pid_type_def chassis_angle_pid;              //follow angle PID.底盘跟随角度pid
+    pid_type_def chassis_angle_pid;           //follow angle PID.底盘跟随云台角度pid
 
     float dyaw;  // (rad)(feedback)当前位置与云台中值角度差（用于坐标转换）
     uint16_t yaw_mid;  // (ecd)(preset)云台中值角度
