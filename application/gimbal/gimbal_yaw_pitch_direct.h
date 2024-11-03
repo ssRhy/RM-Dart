@@ -38,8 +38,8 @@
  */
 typedef enum {
     GIMBAL_ZERO_FORCE,  // 云台无力，所有控制量置0
-    GIMBAL_GYRO,        // 云台陀螺仪控制
-    GIMBAL_OPEN,        // 遥控器的值乘以比例成电流值开环控制
+    GIMBAL_IMU,        // 云台陀螺仪控制
+    GIMBAL_INIT,
 } GimbalMode_e;
 
 
@@ -78,6 +78,10 @@ typedef struct
     Values_t lower_limit;  // 下限值
 
     PID_t pid;  // PID控制器
+
+    float angle_zero_for_imu; //pitch电机处于中值时imupitch的角度
+
+    bool mode_change; //用来标记是否需要应为模式切换而转换角度目标量（矫正模式）和 imu目标量（imu模式）
 } Gimbal_s;
 
 extern void GimbalInit(void);
