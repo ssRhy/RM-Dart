@@ -5,9 +5,7 @@
   * @note       包括初始化，目标量更新、状态量更新、控制量计算与直接控制量的发送
   * @history
   *  Version    Date            Author          Modification
-  *  V1.0.0     Apr-1-2024      Penguin         1. done
-  *  V1.0.1     Apr-16-2024     Penguin         1. 完成基本框架
-  *  
+  *  V1.1.0     2024-11-3     Harry_Wong        1. 完成云台所有基本控制
   @verbatim
   ==============================================================================
 
@@ -101,7 +99,7 @@ void GimbalSetMode(void)
   if (gimbal_direct.mode==GIMBAL_INIT)  //校准模式目前个人设想是比较高的优先级
   {
     GimbalObserver();
-    if (gimbal_direct.reference.yaw-gimbal_direct.yaw.fdb.pos<0.003f && (-0.003f)<gimbal_direct.reference.yaw-gimbal_direct.yaw.fdb.pos)
+    if ((gimbal_direct.reference.yaw-gimbal_direct.yaw.fdb.pos<0.003f && (-0.003f)<gimbal_direct.reference.yaw-gimbal_direct.yaw.fdb.pos) && (gimbal_direct.reference.pitch-gimbal_direct.pitch.fdb.pos<0.003f && (-0.003f)<gimbal_direct.reference.pitch-gimbal_direct.pitch.fdb.pos))
     {
       gimbal_direct.mode_change=true;
       gimbal_direct.mode=GIMBAL_IMU;
@@ -148,7 +146,7 @@ void GimbalReference(void)
 {
     if (gimbal_direct.mode==GIMBAL_INIT)
     {
-      gimbal_direct.reference.pitch=GIMBAL_DIRECT_PITCH_MID;
+      gimbal_direct.reference.pitch=GIMBAL_DIRECT_PITCH_MID-0.2f;
       gimbal_direct.reference.yaw=GIMBAL_DIRECT_YAW_MID;
     }
   if (gimbal_direct.mode==GIMBAL_IMU)
@@ -203,7 +201,8 @@ void GimbalConsole(void)
   }
   else if (gimbal_direct.mode == GIMBAL_INIT)
   {
-    gimbal_direct.pitch.set.curr=0;
+    gimbal_direct.pitch.set.vel=PID_calc(&gimbal_direct_pid.pitch_angle,gimbal_direct.pitch.fdb.pos,gimbal_direct.reference.pitch);
+    gimbal_direct.pitch.set.curr=PID_calc(&gimbal_direct_pid.pitch_velocity,gimbal_direct.pitch.fdb.vel,gimbal_direct.pitch.set.vel);
 
     fp32 delta_yaw=loop_fp32_constrain(gimbal_direct.reference.yaw-gimbal_direct.yaw.fdb.pos,-PI,PI);
     gimbal_direct.yaw.set.vel=PID_calc(&gimbal_direct_pid.yaw_angle,0,delta_yaw);
