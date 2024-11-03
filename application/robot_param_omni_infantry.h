@@ -1,6 +1,9 @@
 /**
   * @file       robot_param_omni_infantry.h
   * @brief      这里是全向轮步兵机器人参数配置文件，包括物理参数、PID参数等
+  * @history
+  *  Version    Date            Author          Modification
+  *  V1.1.0     2024-11-3     Harry_Wong        1. 完成云台所有基本控制
   */
 
 #ifndef INCLUDED_ROBOT_PARAM_H
@@ -62,7 +65,7 @@
 
 //旋转方向
 #define GIMBAL_DIRECT_YAW_DIRECTION (1) 
-#define GIMBAL_DIRECT_PITCH_DIRECTION (-1)
+#define GIMBAL_DIRECT_PITCH_DIRECTION (1)
 
 //减速比
 #define GIMBAL_DIRECT_YAW_REDUCTION_RATIO (1)
@@ -73,12 +76,12 @@
 #define GIMBAL_DIRECT_PITCH_MODE (0)
 
 //physical parameters ---------------------
-#define GIMBAL_UPPER_LIMIT_PITCH (0.6f)
-#define GIMBAL_LOWER_LIMIT_PITCH (-0.4f)
+#define GIMBAL_UPPER_LIMIT_PITCH (0.3f)
+#define GIMBAL_LOWER_LIMIT_PITCH (-0.5f)
 
 //电机角度中值设置
-#define GIMBAL_DIRECT_PITCH_MID (0.8778f) //云台初始电机角度中值暂时为0，以后有需要就更改，校正模式pitch已关闭
-#define GIMBAL_DIRECT_YAW_MID (-2.76f) //云台初始化正对齐的时候使用的yaw轴正中心量
+#define GIMBAL_DIRECT_PITCH_MID (0.7435f) //云台初始电机角度中值暂时为0，以后有需要就更改，校正模式pitch已关闭
+#define GIMBAL_DIRECT_YAW_MID (2.0916f) //云台初始化正对齐的时候使用的yaw轴正中心量
 
 //PID parameters ---------------------
 //YAW ANGLE
@@ -95,16 +98,16 @@
 #define MAX_OUT_GIMBAL_YAW_VELOCITY (30000.0f)
 
 //PITCH ANGLE
-#define KP_GIMBAL_PITCH_ANGLE (1.0f)
-#define KI_GIMBAL_PITCH_ANGLE (0.0f)
-#define KD_GIMBAL_PITCH_ANGLE (0.0f)
+#define KP_GIMBAL_PITCH_ANGLE (3.0f)
+#define KI_GIMBAL_PITCH_ANGLE (0.003f)
+#define KD_GIMBAL_PITCH_ANGLE (0.8f)
 #define MAX_IOUT_GIMBAL_PITCH_ANGLE (1.0f)
 #define MAX_OUT_GIMBAL_PITCH_ANGLE (10.0f)
 //VELOCITY:角速度
-#define KP_GIMBAL_PITCH_VELOCITY (500.0f)
-#define KI_GIMBAL_PITCH_VELOCITY (0.0f)
-#define KD_GIMBAL_PITCH_VELOCITY (0.0f)
-#define MAX_IOUT_GIMBAL_PITCH_VELOCITY (2000.0f)
+#define KP_GIMBAL_PITCH_VELOCITY (1200.0f)
+#define KI_GIMBAL_PITCH_VELOCITY (30.0f)
+#define KD_GIMBAL_PITCH_VELOCITY (100.0f)
+#define MAX_IOUT_GIMBAL_PITCH_VELOCITY (10000.0f)
 #define MAX_OUT_GIMBAL_PITCH_VELOCITY (30000.0f)
 /*-------------------- Shoot --------------------*/
 //physical parameters ---------------------
