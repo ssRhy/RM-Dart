@@ -231,6 +231,7 @@ typedef struct LPF
     LowPassFilter_t leg_phi0_accel_filter[2];
     LowPassFilter_t leg_theta_accel_filter[2];
     LowPassFilter_t support_force_filter[2];
+    LowPassFilter_t roll;
 } LPF_t;
 
 /**

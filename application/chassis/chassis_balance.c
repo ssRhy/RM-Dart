@@ -162,6 +162,7 @@ void ChassisInit(void)
     PID_init(
         &CHASSIS.pid.roll_angle, PID_POSITION, roll_angle_pid, MAX_OUT_CHASSIS_ROLL_ANGLE,
         MAX_IOUT_CHASSIS_ROLL_ANGLE);
+    CHASSIS.pid.roll_angle.N = N_CHASSIS_ROLL_ANGLE;
 
     // PID_init(
     //     &CHASSIS.pid.roll_velocity, PID_POSITION, roll_velocity_pid, MAX_OUT_CHASSIS_ROLL_VELOCITY,
@@ -207,6 +208,8 @@ void ChassisInit(void)
 
     LowPassFilterInit(&CHASSIS.lpf.support_force_filter[0], LEG_SUPPORT_FORCE_LPF_ALPHA);
     LowPassFilterInit(&CHASSIS.lpf.support_force_filter[1], LEG_SUPPORT_FORCE_LPF_ALPHA);
+
+    LowPassFilterInit(&CHASSIS.lpf.roll, CHASSIS_ROLL_ALPHA);
 
     // 初始化机体速度观测器
     // 使用kf同时估计速度和加速度
@@ -364,17 +367,9 @@ void ChassisObserver(void)
 
     BodyMotionObserve();
 
-    ModifyDebugDataPackage(0, CHASSIS.fdb.body.x_acc, "ax");
-    ModifyDebugDataPackage(1, CHASSIS.fdb.body.x_acc_obv, "ax_obv");
-    ModifyDebugDataPackage(2, CHASSIS.fdb.body.x_dot_obv, "x_dot_o");
-
-    ModifyDebugDataPackage(3, CHASSIS.fdb.body.x_accel, "x_a_b");
-    ModifyDebugDataPackage(4, CHASSIS.fdb.body.y_accel, "y_a_b");
-    ModifyDebugDataPackage(5, CHASSIS.fdb.body.z_accel, "z_a_b");
-
-    ModifyDebugDataPackage(6, CHASSIS.fdb.world.x_accel, "x_a_w");
-    ModifyDebugDataPackage(7, CHASSIS.fdb.world.y_accel, "y_a_w");
-    ModifyDebugDataPackage(8, CHASSIS.fdb.world.z_accel, "z_a_w");
+    ModifyDebugDataPackage(0, CHASSIS.fdb.body.roll, "roll");
+    ModifyDebugDataPackage(1, CHASSIS.lpf.roll.out, "roll_sm");
+    ModifyDebugDataPackage(2, CHASSIS.fdb.body.roll_dot, "roll_vel");
 }
 
 /**
@@ -403,6 +398,8 @@ static void UpdateBodyStatus(void)
 
     CHASSIS.fdb.body.yaw = CHASSIS.imu->yaw;
     CHASSIS.fdb.body.yaw_dot = CHASSIS.imu->yaw_vel;
+
+    LowPassFilterCalc(&CHASSIS.lpf.roll, CHASSIS.fdb.body.roll);
 
     // 更新加速度反馈数据，记录下来方便使用
     float ax = CHASSIS.imu->x_accel;
@@ -549,8 +546,8 @@ static void UpdateLegStatus(void)
         // TEMP:临时调试数据，防止测试时的一些抽风
         CHASSIS.fdb.leg[i].take_off_time = 0;
     }
-    // ModifyDebugDataPackage(0, CHASSIS.fdb.leg[0].Fn, "FnL");
-    // ModifyDebugDataPackage(1, CHASSIS.fdb.leg[1].Fn, "FnR");
+    ModifyDebugDataPackage(8, CHASSIS.fdb.leg[0].Fn, "FnL");
+    ModifyDebugDataPackage(9, CHASSIS.fdb.leg[1].Fn, "FnR");
 }
 
 static void UpdateCalibrateStatus(void)
@@ -817,6 +814,7 @@ static void LocomotionController(void)
     float Ld0 = CHASSIS.fdb.leg[0].rod.L0 - CHASSIS.fdb.leg[1].rod.L0;
     // TEMP:临时调试用
     float L_diff = CHASSIS.ref.body.roll / 0.3f * 0.2f;
+    // float L_diff = PID_calc(&CHASSIS.pid.roll_angle, CHASSIS.lpf.roll.out, CHASSIS.ref.body.roll);
     // float L_diff = CalcLegLengthDiff(Ld0, CHASSIS.fdb.body.roll, CHASSIS.ref.body.roll);
 
     // PID补偿稳态误差
@@ -940,8 +938,8 @@ static void ConsoleNormal(void)
     CHASSIS.joint_motor[3].set.tor = CHASSIS.cmd.leg[1].joint.T[1] * (J3_DIRECTION);
 
     for (uint8_t i = 0; i < 4; i++) {
-        CHASSIS.joint_motor[0].set.tor =
-            fp32_constrain(CHASSIS.joint_motor[0].set.tor, MIN_JOINT_TORQUE, MAX_JOINT_TORQUE);
+        CHASSIS.joint_motor[i].set.tor =
+            fp32_constrain(CHASSIS.joint_motor[i].set.tor, MIN_JOINT_TORQUE, MAX_JOINT_TORQUE);
     }
 
     // 给驱动轮电机赋值

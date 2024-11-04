@@ -27,7 +27,7 @@ typedef struct
     fp32 Ki;
     fp32 Kd;
 
-    fp32 N; // [0,1]滤波器系数, 0为不滤波
+    fp32 N; // [0,1]滤波器系数, 0为不对输入数据滤波
 
     fp32 max_out;   //最大输出
     fp32 max_iout;  //最大积分输出

@@ -119,7 +119,7 @@
 #define MAX_SPEED_VECTOR_VY  (2.5f)
 #define MAX_SPEED_VECTOR_WZ  (6.0f)
 
-#define MAX_JOINT_TORQUE   (20.0f)  // (Nm)关节最大扭矩
+#define MAX_JOINT_TORQUE   (5.0f)  // (Nm)关节最大扭矩
 #define MAX_VEL_ADD        (1.0f)  // (m/s)速度增量上限
 #define MAX_PITCH_VEL      (0.1f)  // (rad/s)pitch轴速度上限
 
@@ -203,11 +203,12 @@
     #define MAX_OUT_CHASSIS_PITCH_VELOCITY   (0.2f)
 #else
     //roll轴跟踪角度环PID参数
-    #define KP_CHASSIS_ROLL_ANGLE        (0.005f)
-    #define KI_CHASSIS_ROLL_ANGLE        (0.0001f)
-    #define KD_CHASSIS_ROLL_ANGLE        (0.01f)
-    #define MAX_IOUT_CHASSIS_ROLL_ANGLE  (0.001f)
-    #define MAX_OUT_CHASSIS_ROLL_ANGLE   (0.005f)
+    #define KP_CHASSIS_ROLL_ANGLE        (0.3f)
+    #define KI_CHASSIS_ROLL_ANGLE        (0.0f)
+    #define KD_CHASSIS_ROLL_ANGLE        (0.2f)
+    #define MAX_IOUT_CHASSIS_ROLL_ANGLE  (0.0f)
+    #define MAX_OUT_CHASSIS_ROLL_ANGLE   (0.1f)
+    #define N_CHASSIS_ROLL_ANGLE         (0.1f)
     
     //roll轴跟踪速度环PID参数
     // #define KP_CHASSIS_ROLL_VELOCITY        (0.6f)
@@ -217,9 +218,9 @@
     // #define MAX_OUT_CHASSIS_ROLL_VELOCITY   (0.1f)
 
     // 腿长跟踪长度环PID参数
-    #define KP_CHASSIS_LEG_LENGTH_LENGTH        (500.0f)
+    #define KP_CHASSIS_LEG_LENGTH_LENGTH        (400.0f)
     #define KI_CHASSIS_LEG_LENGTH_LENGTH        (0.0f)
-    #define KD_CHASSIS_LEG_LENGTH_LENGTH        (2200.0f)
+    #define KD_CHASSIS_LEG_LENGTH_LENGTH        (2000.0f)
     #define MAX_IOUT_CHASSIS_LEG_LENGTH_LENGTH  (0.0f)
     #define MAX_OUT_CHASSIS_LEG_LENGTH_LENGTH   (40.0f)
     #define N_LEG_LENGTH_LENGTH                 (0.1f)
@@ -254,10 +255,11 @@
 #define MAX_OUT_CHASSIS_WHEEL_STOP  (200.0f)
 
 //LPF parameters ---------------------
-#define LEG_DDL0_LPF_ALPHA           (0.1f)
-#define LEG_DDPHI0_LPF_ALPHA         (0.1f)
-#define LEG_DDTHETA_LPF_ALPHA        (0.1f)
-#define LEG_SUPPORT_FORCE_LPF_ALPHA  (0.1f)
+#define LEG_DDL0_LPF_ALPHA           (0.9f)
+#define LEG_DDPHI0_LPF_ALPHA         (0.9f)
+#define LEG_DDTHETA_LPF_ALPHA        (0.9f)
+#define LEG_SUPPORT_FORCE_LPF_ALPHA  (0.9f)
+#define CHASSIS_ROLL_ALPHA           (0.5f)
 
 //offest parameters ---------------------
 
