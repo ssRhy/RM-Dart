@@ -82,7 +82,7 @@ void ChassisSetMode(void)
         case CHASSIS_STOP:
             break;
         case CHASSIS_FREE:{//底盘不跟随云台
-             CHASSIS.wz_set = 0.0f;//暂时让这个模式下小陀螺不生效
+            CHASSIS.wz_set = NORMAL_MAX_CHASSIS_SPEED_WX;//暂时让这个模式下小陀螺不生效
         }
             break;
         case CHASSIS_SPIN:{//小陀螺模式
@@ -215,11 +215,7 @@ void ChassisSendCmd(void)
 {
     if (toe_is_error(DBUS_TOE))
   {
-    //CanCmdDjiMotor(1,0x200,0,0,0,0);
-    CHASSIS.wz_set = 0.0f;
-    CHASSIS.vx_set = 0.0f;
-    CHASSIS.vy_set = 0.0f;
-                
+    CanCmdDjiMotor(1,0x200,0,0,0,0);             
   }
   else
   {
