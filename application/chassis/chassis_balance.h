@@ -93,6 +93,8 @@ typedef struct Leg
     float J[2][2];           // 雅可比矩阵
     float Fn;                // N 支撑力
     uint32_t take_off_time;  // 离地时间
+    uint32_t touch_time;     // 触地时间
+    bool is_take_off;        // 是否离地
 } Leg_t;
 
 typedef struct Body
@@ -145,6 +147,7 @@ typedef struct LegState
 typedef struct
 {
     float k[2][6];
+    float x[6];
     float Tp;
     float T;
     float length;
