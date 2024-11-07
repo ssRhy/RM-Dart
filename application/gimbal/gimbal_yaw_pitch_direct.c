@@ -41,7 +41,20 @@ void Angle_solution(void)
 }
 
 
-/*-------------------------The end of internl functions--------------------------------------*/
+/*-------------------------The end of internal functions--------------------------------------*/
+
+/*----------------GetGimbalDeltaYawMid--------------------*/
+
+/**
+ * @brief          (rad) 获取yaw轴和中值的差值
+ * @param[in]      none
+ * @retval         float
+ */
+
+float GetGimbalDeltaYawMid(void)
+{
+  return gimbal_direct.yaw.fdb.pos-GIMBAL_DIRECT_YAW_MID;
+}
 
 /*-------------------- Init --------------------*/
 
