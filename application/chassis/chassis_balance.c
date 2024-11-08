@@ -38,6 +38,10 @@
 #include "usb_debug.h"
 #include "user_lib.h"
 
+// 一些内部的配置
+#define TAKE_OFF_DETECT 1  // 是否检测离地
+
+// Parameters on ---------------------
 #define MS_TO_S 0.001f
 
 #define CALIBRATE_STOP_VELOCITY 0.05f  // rad/s
@@ -57,6 +61,7 @@
 #define TAKE_OFF_FN_THRESHOLD (15.0f)
 // 触地状态切换时间阈值，当时间接触或离地时间超过这个值时切换触地状态
 #define TOUCH_TOGGLE_THRESHOLD (50)
+// Parameters off ---------------------
 
 static Calibrate_s CALIBRATE = {
     .cali_cnt = 0,
@@ -118,6 +123,9 @@ void ChassisInit(void)
     /*-------------------- 值归零 --------------------*/
     memset(&CHASSIS.fdb, 0, sizeof(CHASSIS.fdb));
     memset(&CHASSIS.ref, 0, sizeof(CHASSIS.ref));
+
+    CHASSIS.fdb.leg[0].is_take_off = false;
+    CHASSIS.fdb.leg[1].is_take_off = false;
 
     /*-------------------- 初始化底盘PID --------------------*/
     // yaw轴跟踪pid
@@ -319,6 +327,8 @@ void ChassisSetMode(void)
         return;
     }
 
+#if TAKE_OFF_DETECT
+    // 离地状态切换
     for (uint8_t i = 0; i < 2; i++) {
         if (CHASSIS.fdb.leg[i].is_take_off &&
             CHASSIS.fdb.leg[i].touch_time > TOUCH_TOGGLE_THRESHOLD) {
@@ -329,6 +339,7 @@ void ChassisSetMode(void)
             CHASSIS.fdb.leg[i].is_take_off = true;
         }
     }
+#endif
 
     if (switch_is_up(CHASSIS.rc->rc.s[CHASSIS_MODE_CHANNEL])) {
         // CHASSIS.mode = CHASSIS_FREE;
@@ -513,7 +524,7 @@ static void UpdateLegStatus(void)
         GetL0AndPhi0(CHASSIS.fdb.leg[i].joint.Phi1, CHASSIS.fdb.leg[i].joint.Phi4, L0_Phi0);
         CHASSIS.fdb.leg[i].rod.L0 = L0_Phi0[0];
         CHASSIS.fdb.leg[i].rod.Phi0 = L0_Phi0[1];
-        CHASSIS.fdb.leg[i].rod.Theta = (M_PI_2 - CHASSIS.fdb.leg[i].rod.Phi0 - CHASSIS.fdb.body.phi);
+        CHASSIS.fdb.leg[i].rod.Theta = M_PI_2 - CHASSIS.fdb.leg[i].rod.Phi0 - CHASSIS.fdb.body.phi;
 
         // 计算雅可比矩阵
         CalcJacobian(
@@ -530,15 +541,12 @@ static void UpdateLegStatus(void)
         // 更新加速度信息
         float accel = (CHASSIS.fdb.leg[i].rod.dL0 - last_dL0) / (CHASSIS.duration * MS_TO_S);
         CHASSIS.fdb.leg[i].rod.ddL0 = accel;
-        //LowPassFilterCalc(&CHASSIS.lpf.leg_l0_accel_filter[i], accel);
 
         accel = (CHASSIS.fdb.leg[i].rod.dPhi0 - last_dPhi0) / (CHASSIS.duration * MS_TO_S);
         CHASSIS.fdb.leg[i].rod.ddPhi0 = accel;
-        //LowPassFilterCalc(&CHASSIS.lpf.leg_phi0_accel_filter[i], accel);
 
         accel = (CHASSIS.fdb.leg[i].rod.dTheta - last_dTheta) / (CHASSIS.duration * MS_TO_S);
         CHASSIS.fdb.leg[i].rod.ddTheta = accel;
-        //LowPassFilterCalc(&CHASSIS.lpf.leg_theta_accel_filter[i], accel);
 
         // 差分计算腿长变化率和腿角速度
         float ddot_z_M = CHASSIS.fdb.world.z_accel;
@@ -573,8 +581,6 @@ static void UpdateLegStatus(void)
             CHASSIS.fdb.leg[i].touch_time += CHASSIS.duration;
             CHASSIS.fdb.leg[i].take_off_time = 0;
         }
-        // TEMP:临时调试数据，防止测试时的一些抽风
-        CHASSIS.fdb.leg[i].take_off_time = 0;
     }
 }
 
@@ -613,8 +619,6 @@ static void BodyMotionObserve(void)
 {
     // clang-format off
     float speed = WHEEL_RADIUS * (CHASSIS.fdb.leg[0].wheel.Velocity + CHASSIS.fdb.leg[1].wheel.Velocity) / 2;
-    // speed -= (CHASSIS.fdb.leg[0].rod.dTheta * CHASSIS.fdb.leg[0].rod.L0 * cosf(CHASSIS.fdb.leg[0].rod.Theta)  +
-    //           CHASSIS.fdb.leg[1].rod.dTheta * CHASSIS.fdb.leg[1].rod.L0 * cosf(CHASSIS.fdb.leg[1].rod.Theta)) / 2;
     // clang-format on
 
     // 使用kf同时估计加速度和速度,滤波更新
@@ -815,9 +819,11 @@ static void LocomotionController(void)
     float k[2][6];
     float x[6];
     float T_Tp[2];
+    bool is_take_off = CHASSIS.fdb.leg[0].is_take_off || CHASSIS.fdb.leg[1].is_take_off;
 
     for (uint8_t i = 0; i < 2; i++) {
-        GetK(CHASSIS.fdb.leg[i].rod.L0, k);
+        GetK(CHASSIS.fdb.leg[i].rod.L0, k, is_take_off);
+
         // clang-format off
         x[0] = X0_OFFSET + (CHASSIS.fdb.leg_state[i].theta     - CHASSIS.ref.leg_state[i].theta);
         x[1] = X1_OFFSET + (CHASSIS.fdb.leg_state[i].theta_dot - CHASSIS.ref.leg_state[i].theta_dot);
@@ -829,12 +835,7 @@ static void LocomotionController(void)
         CalcLQR(k, x, T_Tp);
 
         CHASSIS.cmd.leg[i].wheel.T = T_Tp[0];
-
-        if (CHASSIS.fdb.leg[i].is_take_off) {
-            CHASSIS.cmd.leg[i].rod.Tp = 0;
-        } else {
-            CHASSIS.cmd.leg[i].rod.Tp = T_Tp[1];
-        }
+        CHASSIS.cmd.leg[i].rod.Tp = T_Tp[1];
     }
 
     // ROLL角控制=============================================
@@ -855,9 +856,11 @@ static void LocomotionController(void)
     CoordinateLegLength(&CHASSIS.ref.rod_L0[0], &CHASSIS.ref.rod_L0[1], L_diff, delta_L0);
 
     // 转向控制================================================
-    PID_calc(&CHASSIS.pid.yaw_velocity, CHASSIS.fdb.body.yaw_dot, CHASSIS.ref.speed_vector.wz);
-    CHASSIS.cmd.leg[0].wheel.T += CHASSIS.pid.yaw_velocity.out;
-    CHASSIS.cmd.leg[1].wheel.T -= CHASSIS.pid.yaw_velocity.out;
+    if (!is_take_off) {
+        PID_calc(&CHASSIS.pid.yaw_velocity, CHASSIS.fdb.body.yaw_dot, CHASSIS.ref.speed_vector.wz);
+        CHASSIS.cmd.leg[0].wheel.T += CHASSIS.pid.yaw_velocity.out;
+        CHASSIS.cmd.leg[1].wheel.T -= CHASSIS.pid.yaw_velocity.out;
+    }
 }
 
 /**
@@ -973,17 +976,8 @@ static void ConsoleNormal(void)
     // 给驱动轮电机赋值
     // QUESTION: 排查电机发送的力矩要反向的问题，这种情况下控制正常
     //不知道为什么要反向，待后续研究
-    if (CHASSIS.fdb.leg[0].is_take_off) {
-        CHASSIS.wheel_motor[0].set.tor = 0;
-    } else {
-        CHASSIS.wheel_motor[0].set.tor = -(CHASSIS.cmd.leg[0].wheel.T * (W0_DIRECTION));
-    }
-
-    if (CHASSIS.fdb.leg[1].is_take_off) {
-        CHASSIS.wheel_motor[1].set.tor = 0;
-    } else {
-        CHASSIS.wheel_motor[1].set.tor = -(CHASSIS.cmd.leg[1].wheel.T * (W1_DIRECTION));
-    }
+    CHASSIS.wheel_motor[0].set.tor = -(CHASSIS.cmd.leg[0].wheel.T * (W0_DIRECTION));
+    CHASSIS.wheel_motor[1].set.tor = -(CHASSIS.cmd.leg[1].wheel.T * (W1_DIRECTION));
 }
 
 static void ConsoleDebug(void)
@@ -1027,21 +1021,12 @@ static void ConsoleDebug(void)
         fp32_constrain(CHASSIS.joint_motor[3].set.pos, MIN_J3_ANGLE, MAX_J3_ANGLE);
 
     // ===驱动轮控制===
-    if (CHASSIS.fdb.leg[0].is_take_off) {
-        CHASSIS.wheel_motor[0].set.tor = 0;
-    } else {
-        CHASSIS.wheel_motor[0].set.tor = -(CHASSIS.cmd.leg[0].wheel.T * (W0_DIRECTION));
-    }
-
-    if (CHASSIS.fdb.leg[1].is_take_off) {
-        CHASSIS.wheel_motor[1].set.tor = 0;
-    } else {
-        CHASSIS.wheel_motor[1].set.tor = -(CHASSIS.cmd.leg[1].wheel.T * (W1_DIRECTION));
-    }
+    CHASSIS.wheel_motor[0].set.tor = -(CHASSIS.cmd.leg[0].wheel.T * (W0_DIRECTION));
+    CHASSIS.wheel_motor[1].set.tor = -(CHASSIS.cmd.leg[1].wheel.T * (W1_DIRECTION));
 
     // DEBUG:架空调试用
-    CHASSIS.wheel_motor[0].set.tor = 0;
-    CHASSIS.wheel_motor[1].set.tor = 0;
+    // CHASSIS.wheel_motor[0].set.tor = 0;
+    // CHASSIS.wheel_motor[1].set.tor = 0;
 }
 
 static void ConsoleStandUp(void)

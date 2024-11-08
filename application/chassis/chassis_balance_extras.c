@@ -8,7 +8,7 @@
  * @param[in]  l 腿长
  * @param[out] k K矩阵
  */
-void GetK(float l, float k[2][6])
+void GetK(float l, float k[2][6], bool is_take_off)
 {
     float t1 = l;
     float t2 = l * l;
@@ -25,6 +25,21 @@ void GetK(float l, float k[2][6])
     k[1][3] = 4.1428f * t3 + 6.7403f * t2 - 10.8296f * t1 + 4.7319f;
     k[1][4] = 188.7941f * t3 - 210.3882f * t2 + 86.3584f * t1 - 3.1191f;
     k[1][5] = 38.9923f * t3 - 44.7939f * t2 + 19.2302f * t1 - 1.0844f;
+
+    if (is_take_off) {
+        k[0][0] = 0;
+        k[0][1] = 0;
+        k[0][2] = 0;
+        k[0][3] = 0;
+        k[0][4] = 0;
+        k[0][5] = 0;
+        // k[1][0] = 0;
+        // k[1][1] = 0;
+        k[1][2] = 0;
+        k[1][3] = 0;
+        k[1][4] = 0;
+        k[1][5] = 0;
+    }
 }
 
 /**

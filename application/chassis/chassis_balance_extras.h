@@ -3,8 +3,9 @@
 
 #include "robot_param.h"
 #if (CHASSIS_TYPE == CHASSIS_BALANCE)
+#include "stdbool.h"
 
-extern void GetK(float l, float k[2][6]);
+extern void GetK(float l, float k[2][6], bool is_take_off);
 
 extern void GetL0AndPhi0(float phi1, float phi4, float L0_Phi0[2]);
 

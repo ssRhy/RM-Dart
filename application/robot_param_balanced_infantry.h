@@ -119,7 +119,7 @@
 #define MAX_SPEED_VECTOR_VY  (2.5f)
 #define MAX_SPEED_VECTOR_WZ  (6.0f)
 
-#define MAX_JOINT_TORQUE   (5.0f)  // (Nm)关节最大扭矩
+#define MAX_JOINT_TORQUE   (7.0f)  // (Nm)关节最大扭矩
 #define MAX_VEL_ADD        (1.0f)  // (m/s)速度增量上限
 #define MAX_PITCH_VEL      (0.1f)  // (rad/s)pitch轴速度上限
 
@@ -218,9 +218,9 @@
     // #define MAX_OUT_CHASSIS_ROLL_VELOCITY   (0.1f)
 
     // 腿长跟踪长度环PID参数
-    #define KP_CHASSIS_LEG_LENGTH_LENGTH        (400.0f)
+    #define KP_CHASSIS_LEG_LENGTH_LENGTH        (300.0f)
     #define KI_CHASSIS_LEG_LENGTH_LENGTH        (0.0f)
-    #define KD_CHASSIS_LEG_LENGTH_LENGTH        (2000.0f)
+    #define KD_CHASSIS_LEG_LENGTH_LENGTH        (1800.0f)
     #define MAX_IOUT_CHASSIS_LEG_LENGTH_LENGTH  (0.0f)
     #define MAX_OUT_CHASSIS_LEG_LENGTH_LENGTH   (40.0f)
     #define N_LEG_LENGTH_LENGTH                 (0.1f)
