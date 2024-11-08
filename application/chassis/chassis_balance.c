@@ -39,7 +39,10 @@
 #include "user_lib.h"
 
 // 一些内部的配置
-#define TAKE_OFF_DETECT 1  // 是否检测离地
+#define TAKE_OFF_DETECT 1  // 启用离地检测
+#define CLOSE_LEG_LEFT 0   // 关闭左腿输出
+#define CLOSE_LEG_RIGHT 0  // 关闭右腿输出
+#define LIFTED_UP 1        // 被架起
 
 // Parameters on ---------------------
 #define MS_TO_S 0.001f
@@ -760,7 +763,7 @@ void ChassisReference(void)
 /*                     ConsoleCalibrate                           */
 /*                     ConsoleOffHook                             */
 /*                     ConsoleNormal                              */
-/*                     ConsoleDebug                               */
+/*                     ConsolePosDebug                            */
 /*                     ConsoleStandUp                             */
 /******************************************************************/
 
@@ -774,7 +777,7 @@ static void ConsoleZeroForce(void);
 static void ConsoleCalibrate(void);
 static void ConsoleOffHook(void);
 static void ConsoleNormal(void);
-static void ConsoleDebug(void);
+static void ConsolePosDebug(void);
 static void ConsoleStandUp(void);
 
 /**
@@ -797,7 +800,7 @@ void ChassisConsole(void)
             ConsoleNormal();
         } break;
         case CHASSIS_POS_DEBUG: {
-            ConsoleDebug();
+            ConsolePosDebug();
         } break;
         case CHASSIS_STAND_UP: {
             ConsoleStandUp();
@@ -808,6 +811,25 @@ void ChassisConsole(void)
             ConsoleZeroForce();
         }
     }
+
+#if CLOSE_LEG_LEFT
+    memset(&CHASSIS.joint_motor[0].set, 0, sizeof(CHASSIS.joint_motor[0].set));
+    memset(&CHASSIS.joint_motor[1].set, 0, sizeof(CHASSIS.joint_motor[1].set));
+    memset(&CHASSIS.wheel_motor[0].set, 0, sizeof(CHASSIS.wheel_motor[0].set));
+#endif
+
+#if CLOSE_LEG_RIGHT
+    memset(&CHASSIS.joint_motor[2].set, 0, sizeof(CHASSIS.joint_motor[2].set));
+    memset(&CHASSIS.joint_motor[3].set, 0, sizeof(CHASSIS.joint_motor[3].set));
+    memset(&CHASSIS.wheel_motor[1].set, 0, sizeof(CHASSIS.wheel_motor[1].set));
+#endif
+
+#if LIFTED_UP
+    CHASSIS.wheel_motor[0].set.tor = 0;
+    CHASSIS.wheel_motor[1].set.tor = 0;
+    CHASSIS.wheel_motor[0].set.value = 0;
+    CHASSIS.wheel_motor[1].set.value = 0;
+#endif
 }
 
 /**
@@ -980,7 +1002,7 @@ static void ConsoleNormal(void)
     CHASSIS.wheel_motor[1].set.tor = -(CHASSIS.cmd.leg[1].wheel.T * (W1_DIRECTION));
 }
 
-static void ConsoleDebug(void)
+static void ConsolePosDebug(void)
 {
     CHASSIS.joint_motor[0].set.tor = 0;
     CHASSIS.joint_motor[1].set.tor = 0;
