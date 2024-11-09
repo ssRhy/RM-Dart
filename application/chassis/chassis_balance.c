@@ -41,7 +41,7 @@
 // 一些内部的配置
 #define TAKE_OFF_DETECT 1  // 启用离地检测
 #define CLOSE_LEG_LEFT 0   // 关闭左腿输出
-#define CLOSE_LEG_RIGHT 0  // 关闭右腿输出
+#define CLOSE_LEG_RIGHT 1  // 关闭右腿输出
 #define LIFTED_UP 1        // 被架起
 
 // Parameters on ---------------------
@@ -348,7 +348,7 @@ void ChassisSetMode(void)
         // CHASSIS.mode = CHASSIS_FREE;
         CHASSIS.mode = CHASSIS_CUSTOM;
     } else if (switch_is_mid(CHASSIS.rc->rc.s[CHASSIS_MODE_CHANNEL])) {
-        CHASSIS.mode = CHASSIS_POS_DEBUG;
+        CHASSIS.mode = CHASSIS_DEBUG;
     } else if (switch_is_down(CHASSIS.rc->rc.s[CHASSIS_MODE_CHANNEL])) {
         // 在安全模式时，遥控器摇杆打成左下，右上进入脱困模式
         if (CHASSIS.rc->rc.ch[0] > RC_OFF_HOOK_VALUE_HOLE &&
@@ -399,17 +399,21 @@ void ChassisObserver(void)
 
     BodyMotionObserve();
 
-    ModifyDebugDataPackage(0, CHASSIS.fdb.world.z_accel, "roll");
-    ModifyDebugDataPackage(1, CHASSIS.fdb.leg[0].Fn, "Fnl");
-    ModifyDebugDataPackage(2, CHASSIS.fdb.leg[0].Fn, "Fnr");
+    // 传输数据
+    float F0_Tp[2];
+    GetLegForce(CHASSIS.fdb.leg[0].J, CHASSIS.fdb.leg[0].joint.T1, CHASSIS.fdb.leg[0].joint.T2, F0_Tp);
 
-    ModifyDebugDataPackage(3, CHASSIS.fdb.leg[0].rod.Theta, "Theta");
-    ModifyDebugDataPackage(4, CHASSIS.fdb.leg[0].rod.dTheta, "dTheta");
-    ModifyDebugDataPackage(5, CHASSIS.fdb.leg[0].rod.ddTheta, "ddTheta");
+    ModifyDebugDataPackage(0, F0_Tp[0], "F0");
+    ModifyDebugDataPackage(1, F0_Tp[1], "Tp");
+    // ModifyDebugDataPackage(2, CHASSIS.fdb.leg[0].Fn, "Fnr");
 
-    ModifyDebugDataPackage(6, CHASSIS.fdb.leg[0].rod.L0, "L0");
-    ModifyDebugDataPackage(7, CHASSIS.fdb.leg[0].rod.dL0, "dL0");
-    ModifyDebugDataPackage(8, CHASSIS.fdb.leg[0].rod.ddL0, "ddL0");
+    // ModifyDebugDataPackage(3, CHASSIS.fdb.leg[0].rod.Theta, "Theta");
+    // ModifyDebugDataPackage(4, CHASSIS.fdb.leg[0].rod.dTheta, "dTheta");
+    // ModifyDebugDataPackage(5, CHASSIS.fdb.leg[0].rod.ddTheta, "ddTheta");
+
+    // ModifyDebugDataPackage(6, CHASSIS.fdb.leg[0].rod.L0, "L0");
+    // ModifyDebugDataPackage(7, CHASSIS.fdb.leg[0].rod.dL0, "dL0");
+    // ModifyDebugDataPackage(8, CHASSIS.fdb.leg[0].rod.ddL0, "ddL0");
 }
 
 /**
@@ -727,6 +731,10 @@ void ChassisReference(void)
             length = 0.12f;
             angle = M_PI_2;
         } break;
+        case CHASSIS_DEBUG: {
+            CHASSIS.ref.leg_state[0].theta = rc_angle * RC_TO_ONE * 0.3f;
+            CHASSIS.ref.leg_state[1].theta = rc_angle * RC_TO_ONE * 0.3f;
+        }
         case CHASSIS_CUSTOM:
         case CHASSIS_POS_DEBUG: {
             angle = M_PI_2 + rc_angle * RC_TO_ONE * 0.3f;
@@ -763,6 +771,7 @@ void ChassisReference(void)
 /*                     ConsoleCalibrate                           */
 /*                     ConsoleOffHook                             */
 /*                     ConsoleNormal                              */
+/*                     ConsoleDebug                               */
 /*                     ConsolePosDebug                            */
 /*                     ConsoleStandUp                             */
 /******************************************************************/
@@ -777,6 +786,7 @@ static void ConsoleZeroForce(void);
 static void ConsoleCalibrate(void);
 static void ConsoleOffHook(void);
 static void ConsoleNormal(void);
+static void ConsoleDebug(void);
 static void ConsolePosDebug(void);
 static void ConsoleStandUp(void);
 
@@ -798,6 +808,9 @@ void ChassisConsole(void)
         case CHASSIS_CUSTOM:
         case CHASSIS_FREE: {
             ConsoleNormal();
+        } break;
+        case CHASSIS_DEBUG: {
+            ConsoleDebug();
         } break;
         case CHASSIS_POS_DEBUG: {
             ConsolePosDebug();
@@ -842,6 +855,9 @@ static void LocomotionController(void)
     float x[6];
     float T_Tp[2];
     bool is_take_off = CHASSIS.fdb.leg[0].is_take_off || CHASSIS.fdb.leg[1].is_take_off;
+#if LIFTED_UP
+    is_take_off = true;
+#endif
 
     for (uint8_t i = 0; i < 2; i++) {
         GetK(CHASSIS.fdb.leg[i].rod.L0, k, is_take_off);
@@ -1002,6 +1018,23 @@ static void ConsoleNormal(void)
     CHASSIS.wheel_motor[1].set.tor = -(CHASSIS.cmd.leg[1].wheel.T * (W1_DIRECTION));
 }
 
+static void ConsoleDebug(void)
+{
+    LocomotionController();
+    LegTorqueController();
+
+    // 给关节电机赋值
+    CHASSIS.joint_motor[0].set.tor = CHASSIS.cmd.leg[0].joint.T[0] * (J0_DIRECTION);
+    CHASSIS.joint_motor[1].set.tor = CHASSIS.cmd.leg[0].joint.T[1] * (J1_DIRECTION);
+    CHASSIS.joint_motor[2].set.tor = CHASSIS.cmd.leg[1].joint.T[0] * (J2_DIRECTION);
+    CHASSIS.joint_motor[3].set.tor = CHASSIS.cmd.leg[1].joint.T[1] * (J3_DIRECTION);
+
+    for (uint8_t i = 0; i < 4; i++) {
+        CHASSIS.joint_motor[i].set.tor =
+            fp32_constrain(CHASSIS.joint_motor[i].set.tor, MIN_JOINT_TORQUE, MAX_JOINT_TORQUE);
+    }
+}
+
 static void ConsolePosDebug(void)
 {
     CHASSIS.joint_motor[0].set.tor = 0;
@@ -1144,6 +1177,7 @@ static void SendJointMotorCmd(void)
 
         switch (CHASSIS.mode) {
             case CHASSIS_FOLLOW_GIMBAL_YAW:
+            case CHASSIS_DEBUG:
             case CHASSIS_CUSTOM:
             case CHASSIS_FREE: {
 #if LOCATION_CONTROL
