@@ -401,15 +401,16 @@ void ChassisObserver(void)
 
     // 传输数据
     float F0_Tp[2];
-    GetLegForce(CHASSIS.fdb.leg[0].J, CHASSIS.fdb.leg[0].joint.T1, CHASSIS.fdb.leg[0].joint.T2, F0_Tp);
+    GetLegForce(
+        CHASSIS.fdb.leg[0].J, CHASSIS.fdb.leg[0].joint.T1, CHASSIS.fdb.leg[0].joint.T2, F0_Tp);
 
-    ModifyDebugDataPackage(0, F0_Tp[0], "F0");
-    ModifyDebugDataPackage(1, F0_Tp[1], "Tp");
-    // ModifyDebugDataPackage(2, CHASSIS.fdb.leg[0].Fn, "Fnr");
+    // ModifyDebugDataPackage(0, F0_Tp[0], "F0");
+    // ModifyDebugDataPackage(1, F0_Tp[1], "Tp");
+    // ModifyDebugDataPackage(2, CHASSIS.fdb.world.z_accel, "wod_az");
 
-    // ModifyDebugDataPackage(3, CHASSIS.fdb.leg[0].rod.Theta, "Theta");
-    // ModifyDebugDataPackage(4, CHASSIS.fdb.leg[0].rod.dTheta, "dTheta");
-    // ModifyDebugDataPackage(5, CHASSIS.fdb.leg[0].rod.ddTheta, "ddTheta");
+    ModifyDebugDataPackage(3, CHASSIS.fdb.leg[0].Fn, "Fnl");
+    // ModifyDebugDataPackage(4, CHASSIS.fdb.leg[1].Fn, "Fnr");
+    // ModifyDebugDataPackage(5, 0, "whe_az");
 
     // ModifyDebugDataPackage(6, CHASSIS.fdb.leg[0].rod.L0, "L0");
     // ModifyDebugDataPackage(7, CHASSIS.fdb.leg[0].rod.dL0, "dL0");
@@ -568,8 +569,8 @@ static void UpdateLegStatus(void)
         float ddot_z_w = ddot_z_M 
                     - dot_v_l0 * cosf(theta) 
                     + 2.0f * v_l0 * w_theta * sinf(theta) 
-                    + l0 * dot_w_theta * cosf(theta) 
-                    + l0 * powf(w_theta, 2) * sinf(theta);
+                    + l0 * dot_w_theta * sinf(theta) 
+                    + l0 * w_theta * w_theta * cosf(theta);
         // clang-format on
 
         // 计算支撑力
@@ -579,7 +580,7 @@ static void UpdateLegStatus(void)
         float F0 = F[0];
         float Tp = F[1];
 
-        float P = F0 * arm_cos_f32(theta) + Tp * arm_sin_f32(theta) / l0;
+        float P = F0 * cosf(theta) + Tp * sinf(theta) / l0;
         CHASSIS.fdb.leg[i].Fn = P + WHEEL_MASS * (9.8f + ddot_z_w);
         if (CHASSIS.fdb.leg[i].Fn < TAKE_OFF_FN_THRESHOLD) {
             CHASSIS.fdb.leg[i].touch_time = 0;
@@ -588,6 +589,14 @@ static void UpdateLegStatus(void)
             CHASSIS.fdb.leg[i].touch_time += CHASSIS.duration;
             CHASSIS.fdb.leg[i].take_off_time = 0;
         }
+
+        // if (i == 0) {
+        //     ModifyDebugDataPackage(0, P, "P");
+        //     ModifyDebugDataPackage(1, theta, "theta");
+        //     ModifyDebugDataPackage(2, F0, "F0");
+        //     ModifyDebugDataPackage(4, WHEEL_MASS * (9.8f + ddot_z_w), "wg");
+        //     ModifyDebugDataPackage(5, Tp, "Tp");
+        // }
     }
 }
 

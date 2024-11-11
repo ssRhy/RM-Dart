@@ -75,7 +75,7 @@
 #define LEG_L5 (0.150f)  // (m)关节间距
 
 #define BODY_MASS            (8.5f)      // (kg)机身重量
-#define WHEEL_MASS           (1.74f)     // (kg)轮子重量
+#define WHEEL_MASS           (0.65f)      // (kg)轮子重量
 #define WHEEL_RADIUS         (0.106f)    // (m)轮子半径
 #define WHEEL_START_TORQUE   (0.3f)      // (Nm)轮子起动力矩
 #define WHEEL_BASE           (0.51175f)  // (m)驱动轮轴距
