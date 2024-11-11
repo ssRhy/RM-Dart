@@ -6,6 +6,7 @@
   * @history
   *  Version    Date            Author          Modification
   *  V1.1.0     2024-11-3     Harry_Wong        1. 完成云台所有基本控制
+  *  V1.1.1     2024-11-11    Harry_Wong        1.为云台随动添加了yaw轴偏转角度的API
   @verbatim
   ==============================================================================
 
