@@ -1,4 +1,6 @@
 
+
+
 #include "robot_param.h"
 #if (CHASSIS_TYPE == CHASSIS_MECANUM_WHEEL)
 #include "chassis_mecanum.h"
@@ -7,6 +9,8 @@
 #include "usb_task.h"
 #include "motor.h" 
 #include "detect_task.h"
+#include "gimbal_yaw_pitch_direct.h"
+
 Motor_s __Motor;
 Chassis_s CHASSIS;
 
@@ -75,14 +79,27 @@ void ChassisSetMode(void)
             }
             break;
         }
-        case CHASSIS_FOLLOW_GIMBAL_YAW:{//云台跟随模式
+        case CHASSIS_FOLLOW_GIMBAL_YAW:{
+            //云台跟随模式
+        {
+            fp32 sin_yaw = 0.0f, cos_yaw = 0.0f;
+            //旋转控制底盘速度方向，保证前进方向是云台方向，有利于运动平稳
+            //arm_sin是stm34f4中特有的三角函数转换函数，运算速度快
+            //sin_yaw = arm_sin_f32(/*填入云台与底盘相对角度（注意正负）*/);
+            //cos_yaw = arm_cos_f32(/*填入云台与底盘相对角度（注意正负）*/);
 
+            //下面是云台坐标系转换为底盘坐标系的方程
+            CHASSIS.vx_set = cos_yaw * CHASSIS.vx_set + sin_yaw * CHASSIS.vy_set;
+            CHASSIS.vy_set = -sin_yaw * CHASSIS.vx_set + cos_yaw * CHASSIS.vy_set;//注意正负
+
+        }
+        
         }
             break;
         case CHASSIS_STOP:
             break;
         case CHASSIS_FREE:{//底盘不跟随云台
-            CHASSIS.wz_set = NORMAL_MAX_CHASSIS_SPEED_WX;//暂时让这个模式下小陀螺不生效
+            CHASSIS.wz_set = NORMAL_MIN_CHASSIS_SPEED_WX;//暂时让这个模式下小陀螺不生效
         }
             break;
         case CHASSIS_SPIN:{//小陀螺模式
@@ -116,6 +133,7 @@ void ChassisObserver(void) {
     for (uint8_t i = 0; i < 4; i++) {
         GetMotorMeasure(&CHASSIS.wheel_motor[i]);
     }
+    //GetMotorMeasure(/*跟新云台与底盘相对角度*/);
 }
 
 /*-------------------- Reference --------------------*/
@@ -140,7 +158,7 @@ void ChassisReference(void) {
     CHASSIS.wheel_motor[i].set.vel = CHASSIS_VX_RC_SEN * CHASSIS.rc->rc.ch[3];
    }*/
 
-    //给定摇杆值1
+    //给定摇杆值
     CHASSIS.vx_set = CHASSIS_VX_RC_SEN * CHASSIS.rc->rc.ch[3];
     CHASSIS.vy_set = CHASSIS_VY_RC_SEN * CHASSIS.rc->rc.ch[2];
 

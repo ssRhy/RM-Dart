@@ -74,7 +74,7 @@ typedef enum {
 #define CHASSIS_VX_RC_SEN 0.6f
 //rocker value (max 660) change to horizontal speed (m/s)
 //遥控器左右摇杆（max 660）转化成车体左右速度（m/s）的比例
-#define CHASSIS_VY_RC_SEN 0.5
+#define CHASSIS_VY_RC_SEN 0.5f
 
 #define CHASSIS_WZ_SET_SCALE 0.1f
 #define MOTOR_DISTANCE_TO_CENTER 0.2f
@@ -89,11 +89,69 @@ typedef enum {
 #define NORMAL_MAX_CHASSIS_SPEED_Y 250.5f
 //底盘小陀螺速度
 #define NORMAL_MAX_CHASSIS_SPEED_WX 250.0f
-
+#define NORMAL_MIN_CHASSIS_SPEED_WX 0.0f
 
 /*-------------------- Gimbal --------------------*/
+//mouse sensitivity ---------------------
+#define MOUSE_SENSITIVITY (0.5)
+//remote controller sensitivity ---------------------
+#define REMOTE_CONTROLLER_SENSITIVITY (1)
+//motor parameters ---------------------
+//电机id
+#define GIMBAL_DIRECT_YAW_ID ((uint8_t)1)
+#define GIMBAL_DIRECT_PITCH_ID ((uint8_t)2)
+
+//电机can口
+#define GIMBAL_DIRECT_YAW_CAN ((uint8_t)2)
+#define GIMBAL_DIRECT_PITCH_CAN ((uint8_t)2) 
+
+//电机种类        
+#define GIMBAL_DIRECT_YAW_MOTOR_TYPE ((MotorType_e)DJI_M6020)
+#define GIMBAL_DIRECT_PITCH_MOTOR_TYPE ((MotorType_e)DJI_M6020)
+
+//旋转方向
+#define GIMBAL_DIRECT_YAW_DIRECTION (1) 
+#define GIMBAL_DIRECT_PITCH_DIRECTION (1)
+
+//减速比
+#define GIMBAL_DIRECT_YAW_REDUCTION_RATIO (1)
+#define GIMBAL_DIRECT_PITCH_REDUCTION_RATIO (1)
+
+//电机运行模式
+#define GIMBAL_DIRECT_YAW_MODE (0)
+#define GIMBAL_DIRECT_PITCH_MODE (0)
+
 //physical parameters ---------------------
+#define GIMBAL_UPPER_LIMIT_PITCH (1.4)
+#define GIMBAL_UPPER_LIMIT_YAW (0.6f)
+#define GIMBAL_LOWER_LIMIT_PITCH (0.6f)
+#define GIMBAL_LOWER_LIMIT_YAW (0.0f)
 //PID parameters ---------------------
+//YAW ANGLE
+#define KP_GIMBAL_YAW_ANGLE (3.0f)
+#define KI_GIMBAL_YAW_ANGLE (0.003f)
+#define KD_GIMBAL_YAW_ANGLE (0.8f)
+#define MAX_IOUT_GIMBAL_YAW_ANGLE (0.05f)
+#define MAX_OUT_GIMBAL_YAW_ANGLE (20.0f)
+//VELOCITY:角速度
+#define KP_GIMBAL_YAW_VELOCITY (800.0f)
+#define KI_GIMBAL_YAW_VELOCITY (20.0f)
+#define KD_GIMBAL_YAW_VELOCITY (100.0f)
+#define MAX_IOUT_GIMBAL_YAW_VELOCITY (10000.0f)
+#define MAX_OUT_GIMBAL_YAW_VELOCITY (30000.0f)
+
+//PITCH ANGLE
+#define KP_GIMBAL_PITCH_ANGLE (1.0f)
+#define KI_GIMBAL_PITCH_ANGLE (0.0f)
+#define KD_GIMBAL_PITCH_ANGLE (0.0f)
+#define MAX_IOUT_GIMBAL_PITCH_ANGLE (1.0f)
+#define MAX_OUT_GIMBAL_PITCH_ANGLE (10.0f)
+//VELOCITY:角速度
+#define KP_GIMBAL_PITCH_VELOCITY (7400.0f)
+#define KI_GIMBAL_PITCH_VELOCITY (80.0f)
+#define KD_GIMBAL_PITCH_VELOCITY (40.0f)
+#define MAX_IOUT_GIMBAL_PITCH_VELOCITY (18000.0f)
+#define MAX_OUT_GIMBAL_PITCH_VELOCITY (30000.0f)
 
 /*-------------------- Shoot --------------------*/
 //physical parameters ---------------------
