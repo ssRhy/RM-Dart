@@ -80,7 +80,7 @@
 #define GIMBAL_LOWER_LIMIT_PITCH (-0.5f)
 
 //电机角度中值设置
-#define GIMBAL_DIRECT_PITCH_MID (0.7435f) //云台初始电机角度中值暂时为0，以后有需要就更改，校正模式pitch已关闭
+#define GIMBAL_DIRECT_PITCH_MID (0.7435f) //云台初始化正对齐的时候使用的pitch轴正中心量
 #define GIMBAL_DIRECT_YAW_MID (2.0916f) //云台初始化正对齐的时候使用的yaw轴正中心量
 
 //PID parameters ---------------------

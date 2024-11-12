@@ -54,7 +54,7 @@ void Angle_solution(void)
 
 float GetGimbalDeltaYawMid(void)
 {
-  return gimbal_direct.yaw.fdb.pos-GIMBAL_DIRECT_YAW_MID;
+  return loop_fp32_constrain(gimbal_direct.yaw.fdb.pos-GIMBAL_DIRECT_YAW_MID,-PI,PI);
 }
 
 /*-------------------- Init --------------------*/
@@ -243,11 +243,8 @@ void GimbalSendCmd(void)
   {
     CanCmdDjiMotor(2,0x1FF,gimbal_direct.yaw.set.curr,gimbal_direct.pitch.set.curr,0,0);
   }
-  ModifyDebugDataPackage(5,(double)gimbal_direct.imu->pitch,"pos");
-  ModifyDebugDataPackage(6,(double)gimbal_direct.angle_zero_for_imu+GIMBAL_LOWER_LIMIT_PITCH,"down");
-  ModifyDebugDataPackage(7,(double)gimbal_direct.angle_zero_for_imu+GIMBAL_UPPER_LIMIT_PITCH,"up");
-  ModifyDebugDataPackage(8,(double)gimbal_direct.pitch.fdb.pos,"pitch_motor_pos");
-  ModifyDebugDataPackage(9,(double)gimbal_direct.yaw.set.curr,"curr_set");
+
+  ModifyDebugDataPackage(1,gimbal_direct.yaw.fdb.pos-GIMBAL_DIRECT_YAW_MID,"curr_set");
 }
 
 
