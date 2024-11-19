@@ -39,10 +39,10 @@
 #include "user_lib.h"
 
 // 一些内部的配置
-#define TAKE_OFF_DETECT 1  // 启用离地检测
+#define TAKE_OFF_DETECT 0  // 启用离地检测
 #define CLOSE_LEG_LEFT 0   // 关闭左腿输出
-#define CLOSE_LEG_RIGHT 1  // 关闭右腿输出
-#define LIFTED_UP 1        // 被架起
+#define CLOSE_LEG_RIGHT 0  // 关闭右腿输出
+#define LIFTED_UP 0        // 被架起
 
 // Parameters on ---------------------
 #define MS_TO_S 0.001f
@@ -61,7 +61,7 @@
 #define RC_OFF_HOOK_VALUE_HOLE 650
 
 // 支持力阈值，当支持力小于这个值时认为离地
-#define TAKE_OFF_FN_THRESHOLD (15.0f)
+#define TAKE_OFF_FN_THRESHOLD (5.0f)
 // 触地状态切换时间阈值，当时间接触或离地时间超过这个值时切换触地状态
 #define TOUCH_TOGGLE_THRESHOLD (50)
 // Parameters off ---------------------
@@ -80,17 +80,6 @@ Chassis_s CHASSIS = {
     .mode = CHASSIS_OFF,
     .error_code = 0,
     .yaw_mid = 0,
-
-    .ratio =
-        {
-            // clang-format off
-            .k = {{1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f}, 
-                  {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f}},
-            // clang-format on
-            .Tp = TP_RATIO,
-            .T = T_RATIO,
-            .length = 1.0f,
-        },
     .dyaw = 0.0f,
 };
 
@@ -148,34 +137,14 @@ void ChassisInit(void)
         &CHASSIS.pid.vel_add, PID_POSITION, vel_add_pid, MAX_OUT_CHASSIS_VEL_ADD,
         MAX_IOUT_CHASSIS_VEL_ADD);
 
-#if LOCATION_CONTROL
+    /*========== Start of locomotion control pid ==========*/
 
-    float roll_angle_pid[3] = {KP_CHASSIS_ROLL_ANGLE, KI_CHASSIS_ROLL_ANGLE, KD_CHASSIS_ROLL_ANGLE};
-    float pitch_angle_pid[3] = {
-        KP_CHASSIS_PITCH_ANGLE, KI_CHASSIS_PITCH_ANGLE, KD_CHASSIS_PITCH_ANGLE};
-    float pitch_vel_pid[3] = {
-        KP_CHASSIS_PITCH_VELOCITY, KI_CHASSIS_PITCH_VELOCITY, KD_CHASSIS_PITCH_VELOCITY};
-
-    PID_init(
-        &CHASSIS.pid.roll_angle, PID_POSITION, roll_angle_pid, MAX_OUT_CHASSIS_ROLL_ANGLE,
-        MAX_IOUT_CHASSIS_ROLL_ANGLE);
-
-    PID_init(
-        &CHASSIS.pid.pitch_angle, PID_POSITION, pitch_angle_pid, MAX_OUT_CHASSIS_PITCH_ANGLE,
-        MAX_IOUT_CHASSIS_PITCH_ANGLE);
-    PID_init(
-        &CHASSIS.pid.pitch_vel, PID_POSITION, pitch_vel_pid, MAX_OUT_CHASSIS_PITCH_VELOCITY,
-        MAX_IOUT_CHASSIS_PITCH_VELOCITY);
-#else
     float roll_angle_pid[3] = {KP_CHASSIS_ROLL_ANGLE, KI_CHASSIS_ROLL_ANGLE, KD_CHASSIS_ROLL_ANGLE};
     // float roll_velocity_pid[3] = {
     //     KP_CHASSIS_ROLL_VELOCITY, KI_CHASSIS_ROLL_VELOCITY, KD_CHASSIS_ROLL_VELOCITY};
 
     float leg_length_length_pid[3] = {
         KP_CHASSIS_LEG_LENGTH_LENGTH, KI_CHASSIS_LEG_LENGTH_LENGTH, KD_CHASSIS_LEG_LENGTH_LENGTH};
-
-    float leg_angle_angle_pid[3] = {
-        KP_CHASSIS_LEG_ANGLE_ANGLE, KI_CHASSIS_LEG_ANGLE_ANGLE, KD_CHASSIS_LEG_ANGLE_ANGLE};
 
     PID_init(
         &CHASSIS.pid.roll_angle, PID_POSITION, roll_angle_pid, MAX_OUT_CHASSIS_ROLL_ANGLE,
@@ -196,10 +165,7 @@ void ChassisInit(void)
         MAX_OUT_CHASSIS_LEG_LENGTH_LENGTH, MAX_IOUT_CHASSIS_LEG_LENGTH_LENGTH);
     CHASSIS.pid.leg_length_length[1].N = N_LEG_LENGTH_LENGTH;
 
-    PID_init(
-        &CHASSIS.pid.leg_angle_angle, PID_POSITION, leg_angle_angle_pid,
-        MAX_OUT_CHASSIS_LEG_ANGLE_ANGLE, MAX_IOUT_CHASSIS_LEG_ANGLE_ANGLE);
-#endif
+    /*========== End of locomotion control pid ==========*/
 
     float stand_up_pid[3] = {KP_CHASSIS_STAND_UP, KI_CHASSIS_STAND_UP, KD_CHASSIS_STAND_UP};
     PID_init(
@@ -1189,19 +1155,11 @@ static void SendJointMotorCmd(void)
             case CHASSIS_DEBUG:
             case CHASSIS_CUSTOM:
             case CHASSIS_FREE: {
-#if LOCATION_CONTROL
-                DmMitCtrlPosition(&CHASSIS.joint_motor[0], NORMAL_POS_KP, NORMAL_POS_KD);
-                DmMitCtrlPosition(&CHASSIS.joint_motor[1], NORMAL_POS_KP, NORMAL_POS_KD);
-                delay_us(DM_DELAY);
-                DmMitCtrlPosition(&CHASSIS.joint_motor[2], NORMAL_POS_KP, NORMAL_POS_KD);
-                DmMitCtrlPosition(&CHASSIS.joint_motor[3], NORMAL_POS_KP, NORMAL_POS_KD);
-#else
                 DmMitCtrlTorque(&CHASSIS.joint_motor[0]);
                 DmMitCtrlTorque(&CHASSIS.joint_motor[1]);
                 delay_us(DM_DELAY);
                 DmMitCtrlTorque(&CHASSIS.joint_motor[2]);
                 DmMitCtrlTorque(&CHASSIS.joint_motor[3]);
-#endif
             } break;
             case CHASSIS_STAND_UP: {
                 DmMitCtrlPosition(&CHASSIS.joint_motor[0], NORMAL_POS_KP, NORMAL_POS_KD);

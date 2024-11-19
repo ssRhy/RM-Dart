@@ -141,19 +141,6 @@ typedef struct LegState
 } LegState_t;
 
 /**
- * @brief      比例系数结构体
- * @note       比例系数，用于手动优化控制效果
- */
-typedef struct
-{
-    float k[2][6];
-    float x[6];
-    float Tp;
-    float T;
-    float length;
-} Ratio_t;
-
-/**
  * @brief 状态
  */
 typedef struct
@@ -260,8 +247,6 @@ typedef struct
 
     PID_t pid;  // PID控制器
     LPF_t lpf;  // 低通滤波器
-
-    Ratio_t ratio;  // 比例系数
 
     uint32_t last_time;  // (ms)上一次更新时间
     uint32_t duration;   // (ms)任务周期
