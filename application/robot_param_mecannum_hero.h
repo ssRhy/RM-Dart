@@ -10,9 +10,10 @@
 #define CHASSIS_MODE_CHANNEL   0  // 选择底盘状态 开关通道号
 
 #define CHASSIS_TYPE CHASSIS_MECANUM_WHEEL  // 选择底盘类型
-#define GIMBAL_TYPE GIMBAL_NONE             // 选择云台类型
+#define GIMBAL_TYPE GIMBAL_YAW_PITCH_DIRECT // 选择云台类型
 #define SHOOT_TYPE SHOOT_NONE               // 选择发射机构类型
-#define CONTROL_TYPE CHASSIS_ONLY           // 选择控制类型
+#define CONTROL_TYPE CHASSIS_AND_GIMBAL           // 选择控制类型
+#define MECHANICAL_ARM_TYPE MECHANICAL_ARM_NONE  //选择机械臂类型
 
 // 机器人物理参数
 typedef enum {
@@ -41,10 +42,11 @@ typedef enum {
 //physical parameters ---------------------
 #define WHEEL_RADIUS 0.106f  //(m)轮子半径
 #define WHEEL_DIRECTION 1    //轮子方向
+#define CAR_RADIUS 0.23f//(m)车中轴到轮子的距离
 //upper_limit parameters ---------------------
-#define MAX_SPEED_VECTOR_VX 5.0f
-#define MAX_SPEED_VECTOR_VY 5.0f
-#define MAX_SPEED_VECTOR_WZ 1.0f
+#define MAX_SPEED_VECTOR_VX 1.5f
+#define MAX_SPEED_VECTOR_VY 1.5f
+#define MAX_SPEED_VECTOR_WZ 3.0f
 
 //lower_limit parameters ---------------------
 #define MIN_SPEED_VECTOR_VX -MAX_SPEED_VECTOR_VX
@@ -60,11 +62,11 @@ typedef enum {
 #define MAX_OUT_CHASSIS_WHEEL_SPEED 30000.0f
 
 //云台跟随角度环PID参数
-#define KP_CHASSIS_GIMBAL_FOLLOW_ANGLE 0.0f
-#define KI_CHASSIS_GIMBAL_FOLLOW_ANGLE 0.0f
+#define KP_CHASSIS_GIMBAL_FOLLOW_ANGLE 200.0f
+#define KI_CHASSIS_GIMBAL_FOLLOW_ANGLE 0.3f
 #define KD_CHASSIS_GIMBAL_FOLLOW_ANGLE 0.0f
-#define MAX_IOUT_CHASSIS_GIMBAL_FOLLOW_ANGLE 0.0f
-#define MAX_OUT_CHASSIS_GIMBAL_FOLLOW_ANGLE 0.0f
+#define MAX_IOUT_CHASSIS_GIMBAL_FOLLOW_ANGLE 10000.0f
+#define MAX_OUT_CHASSIS_GIMBAL_FOLLOW_ANGLE 300000.0f
 
 #define MAX_ROLL            (0.3f)
 #define MIN_ROLL            (-MAX_ROLL)
@@ -74,12 +76,14 @@ typedef enum {
 #define CHASSIS_VX_RC_SEN 0.6f
 //rocker value (max 660) change to horizontal speed (m/s)
 //遥控器左右摇杆（max 660）转化成车体左右速度（m/s）的比例
-#define CHASSIS_VY_RC_SEN 0.5f
+#define CHASSIS_VY_RC_SEN 0.6f//0.5f
+#define CHASSIS_WX_RC_SEN 0.5f
 
 #define CHASSIS_WZ_SET_SCALE 0.1f
 #define MOTOR_DISTANCE_TO_CENTER 0.2f
 
-#define CHASSIA_SPIN_SPEED 1.5f        //小陀螺旋转速度设定
+#define CHASSIA_SPIN_SPEED 1.5f     
+#define CHASSIA_STOP_SPEED 0.0f
 
 //chassis forward or back max speed
 //底盘运动过程最大前进速度
@@ -93,9 +97,9 @@ typedef enum {
 
 /*-------------------- Gimbal --------------------*/
 //mouse sensitivity ---------------------
-#define MOUSE_SENSITIVITY (0.5)
+#define MOUSE_SENSITIVITY (0.5f)
 //remote controller sensitivity ---------------------
-#define REMOTE_CONTROLLER_SENSITIVITY (1)
+#define REMOTE_CONTROLLER_SENSITIVITY (1500000.0f)
 //motor parameters ---------------------
 //电机id
 #define GIMBAL_DIRECT_YAW_ID ((uint8_t)1)
@@ -122,13 +126,16 @@ typedef enum {
 #define GIMBAL_DIRECT_PITCH_MODE (0)
 
 //physical parameters ---------------------
-#define GIMBAL_UPPER_LIMIT_PITCH (1.4)
-#define GIMBAL_UPPER_LIMIT_YAW (0.6f)
-#define GIMBAL_LOWER_LIMIT_PITCH (0.6f)
-#define GIMBAL_LOWER_LIMIT_YAW (0.0f)
+#define GIMBAL_UPPER_LIMIT_PITCH (0.3f)
+#define GIMBAL_LOWER_LIMIT_PITCH (-0.5f)
+
+//电机角度中值设置
+#define GIMBAL_DIRECT_PITCH_MID (0.7435f) //云台初始化正对齐的时候使用的pitch轴正中心量
+#define GIMBAL_DIRECT_YAW_MID (2.0916f) //云台初始化正对齐的时候使用的yaw轴正中心量
+
 //PID parameters ---------------------
 //YAW ANGLE
-#define KP_GIMBAL_YAW_ANGLE (3.0f)
+#define KP_GIMBAL_YAW_ANGLE (3.0f)//3.0f
 #define KI_GIMBAL_YAW_ANGLE (0.003f)
 #define KD_GIMBAL_YAW_ANGLE (0.8f)
 #define MAX_IOUT_GIMBAL_YAW_ANGLE (0.05f)
@@ -141,18 +148,17 @@ typedef enum {
 #define MAX_OUT_GIMBAL_YAW_VELOCITY (30000.0f)
 
 //PITCH ANGLE
-#define KP_GIMBAL_PITCH_ANGLE (1.0f)
-#define KI_GIMBAL_PITCH_ANGLE (0.0f)
-#define KD_GIMBAL_PITCH_ANGLE (0.0f)
+#define KP_GIMBAL_PITCH_ANGLE (3.0f)
+#define KI_GIMBAL_PITCH_ANGLE (0.003f)
+#define KD_GIMBAL_PITCH_ANGLE (0.8f)
 #define MAX_IOUT_GIMBAL_PITCH_ANGLE (1.0f)
 #define MAX_OUT_GIMBAL_PITCH_ANGLE (10.0f)
 //VELOCITY:角速度
-#define KP_GIMBAL_PITCH_VELOCITY (7400.0f)
-#define KI_GIMBAL_PITCH_VELOCITY (80.0f)
-#define KD_GIMBAL_PITCH_VELOCITY (40.0f)
-#define MAX_IOUT_GIMBAL_PITCH_VELOCITY (18000.0f)
+#define KP_GIMBAL_PITCH_VELOCITY (1200.0f)
+#define KI_GIMBAL_PITCH_VELOCITY (30.0f)
+#define KD_GIMBAL_PITCH_VELOCITY (100.0f)
+#define MAX_IOUT_GIMBAL_PITCH_VELOCITY (10000.0f)
 #define MAX_OUT_GIMBAL_PITCH_VELOCITY (30000.0f)
-
 /*-------------------- Shoot --------------------*/
 //physical parameters ---------------------
 #define FRIC_RADIUS 0.03f  // (m)摩擦轮半径

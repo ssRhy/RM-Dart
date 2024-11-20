@@ -53,15 +53,13 @@ typedef struct
 {
     float wheel_speed[4];  // (m/s)轮子速度
     ChassisSpeedVector_t speed_vector;
-} Values_t;
+} Values_t_chassis;
 
-typedef struct
-{
-    pid_type_def wheel_pid_speed[4];
-    pid_type_def gimbal_follow_pid_angle[4];
-} PID_t;
-
-
+// typedef struct
+// {
+//     pid_type_def wheel_pid_speed[4];
+//     pid_type_def gimbal_follow_pid_angle[4];
+// } PID_t;
 
 /**
  * @brief  底盘数据结构体
@@ -80,10 +78,10 @@ typedef struct
     Motor_s wheel_motor[4];  // 驱动轮电机
     /*-------------------- Values --------------------*/
 
-    Values_t ref;          // 期望值
-    Values_t fdb;          // 状态值
-    Values_t upper_limit;  // 上限值
-    Values_t lower_limit;  // 下限值
+    Values_t_chassis ref;          // 期望值
+    Values_t_chassis fdb;          // 状态值
+    Values_t_chassis upper_limit;  // 上限值
+    Values_t_chassis lower_limit;  // 下限值
 
     pid_type_def pid;  // PID控制器
     pid_type_def motor_chassis[4];               //chassis motor data.底盘电机数据
@@ -93,9 +91,14 @@ typedef struct
     float dyaw;  // (rad)(feedback)当前位置与云台中值角度差（用于坐标转换）
     uint16_t yaw_mid;  // (ecd)(preset)云台中值角度
     uint16_t current_set;
+
+    fp32 vx_rc_set;                   //底盘设定速度，遥控器控制云台坐标系下前进方向
+    fp32 vy_rc_set;                   //底盘设定速度，遥控器控制云台坐标系下左右方向
+    fp32 wz_rc_set;                   //底盘设定旋转速度，遥控器控制云台坐标系下
     fp32 vx_set;                      //底盘设定速度 前进方向 前为正，单位 m/s
     fp32 vy_set;                      //底盘设定速度 左右方向 左为正，单位 m/s
     fp32 wz_set;                      //底盘设定旋转角速度，逆时针为正 单位 rad/s
+
     
 } Chassis_s;
 

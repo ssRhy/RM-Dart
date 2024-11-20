@@ -10,6 +10,7 @@
 #include "motor.h" 
 #include "detect_task.h"
 #include "gimbal_yaw_pitch_direct.h"
+#include "math.h"
 
 Motor_s __Motor;
 Chassis_s CHASSIS;
@@ -60,52 +61,36 @@ void ChassisSetMode(void)
     if (switch_is_up(CHASSIS.rc->rc.s[CHASSIS_MODE_CHANNEL])) {
         CHASSIS.mode = CHASSIS_SPIN;
     } else if (switch_is_mid(CHASSIS.rc->rc.s[CHASSIS_MODE_CHANNEL])) {
-        CHASSIS.mode = CHASSIS_FREE;
+        CHASSIS.mode = CHASSIS_FOLLOW_GIMBAL_YAW;
     } else if (switch_is_down(CHASSIS.rc->rc.s[CHASSIS_MODE_CHANNEL])) {
         CHASSIS.mode = CHASSIS_ZERO_FORCE;
-        //CHASSIS.mode = CHASSIS_FREE;
     }
-    
+
     uint8_t i;
     //具体模式设定
     switch (CHASSIS.mode) {
         case CHASSIS_ZERO_FORCE: { 
-            for (i = 0; i < 4; i++) {
-                //CHASSIS.wheel_motor[i].set.curr = 0.0f;
-                CHASSIS.wz_set = 0.0f;
-                CHASSIS.vx_set = 0.0f;
-                CHASSIS.vy_set = 0.0f;
-                
-            }
+            CHASSIS.wz_set = CHASSIA_STOP_SPEED;
+            CHASSIS.vx_set = CHASSIA_STOP_SPEED;
+            CHASSIS.vy_set = CHASSIA_STOP_SPEED;
             break;
         }
-        case CHASSIS_FOLLOW_GIMBAL_YAW:{
-            //云台跟随模式
-        {
-            fp32 sin_yaw = 0.0f, cos_yaw = 0.0f;
-            //旋转控制底盘速度方向，保证前进方向是云台方向，有利于运动平稳
-            //arm_sin是stm34f4中特有的三角函数转换函数，运算速度快
-            //sin_yaw = arm_sin_f32(/*填入云台与底盘相对角度（注意正负）*/);
-            //cos_yaw = arm_cos_f32(/*填入云台与底盘相对角度（注意正负）*/);
+        case CHASSIS_FOLLOW_GIMBAL_YAW:{//云台跟随模式
 
-            //下面是云台坐标系转换为底盘坐标系的方程
-            CHASSIS.vx_set = cos_yaw * CHASSIS.vx_set + sin_yaw * CHASSIS.vy_set;
-            CHASSIS.vy_set = -sin_yaw * CHASSIS.vx_set + cos_yaw * CHASSIS.vy_set;//注意正负
-
-        }
-        
-        }
+            CHASSIS.ref.speed_vector.wz = CHASSIS.dyaw; 
+            CHASSIS.wz_set = PID_calc(&CHASSIS.chassis_angle_pid, CHASSIS.fdb.speed_vector.wz, CHASSIS.ref.speed_vector.wz);//
             break;
+        }
         case CHASSIS_STOP:
             break;
         case CHASSIS_FREE:{//底盘不跟随云台
-            CHASSIS.wz_set = NORMAL_MIN_CHASSIS_SPEED_WX;//暂时让这个模式下小陀螺不生效
-        }
+            CHASSIS.wz_set = NORMAL_MAX_CHASSIS_SPEED_WX;//暂时让这个模式下小陀螺生效
             break;
+        }
         case CHASSIS_SPIN:{//小陀螺模式
-            CHASSIS.wz_set = NORMAL_MAX_CHASSIS_SPEED_WX;
-        }
+			CHASSIS.wz_set = NORMAL_MAX_CHASSIS_SPEED_WX;
             break;
+        }
         case CHASSIS_AUTO:
             break;
         case CHASSIS_OPEN: {
@@ -133,7 +118,6 @@ void ChassisObserver(void) {
     for (uint8_t i = 0; i < 4; i++) {
         GetMotorMeasure(&CHASSIS.wheel_motor[i]);
     }
-    //GetMotorMeasure(/*跟新云台与底盘相对角度*/);
 }
 
 /*-------------------- Reference --------------------*/
@@ -145,41 +129,41 @@ void ChassisObserver(void) {
  */
 void ChassisReference(void) {
 
-   /*int16_t vx_channel, vy_channel;
-    rc_deadband_limit(CHASSIS.rc->rc.ch[CHASSIS_X_CHANNEL], rc_x, CHASSIS_RC_DEADLINE);
-    rc_deadband_limit(CHASSIS.rc->rc.ch[CHASSIS_Y_CHANNEL], rc_y, CHASSIS_RC_DEADLINE);
+    fp32 rc_x, rc_y;
+    fp32 vx_channel, vy_channel;
+    rc_deadband_limit(CHASSIS.rc->rc.ch[3], rc_x, CHASSIS_RC_DEADLINE);
+    rc_deadband_limit(CHASSIS.rc->rc.ch[2], rc_y, CHASSIS_RC_DEADLINE);
     //rc_deadband_limit(CHASSIS.rc->rc.ch[CHASSIS_ROLL_CHANNEL], rc_roll, CHASSIS_RC_DEADLINE);
 
-    vx_channel = rc_x * CHASSIS_VX_RC_SEN;
-    vy_channel = rc_y * CHASSIS_VY_RC_SEN;
+    vx_channel = rc_x * MAX_SPEED_VECTOR_VX;
+    vy_channel = rc_y * MAX_SPEED_VECTOR_VY;
 
-    for (i = 0; i < 4; i++)
-   {
-    CHASSIS.wheel_motor[i].set.vel = CHASSIS_VX_RC_SEN * CHASSIS.rc->rc.ch[3];
-   }*/
+    CHASSIS.dyaw = GetGimbalDeltaYawMid();
 
-    //给定摇杆值
-    CHASSIS.vx_set = CHASSIS_VX_RC_SEN * CHASSIS.rc->rc.ch[3];
-    CHASSIS.vy_set = CHASSIS_VY_RC_SEN * CHASSIS.rc->rc.ch[2];
+    //给定摇杆值(无死区)
+    // CHASSIS.vx_rc_set = CHASSIS_VX_RC_SEN * CHASSIS.rc->rc.ch[3];
+    // CHASSIS.vy_rc_set = CHASSIS_VY_RC_SEN * CHASSIS.rc->rc.ch[2];
 
-    
+    CHASSIS.vx_rc_set = vx_channel;
+    CHASSIS.vy_rc_set = vy_channel;
+
     //键盘控制
     if (CHASSIS.rc->key.v & KEY_PRESSED_OFFSET_W)
     {
-        CHASSIS.vx_set = NORMAL_MAX_CHASSIS_SPEED_X;
+        CHASSIS.vx_rc_set = NORMAL_MAX_CHASSIS_SPEED_X;
     }
     else if (CHASSIS.rc->key.v & KEY_PRESSED_OFFSET_S)
     {
-        CHASSIS.vx_set = -NORMAL_MAX_CHASSIS_SPEED_X;
+        CHASSIS.vx_rc_set = -NORMAL_MAX_CHASSIS_SPEED_X;
     }
 
     if (CHASSIS.rc->key.v & KEY_PRESSED_OFFSET_A)
     {
-        CHASSIS.vy_set = NORMAL_MAX_CHASSIS_SPEED_Y;
+        CHASSIS.vy_rc_set = NORMAL_MAX_CHASSIS_SPEED_Y;
     }
     else if (CHASSIS.rc->key.v & KEY_PRESSED_OFFSET_D)
     {
-        CHASSIS.vy_set = -NORMAL_MAX_CHASSIS_SPEED_Y;
+        CHASSIS.vy_rc_set = -NORMAL_MAX_CHASSIS_SPEED_Y;
     }
     /*int spinflag = 0; //标定小陀螺状态
     if (CHASSIS.rc->key.v & KEY_PRESSED_OFFSET_R)//按R键启用小陀螺
@@ -193,6 +177,14 @@ void ChassisReference(void) {
     if (spinflag){
         CHASSIS.wz_set = NORMAL_MAX_CHASSIS_SPEED_WX;
     }*/
+
+   //GimbalSpeedVectorToChassisSpeedVector();
+   fp32 sin_yaw = 0.0f, cos_yaw = 0.0f;
+	// 控制vx vy
+	sin_yaw = sinf(CHASSIS.dyaw);
+	cos_yaw = cosf(CHASSIS.dyaw);
+    CHASSIS.vy_set = cos_yaw * CHASSIS.vy_rc_set - sin_yaw * CHASSIS.vx_rc_set;
+	CHASSIS.vx_set = sin_yaw * CHASSIS.vy_rc_set + cos_yaw * CHASSIS.vx_rc_set;
 }
 
 /*-------------------- Console --------------------*/
@@ -210,7 +202,7 @@ void ChassisConsole(void)
     CHASSIS.wheel_motor[0].set.vel = -CHASSIS.vx_set + CHASSIS.vy_set + (CHASSIS_WZ_SET_SCALE - 1.0f) * CHASSIS.wz_set;
     CHASSIS.wheel_motor[1].set.vel =  CHASSIS.vx_set + CHASSIS.vy_set + (CHASSIS_WZ_SET_SCALE - 1.0f) * CHASSIS.wz_set;
     CHASSIS.wheel_motor[2].set.vel =  CHASSIS.vx_set - CHASSIS.vy_set + (CHASSIS_WZ_SET_SCALE - 1.0f) * CHASSIS.wz_set;
-    CHASSIS.wheel_motor[3].set.vel = -CHASSIS.vx_set - CHASSIS.vy_set + (CHASSIS_WZ_SET_SCALE - 1.0f) * CHASSIS.wz_set;
+    CHASSIS.wheel_motor[3].set.vel = -CHASSIS.vx_set - CHASSIS.vy_set + (CHASSIS_WZ_SET_SCALE - 1.0f) * CHASSIS.wz_set; 
 
     //pid速度计算            
     for (i = 0; i < 4; i++)
@@ -240,11 +232,11 @@ void ChassisSendCmd(void)
     CanCmdDjiMotor(1, 0x200, 
     CHASSIS.wheel_motor[0].set.curr, CHASSIS.wheel_motor[1].set.curr,
     CHASSIS.wheel_motor[2].set.curr, CHASSIS.wheel_motor[3].set.curr);
-
   }
-
-    
+  ModifyDebugDataPackage(2, CHASSIS.dyaw, "dyaw");
+  ModifyDebugDataPackage(3, CHASSIS.wz_set, "wz_set");  
+  //ModifyDebugDataPackage(4, CHASSIS.vx_set, "CHASSIS.vx_set");
+  //ModifyDebugDataPackage(5, CHASSIS.vy_set, "CHASSIS.vy_set");
 }
 
-#endif //CHASSIS_MECANUM_WHEEL
-
+#endif //CHASSIS_OMNI_WHEEL
