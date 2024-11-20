@@ -39,7 +39,7 @@
 #include "user_lib.h"
 
 // 一些内部的配置
-#define TAKE_OFF_DETECT 0  // 启用离地检测
+#define TAKE_OFF_DETECT 1  // 启用离地检测
 #define CLOSE_LEG_LEFT 0   // 关闭左腿输出
 #define CLOSE_LEG_RIGHT 0  // 关闭右腿输出
 #define LIFTED_UP 0        // 被架起
@@ -61,9 +61,9 @@
 #define RC_OFF_HOOK_VALUE_HOLE 650
 
 // 支持力阈值，当支持力小于这个值时认为离地
-#define TAKE_OFF_FN_THRESHOLD (5.0f)
+#define TAKE_OFF_FN_THRESHOLD (3.0f)
 // 触地状态切换时间阈值，当时间接触或离地时间超过这个值时切换触地状态
-#define TOUCH_TOGGLE_THRESHOLD (50)
+#define TOUCH_TOGGLE_THRESHOLD (100)
 // Parameters off ---------------------
 
 static Calibrate_s CALIBRATE = {
@@ -375,7 +375,7 @@ void ChassisObserver(void)
     // ModifyDebugDataPackage(2, CHASSIS.fdb.world.z_accel, "wod_az");
 
     ModifyDebugDataPackage(3, CHASSIS.fdb.leg[0].Fn, "Fnl");
-    // ModifyDebugDataPackage(4, CHASSIS.fdb.leg[1].Fn, "Fnr");
+    ModifyDebugDataPackage(4, CHASSIS.fdb.leg[1].Fn, "Fnr");
     // ModifyDebugDataPackage(5, 0, "whe_az");
 
     // ModifyDebugDataPackage(6, CHASSIS.fdb.leg[0].rod.L0, "L0");
