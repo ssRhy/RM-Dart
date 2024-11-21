@@ -34,7 +34,8 @@
 #define WHEEL_DEADZONE (0.01f)  // (m/s)轮子速度死区
 
 // ratio parameters ---------------------
-#define FF_RATIO             (0.25f)   // 前馈比例系数
+#define FF_RATIO               (0.25f)   // 前馈比例系数
+#define ROLL_VEL_LIMIT_FACTOR  (0.1f)    // roll角速度抑制比例系数
 
 // motor parameters ---------------------
 #define JOINT_CAN (1)

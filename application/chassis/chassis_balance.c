@@ -39,7 +39,7 @@
 #include "user_lib.h"
 
 // 一些内部的配置
-#define TAKE_OFF_DETECT 1  // 启用离地检测
+#define TAKE_OFF_DETECT 0  // 启用离地检测
 #define CLOSE_LEG_LEFT 0   // 关闭左腿输出
 #define CLOSE_LEG_RIGHT 0  // 关闭右腿输出
 #define LIFTED_UP 0        // 被架起
@@ -855,9 +855,9 @@ static void LocomotionController(void)
     // 计算腿长差值
     float Ld0 = CHASSIS.fdb.leg[0].rod.L0 - CHASSIS.fdb.leg[1].rod.L0;
     // TEMP:临时调试用
-    float L_diff = CHASSIS.ref.body.roll / 0.3f * 0.2f;
+    // float L_diff = CHASSIS.ref.body.roll / 0.3f * 0.2f;
     // float L_diff = PID_calc(&CHASSIS.pid.roll_angle, CHASSIS.lpf.roll.out, CHASSIS.ref.body.roll);
-    // float L_diff = CalcLegLengthDiff(Ld0, CHASSIS.fdb.body.roll, CHASSIS.ref.body.roll);
+    float L_diff = CalcLegLengthDiff(Ld0, CHASSIS.fdb.body.roll, CHASSIS.ref.body.roll);
 
     // PID补偿稳态误差
     // TEMP:临时调试用
@@ -883,6 +883,9 @@ static void LegTorqueController(void)
 {
     // 腿长控制
     float F_ff, F_compensate;
+
+    float roll_vel_limit_f = fp32_constrain(CHASSIS.fdb.body.roll_dot * ROLL_VEL_LIMIT_FACTOR, -0.2, 0.2);
+
     for (uint8_t i = 0; i < 2; i++) {
         // 计算前馈力
         F_ff = LegFeedForward(CHASSIS.fdb.leg_state[i].theta) * FF_RATIO;
@@ -893,6 +896,9 @@ static void LegTorqueController(void)
         CHASSIS.cmd.leg[i].rod.F = F_ff + F_compensate;
         // CHASSIS.cmd.leg[i].rod.F = F_ff + F_compensate - F_ff;
     }
+
+    CHASSIS.cmd.leg[0].rod.F -= roll_vel_limit_f;
+    CHASSIS.cmd.leg[1].rod.F += roll_vel_limit_f;
 
     // 转换为关节力矩
     CalcVmc(
