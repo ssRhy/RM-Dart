@@ -8,6 +8,7 @@
   *  V1.0.0     Apr-1-2024      Penguin         1. done
   *  V1.0.1     Apr-16-2024     Penguin         1. 完成基本框架
   *  V1.0.2     Sep-16-2024     Penguin         1. 添加速度观测器并测试效果
+  *  V1.0.3     Nov-20-2024     Penguin         1. 完善离地检测
   *
   @verbatim
   ==============================================================================
@@ -65,6 +66,16 @@
 // 触地状态切换时间阈值，当时间接触或离地时间超过这个值时切换触地状态
 #define TOUCH_TOGGLE_THRESHOLD (100)
 // Parameters off ---------------------
+
+#define rc_deadband_limit(input, output, dealine)          \
+    {                                                      \
+        if ((input) > (dealine) || (input) < -(dealine)) { \
+            (output) = (input);                            \
+        } else {                                           \
+            (output) = 0;                                  \
+        }                                                  \
+    }
+
 
 static Calibrate_s CALIBRATE = {
     .cali_cnt = 0,
