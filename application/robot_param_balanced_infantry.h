@@ -15,7 +15,6 @@
 
 // clang-format off
 /*-------------------- Chassis --------------------*/
-#define LOCATION_CONTROL 0 // 位置控制
 // 底盘任务相关宏定义
 #define CHASSIS_TASK_INIT_TIME 357   // 任务开始空闲一段时间
 #define CHASSIS_CONTROL_TIME_MS 2    // 底盘任务控制间隔 2ms
@@ -35,21 +34,8 @@
 #define WHEEL_DEADZONE (0.01f)  // (m/s)轮子速度死区
 
 // ratio parameters ---------------------
-#define VEL_ADD_RATIO        (0.008f)  // 速度增量比例系数
-#define PITCH_VEL_RATIO      (0.9f)    // pitch轴速度比例系数
-#define FF_RATIO             (0.18f)   // 前馈比例系数
-#define RC_LENGTH_ADD_RATIO  (0.0000015f) // 遥控器腿长增量比例系数
-#define X_ADD_RATIO          (1.2f) // x增量比例系数
-
-#define TP_RATIO (0.05f)  // 髋关节转矩比例系数
-#define T_RATIO  (1.0f)   // 驱动轮转矩比例系数
-
-#define X_0_RATIO (1.0f)  // theta比例系数
-#define X_1_RATIO (1.0f)  // theta_dot比例系数
-#define X_2_RATIO (3.0f)  // x比例系数
-#define X_3_RATIO (1.0f)  // x_dot比例系数
-#define X_4_RATIO (1.0f)  // phi比例系数
-#define X_5_RATIO (1.0f)  // phi_dot比例系数
+#define FF_RATIO               (0.25f)   // 前馈比例系数
+#define ROLL_VEL_LIMIT_FACTOR  (0.1f)    // roll角速度抑制比例系数
 
 // motor parameters ---------------------
 #define JOINT_CAN (1)
@@ -81,11 +67,11 @@
 #define LEG_L4 (LEG_L1)  // (m)腿4长度
 #define LEG_L5 (0.150f)  // (m)关节间距
 
-#define BODY_MASS            (12.65813f)    // (kg)机身重量
-#define LEG_MASS             (0.4f)    // (kg)腿重量
-#define WHEEL_MASS           (1.74f)   // (kg)轮子重量
-#define WHEEL_RADIUS         (0.106f)  // (m)轮子半径
-#define WHEEL_START_TORQUE   (0.3f)    // (Nm)轮子起动力矩
+#define BODY_MASS            (8.5f)      // (kg)机身重量
+#define WHEEL_MASS           (0.65f)      // (kg)轮子重量
+#define WHEEL_RADIUS         (0.106f)    // (m)轮子半径
+#define WHEEL_START_TORQUE   (0.3f)      // (Nm)轮子起动力矩
+#define WHEEL_BASE           (0.51175f)  // (m)驱动轮轴距
 
 #define J0_ANGLE_OFFSET     (-0.19163715f + M_PI) // (rad)关节0角度偏移量(电机0点到水平线的夹角)
 #define J1_ANGLE_OFFSET     (0.19163715f)         // (rad)关节1角度偏移量(电机0点到水平线的夹角)
@@ -93,9 +79,9 @@
 #define J3_ANGLE_OFFSET     (-0.19163715f)        // (rad)关节3角度偏移量(电机0点到水平线的夹角)
 
 #define DLENGTH_DIRECTION  (-1) // ROLL角补偿量方向(腿长增加方向)
-// #define DANGLE_DIRECTION   (1) // pitch角补偿量方向
 
 //upper_limit parameters ---------------------
+
 #define MAX_DELTA_ROD_ANGLE (0.25f) // (rad)腿摆角最大变化量
 #define MAX_TORQUE_PROTECT  (10.0f)  // (Nm)最大扭矩保护
 
@@ -121,17 +107,19 @@
 
 #define MAX_LEG_LENGTH       (0.35f)
 #define MAX_LEG_ANGLE        (M_PI_2 + MAX_DELTA_ROD_ANGLE)
-#define MAX_SPEED            (1.5f)
-#define MAX_SPEED_VECTOR_VX  (1.5f)
-#define MAX_SPEED_VECTOR_VY  (1.5f)
-#define MAX_SPEED_VECTOR_WZ  (3.0f)
+#define MAX_SPEED            (2.5f)
+#define MAX_SPEED_VECTOR_VX  (2.5f)
+#define MAX_SPEED_VECTOR_VY  (2.5f)
+#define MAX_SPEED_VECTOR_WZ  (6.0f)
 
-#define MAX_JOINT_TORQUE   (5.0f)  // (Nm)关节最大扭矩
+#define MAX_JOINT_TORQUE   (7.0f)  // (Nm)关节最大扭矩
 #define MAX_VEL_ADD        (1.0f)  // (m/s)速度增量上限
 #define MAX_PITCH_VEL      (0.1f)  // (rad/s)pitch轴速度上限
 
 #define MAX_TOUCH_INTERVAL (200)   // (ms)最大离地时间，超过这个时间认为离地
+
 //lower_limit parameters ---------------------
+
 #define MIN_DELTA_ROD_ANGLE (-MAX_DELTA_ROD_ANGLE) // (rad)腿摆角最小变化量
 
 #define MIN_DELTA_VEL_FDB_TO_REF (-MAX_DELTA_VEL_FDB_TO_REF) // (m/s)速度反馈到参考速度的最小变化量
@@ -187,77 +175,39 @@
 #define MAX_IOUT_CHASSIS_VEL_ADD  (0.8f)//0.5
 #define MAX_OUT_CHASSIS_VEL_ADD   (1.5f)//1.0
 
-#if LOCATION_CONTROL
-    //roll轴跟踪角度环PID参数
-    #define KP_CHASSIS_ROLL_ANGLE        (0.6f)
-    #define KI_CHASSIS_ROLL_ANGLE        (0.0f)
-    #define KD_CHASSIS_ROLL_ANGLE        (0.1f)
-    #define MAX_IOUT_CHASSIS_ROLL_ANGLE  (0.0f)
-    #define MAX_OUT_CHASSIS_ROLL_ANGLE   (0.12f)
+/*========== Start of locomotion control pid ==========*/
 
-    //pitch轴跟踪角度环PID参数
-    #define KP_CHASSIS_PITCH_ANGLE        (1.0f)
-    #define KI_CHASSIS_PITCH_ANGLE        (0.0f)
-    #define KD_CHASSIS_PITCH_ANGLE        (0.0f)
-    #define MAX_IOUT_CHASSIS_PITCH_ANGLE  (0.0f)
-    #define MAX_OUT_CHASSIS_PITCH_ANGLE   (1.0f)
-  
-    //pitch轴跟踪速度环PID参数
-    #define KP_CHASSIS_PITCH_VELOCITY        (1.5f)
-    #define KI_CHASSIS_PITCH_VELOCITY        (0.0f)
-    #define KD_CHASSIS_PITCH_VELOCITY        (0.1f)
-    #define MAX_IOUT_CHASSIS_PITCH_VELOCITY  (0.0f)
-    #define MAX_OUT_CHASSIS_PITCH_VELOCITY   (0.2f)
-#else
-    //roll轴跟踪角度环PID参数
-    #define KP_CHASSIS_ROLL_ANGLE        (8.0f)
-    #define KI_CHASSIS_ROLL_ANGLE        (0.0f)
-    #define KD_CHASSIS_ROLL_ANGLE        (1.0f)
-    #define MAX_IOUT_CHASSIS_ROLL_ANGLE  (0.0f)
-    #define MAX_OUT_CHASSIS_ROLL_ANGLE   (15.0f)
+//roll轴跟踪角度环PID参数
+#define KP_CHASSIS_ROLL_ANGLE        (0.3f)
+#define KI_CHASSIS_ROLL_ANGLE        (0.0f)
+#define KD_CHASSIS_ROLL_ANGLE        (0.2f)
+#define MAX_IOUT_CHASSIS_ROLL_ANGLE  (0.0f)
+#define MAX_OUT_CHASSIS_ROLL_ANGLE   (0.1f)
+#define N_CHASSIS_ROLL_ANGLE         (0.1f)
 
-    // //roll轴跟踪速度环PID参数
-    // #define KP_CHASSIS_ROLL_VELOCITY 0.1f
-    // #define KI_CHASSIS_ROLL_VELOCITY 0.0f
-    // #define KD_CHASSIS_ROLL_VELOCITY 0.0f
-    // #define MAX_IOUT_CHASSIS_ROLL_VELOCITY 0.0f
-    // #define MAX_OUT_CHASSIS_ROLL_VELOCITY 0.12f
+//roll轴跟踪速度环PID参数
+// #define KP_CHASSIS_ROLL_VELOCITY        (0.6f)
+// #define KI_CHASSIS_ROLL_VELOCITY        (0.0001f)
+// #define KD_CHASSIS_ROLL_VELOCITY        (0.005f)
+// #define MAX_IOUT_CHASSIS_ROLL_VELOCITY  (0.01f)
+// #define MAX_OUT_CHASSIS_ROLL_VELOCITY   (0.1f)
 
-    //pitch轴跟踪角度环PID参数
-    #define KP_CHASSIS_PITCH_ANGLE        (0.0f)
-    #define KI_CHASSIS_PITCH_ANGLE        (0.0f)
-    #define KD_CHASSIS_PITCH_ANGLE        (0.0f)
-    #define MAX_IOUT_CHASSIS_PITCH_ANGLE  (0.0f)
-    #define MAX_OUT_CHASSIS_PITCH_ANGLE   (0.0f)
+// 腿长跟踪长度环PID参数
+#define KP_CHASSIS_LEG_LENGTH_LENGTH        (200.0f)
+#define KI_CHASSIS_LEG_LENGTH_LENGTH        (0.0f)
+#define KD_CHASSIS_LEG_LENGTH_LENGTH        (1500.0f)
+#define MAX_IOUT_CHASSIS_LEG_LENGTH_LENGTH  (0.0f)
+#define MAX_OUT_CHASSIS_LEG_LENGTH_LENGTH   (40.0f)
+#define N_LEG_LENGTH_LENGTH                 (0.1f)
 
-    //pitch轴跟踪速度环PID参数
-    // #define KP_CHASSIS_PITCH_VELOCITY        (1.5f)
-    // #define KI_CHASSIS_PITCH_VELOCITY        (0.0f)
-    // #define KD_CHASSIS_PITCH_VELOCITY        (0.0f)
-    // #define MAX_IOUT_CHASSIS_PITCH_VELOCITY  (0.0f)
-    // #define MAX_OUT_CHASSIS_PITCH_VELOCITY   (0.0f)
+// 腿长跟踪速度环PID参数
+// #define KP_CHASSIS_LEG_LENGTH_SPEED 0.0f
+// #define KI_CHASSIS_LEG_LENGTH_SPEED 0.0f
+// #define KD_CHASSIS_LEG_LENGTH_SPEED 0.0f
+// #define MAX_IOUT_CHASSIS_LEG_LENGTH_SPEED 0.0f
+// #define MAX_OUT_CHASSIS_LEG_LENGTH_SPEED 0.0f
 
-    // 腿长跟踪长度环PID参数
-    #define KP_CHASSIS_LEG_LENGTH_LENGTH        (30.0f)
-    #define KI_CHASSIS_LEG_LENGTH_LENGTH        (0.0f)
-    #define KD_CHASSIS_LEG_LENGTH_LENGTH        (3.0f)
-    #define MAX_IOUT_CHASSIS_LEG_LENGTH_LENGTH  (0.0f)
-    #define MAX_OUT_CHASSIS_LEG_LENGTH_LENGTH   (30.0f)
-
-    // 腿长跟踪速度环PID参数
-    // #define KP_CHASSIS_LEG_LENGTH_SPEED 0.0f
-    // #define KI_CHASSIS_LEG_LENGTH_SPEED 0.0f
-    // #define KD_CHASSIS_LEG_LENGTH_SPEED 0.0f
-    // #define MAX_IOUT_CHASSIS_LEG_LENGTH_SPEED 0.0f
-    // #define MAX_OUT_CHASSIS_LEG_LENGTH_SPEED 0.0f
-
-    // 腿角控制角度环PID参数
-    #define KP_CHASSIS_LEG_ANGLE_ANGLE        (0.0f)
-    #define KI_CHASSIS_LEG_ANGLE_ANGLE        (0.0f)
-    #define KD_CHASSIS_LEG_ANGLE_ANGLE        (0.0f)
-    #define MAX_IOUT_CHASSIS_LEG_ANGLE_ANGLE  (0.0f)
-    #define MAX_OUT_CHASSIS_LEG_ANGLE_ANGLE   (0.0f)
-#endif
+/*========== End of locomotion control pid ==========*/
 
 // 起立用的pid
 #define KP_CHASSIS_STAND_UP       (2000.0f)
@@ -267,31 +217,29 @@
 #define MAX_OUT_CHASSIS_STAND_UP  (2000.0f)
 
 // 轮子停止用的pid
-#define KP_CHASSIS_WHEEL_STOP       (0.5f)
+#define KP_CHASSIS_WHEEL_STOP       (0.3f)
 #define KI_CHASSIS_WHEEL_STOP       (0.0f)
 #define KD_CHASSIS_WHEEL_STOP       (0.1f)
 #define MAX_IOUT_CHASSIS_WHEEL_STOP (0.0f)
 #define MAX_OUT_CHASSIS_WHEEL_STOP  (200.0f)
 
 //LPF parameters ---------------------
-#define LEG_DDL0_LPF_ALPHA           (0.1f)
-#define LEG_DDPHI0_LPF_ALPHA         (0.1f)
-#define LEG_DDTHETA_LPF_ALPHA        (0.1f)
-#define LEG_SUPPORT_FORCE_LPF_ALPHA  (0.1f)
+#define LEG_DDL0_LPF_ALPHA           (0.9f)
+#define LEG_DDPHI0_LPF_ALPHA         (0.9f)
+#define LEG_DDTHETA_LPF_ALPHA        (0.9f)
+#define LEG_SUPPORT_FORCE_LPF_ALPHA  (0.9f)
+#define CHASSIS_ROLL_ALPHA           (0.5f)
+
+//offest parameters ---------------------
+
+#define X0_OFFSET (0.0f)   // 目标theta偏移量
+#define X1_OFFSET (0.0f)   // 目标theta_dot偏移量
+#define X2_OFFSET (-0.09f) // 目标x偏移量
+#define X3_OFFSET (0.0f)   // 目标x_dot偏移量
+#define X4_OFFSET (0.0f)   // 目标phi偏移量
+#define X5_OFFSET (0.0f)   // 目标phi_dot偏移量
 
 //other parameters ---------------------
-
-/*-------------------- Gimbal --------------------*/
-//physical parameters ---------------------
-//PID parameters ---------------------
-
-/*-------------------- Shoot --------------------*/
-//physical parameters ---------------------
-#define FRIC_RADIUS (0.03f)  // (m)摩擦轮半径
-#define BULLET_NUM  (8)      // 定义拨弹盘容纳弹丸个数
-#define GUN_NUM     (1)      // 定义枪管个数（一个枪管2个摩擦轮）
-
-//PID parameters ---------------------
 
 // clang-format on
 #endif /* INCLUDED_ROBOT_PARAM_H */

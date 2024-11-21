@@ -8,23 +8,38 @@
  * @param[in]  l 腿长
  * @param[out] k K矩阵
  */
-void GetK(float l, float k[2][6])
+void GetK(float l, float k[2][6], bool is_take_off)
 {
     float t1 = l;
     float t2 = l * l;
     float t3 = l * l * l;
-    k[0][0] = -193.7876f * t3 + 258.5251f * t2 - 146.3757f * t1 + 1.9683f;
-    k[0][1] = 7.4501f * t3 - 2.7998f * t2 - 9.5805f * t1 + 0.3517f;
-    k[0][2] = -26.7112f * t3 + 28.4229f * t2 - 10.8686f * t1 + 0.1035f;
-    k[0][3] = -44.1018f * t3 + 47.2520f * t2 - 18.6368f * t1 + 0.1231f;
-    k[0][4] = 18.3194f * t3 + 2.2358f * t2 - 17.0385f * t1 + 9.2033f;
-    k[0][5] = 7.6910f * t3 - 3.6046f * t2 - 2.0797f * t1 + 1.9132f;
-    k[1][0] = 400.7968f * t3 - 376.1502f * t2 + 104.1785f * t1 + 5.9209f;
-    k[1][1] = 31.1432f * t3 - 34.1913f * t2 + 12.6920f * t1 - 0.0628f;
-    k[1][2] = -2.9559f * t3 + 10.3258f * t2 - 9.0860f * t1 + 3.1652f;
-    k[1][3] = -3.3134f * t3 + 15.3846f * t2 - 14.4404f * t1 + 5.2335f;
-    k[1][4] = 229.1970f * t3 - 250.4934f * t2 + 100.0975f * t1 - 3.3594f;
-    k[1][5] = 45.0946f * t3 - 50.3751f * t2 + 20.8265f * t1 - 1.0455f;
+    k[0][0] = -126.4415f * t3 + 181.8307f * t2 - 113.4078f * t1 + 1.7416f;
+    k[0][1] = 9.2674f * t3 - 5.3399f * t2 - 7.8700f * t1 + 0.2942f;
+    k[0][2] = -25.2465f * t3 + 27.4628f * t2 - 10.8430f * t1 + 0.1776f;
+    k[0][3] = -38.0267f * t3 + 41.7719f * t2 - 17.1477f * t1 + 0.2203f;
+    k[0][4] = 22.6793f * t3 - 5.1503f * t2 - 12.4666f * t1 + 7.9346f;
+    k[0][5] = 9.2753f * t3 - 5.5764f * t2 - 1.2156f * t1 + 1.7880f;
+    k[1][0] = 329.9169f * t3 - 316.9316f * t2 + 91.4492f * t1 + 3.9345f;
+    k[1][1] = 26.2333f * t3 - 29.8342f * t2 + 11.6331f * t1 - 0.1016f;
+    k[1][2] = 1.6298f * t3 + 5.6911f * t2 - 7.6027f * t1 + 3.1202f;
+    k[1][3] = 4.1428f * t3 + 6.7403f * t2 - 10.8296f * t1 + 4.7319f;
+    k[1][4] = 188.7941f * t3 - 210.3882f * t2 + 86.3584f * t1 - 3.1191f;
+    k[1][5] = 38.9923f * t3 - 44.7939f * t2 + 19.2302f * t1 - 1.0844f;
+
+    if (is_take_off) {
+        k[0][0] = 0;
+        k[0][1] = 0;
+        k[0][2] = 0;
+        k[0][3] = 0;
+        k[0][4] = 0;
+        k[0][5] = 0;
+        // k[1][0] = 0;
+        // k[1][1] = 0;
+        k[1][2] = 0;
+        k[1][3] = 0;
+        k[1][4] = 0;
+        k[1][5] = 0;
+    }
 }
 
 /**
@@ -72,21 +87,22 @@ void GetdL0AnddPhi0(float J[2][2], float d_phi1, float d_phi4, float dL0_dPhi0[2
 }
 
 /**
- * @brief 获取腿部支持力
+ * @brief 获取腿部摆杆的等效力
  * @param[in]  J 雅可比矩阵
  * @param[in]  T1 
  * @param[in]  T2 
- * @param[out] F 
+ * @param[out] F 0-F0 1-Tp
  */
 void GetLegForce(float J[2][2], float T1, float T2, float F[2])
 {
     float det = J[0][0] * J[1][1] - J[0][1] * J[1][0];
     // clang-format off
-    float inv_J[4] = {J[0][0] / det, J[1][0] / det, 
-                      J[0][1] / det, J[1][1] / det};
+    float inv_J[4] = {J[1][1] / det, -J[0][1] / det, 
+                     -J[1][0] / det,  J[1][1] / det};
     // clang-format on
-    float F0 = inv_J[0] * T1 + inv_J[1] * T2;
-    float Tp = inv_J[2] * T1 + inv_J[3] * T2;
+    //F = (inv_J.') * T
+    float F0 = inv_J[0] * T1 + inv_J[2] * T2;
+    float Tp = inv_J[1] * T1 + inv_J[3] * T2;
 
     F[0] = F0;
     F[1] = Tp;
@@ -182,12 +198,61 @@ void CalcPhi1AndPhi4(float phi0, float l0, float phi1_phi4[2])
     phi41 = acos(cos_phi41);
     phi42 = acos(cos_phi42);
 
-    // 这里还要再修改一下适配现在的仿真模型
     phi1 = phi11 + phi12;
     phi4 = M_PI - (phi41 + phi42);
 
     phi1_phi4[0] = phi1;
     phi1_phi4[1] = phi4;
+}
+
+/**
+ * @brief 通过当前底盘姿态和目标roll角计算两腿长度期望差值
+ * @param[in]  Ld0 (m)当前左右腿长度差值(L0l - L0r)
+ * @param[in]  theta0 (rad)当前底盘roll角
+ * @param[in]  theta1 (rad)目标roll角
+ * @return 两腿长度期望差值(m)(L1l - L1r)
+ */
+inline float CalcLegLengthDiff(float Ld0, float theta0, float theta1)
+{
+    return WHEEL_BASE * tanf(theta1) -
+           cosf(theta0) / cosf(theta1) * (WHEEL_BASE * tanf(theta0) - Ld0);
+}
+
+/**
+ * @brief 双腿腿长协调控制，维持腿长目标在范围内，同时尽可能达到两腿目标差值
+ * @param[in]  Ll_ref   (m)左腿长度指针
+ * @param[in]  Lr_ref   (m)右腿长度指针
+ * @param[in]  diff (m)腿长差值
+ * @param[in]  add  (m)腿长差值补偿量
+ */
+void CoordinateLegLength(float * Ll_ref, float * Lr_ref, float diff, float add)
+{
+    *Ll_ref = *Ll_ref + diff * 0.5f + add;
+    *Lr_ref = *Lr_ref - diff * 0.5f - add;
+
+    // float delta = *Ll_ref - *Lr_ref;
+    // if (delta > MAX_LEG_LENGTH - MIN_LEG_LENGTH) {
+    //     *Ll_ref = MAX_LEG_LENGTH;
+    //     *Lr_ref = MIN_LEG_LENGTH;
+    //     return;
+    // } else if (delta < MIN_LEG_LENGTH - MAX_LEG_LENGTH) {
+    //     *Ll_ref = MIN_LEG_LENGTH;
+    //     *Lr_ref = MAX_LEG_LENGTH;
+    //     return;
+    // }
+
+    //先判断短腿范围，再判断长腿范围
+    float * short_leg = *Ll_ref < *Lr_ref ? Ll_ref : Lr_ref;
+    float * long_leg = *Ll_ref < *Lr_ref ? Lr_ref : Ll_ref;
+    float move = 0;
+    move = MIN_LEG_LENGTH - *short_leg;
+    if (move > 0) {
+        *short_leg += move;
+        *long_leg += move;
+    }
+    if (*long_leg > MAX_LEG_LENGTH) {
+        *long_leg = MAX_LEG_LENGTH;
+    }
 }
 
 #endif /* CHASSIS_BALANCE */

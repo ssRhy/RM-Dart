@@ -16,18 +16,16 @@
   */
 
 #include "pid.h"
+
 #include "main.h"
 
-#define LimitMax(input, max)   \
-    {                          \
-        if (input > max)       \
-        {                      \
-            input = max;       \
-        }                      \
-        else if (input < -max) \
-        {                      \
-            input = -max;      \
-        }                      \
+#define LimitMax(input, max)       \
+    {                              \
+        if (input > max) {         \
+            input = max;           \
+        } else if (input < -max) { \
+            input = -max;          \
+        }                          \
     }
 
 /**
@@ -40,20 +38,21 @@
   * @param[in]      max_iout: pid最大积分输出
   * @retval         none
   */
-void PID_init(pid_type_def *pid, uint8_t mode, const fp32 PID[3], fp32 max_out, fp32 max_iout)
+void PID_init(pid_type_def * pid, uint8_t mode, const fp32 PID[3], fp32 max_out, fp32 max_iout)
 {
-    if (pid == NULL || PID == NULL)
-    {
+    if (pid == NULL || PID == NULL) {
         return;
     }
     pid->mode = mode;
     pid->Kp = PID[0];
     pid->Ki = PID[1];
     pid->Kd = PID[2];
+    pid->N = 0.0f;
     pid->max_out = max_out;
     pid->max_iout = max_iout;
     pid->Dbuf[0] = pid->Dbuf[1] = pid->Dbuf[2] = 0.0f;
-    pid->error[0] = pid->error[1] = pid->error[2] = pid->Pout = pid->Iout = pid->Dout = pid->out = 0.0f;
+    pid->error[0] = pid->error[1] = pid->error[2] = pid->Pout = pid->Iout = pid->Dout = pid->out =
+        0.0f;
 }
 
 /**
@@ -63,10 +62,9 @@ void PID_init(pid_type_def *pid, uint8_t mode, const fp32 PID[3], fp32 max_out, 
   * @param[in]      set: 设定值
   * @retval         pid输出
   */
-fp32 PID_calc(pid_type_def *pid, fp32 ref, fp32 set)
+fp32 PID_calc(pid_type_def * pid, fp32 ref, fp32 set)
 {
-    if (pid == NULL)
-    {
+    if (pid == NULL) {
         return 0.0f;
     }
 
@@ -75,20 +73,18 @@ fp32 PID_calc(pid_type_def *pid, fp32 ref, fp32 set)
     pid->set = set;
     pid->fdb = ref;
     pid->error[0] = set - ref;
-    if (pid->mode == PID_POSITION)
-    {
+    if (pid->mode == PID_POSITION) {
         pid->Pout = pid->Kp * pid->error[0];
         pid->Iout += pid->Ki * pid->error[0];
         pid->Dbuf[2] = pid->Dbuf[1];
         pid->Dbuf[1] = pid->Dbuf[0];
-        pid->Dbuf[0] = (pid->error[0] - pid->error[1]);
+        // 对 Dbuf[0] 进行低通滤波
+        pid->Dbuf[0] = pid->N * pid->Dbuf[1] + (1.0f - pid->N) * (pid->error[0] - pid->error[1]);
         pid->Dout = pid->Kd * pid->Dbuf[0];
         LimitMax(pid->Iout, pid->max_iout);
         pid->out = pid->Pout + pid->Iout + pid->Dout;
         LimitMax(pid->out, pid->max_out);
-    }
-    else if (pid->mode == PID_DELTA)
-    {
+    } else if (pid->mode == PID_DELTA) {
         pid->Pout = pid->Kp * (pid->error[0] - pid->error[1]);
         pid->Iout = pid->Ki * pid->error[0];
         pid->Dbuf[2] = pid->Dbuf[1];
@@ -111,10 +107,9 @@ fp32 PID_calc(pid_type_def *pid, fp32 ref, fp32 set)
   * @param[out]     pid: PID结构数据指针
   * @retval         none
   */
-void PID_clear(pid_type_def *pid)
+void PID_clear(pid_type_def * pid)
 {
-    if (pid == NULL)
-    {
+    if (pid == NULL) {
         return;
     }
 
@@ -123,3 +118,57 @@ void PID_clear(pid_type_def *pid)
     pid->out = pid->Pout = pid->Iout = pid->Dout = 0.0f;
     pid->fdb = pid->set = 0.0f;
 }
+
+/* ============== 以下为测试中的全新PID算法 ============== */
+
+/**
+  * @brief          测试内容
+  */
+void SinglePidParamUpdate(Pid_t * pid, fp32 param[4])
+{
+    pid->Kp = param[0];
+    pid->Ki = param[1];
+    pid->Kd = param[2];
+    pid->N = param[3];
+}
+
+/**
+  * @brief          测试内容
+  */
+void SinglePidInit(Pid_t * pid, fp32 param[4], fp32 max[2])
+{
+    SinglePidParamUpdate(pid, param);
+    pid->max_out = max[0];
+    pid->max_iout = max[1];
+
+    pid->ref = 0;
+    pid->fdb = 0;
+
+    pid->out = 0;
+    pid->Pout = 0;
+    pid->Iout = 0;
+    pid->Dout = 0;
+}
+
+/**
+  * @brief          测试内容
+  */
+void SinglePidCalc(Pid_t * pid, fp32 error, fp32 dt)
+{
+    pid->Pout = pid->Kp * error;
+    pid->Iout += pid->Ki * error * dt;
+    pid->Dout = pid->Kd * (pid->N * pid->Pout - pid->Dout);
+    pid->out = pid->Pout + pid->Iout + pid->Dout;
+
+    if (pid->out > pid->max_out) {
+        pid->out = pid->max_out;
+    } else if (pid->out < -pid->max_out) {
+        pid->out = -pid->max_out;
+    }
+    if (pid->Iout > pid->max_iout) {
+        pid->Iout = pid->max_iout;
+    } else if (pid->Iout < -pid->max_iout) {
+        pid->Iout = -pid->max_iout;
+    }
+}
+/*------------------------------ End of File ------------------------------*/
