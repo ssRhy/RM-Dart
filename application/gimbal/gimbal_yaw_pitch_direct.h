@@ -31,6 +31,7 @@
 #include "CAN_cmd_dji.h"
 #include "detect_task.h"
 #include "usb_debug.h"
+#include "cmsis_os.h"
 
 
 /**
@@ -81,7 +82,10 @@ typedef struct
 
     float angle_zero_for_imu; //pitch电机处于中值时imupitch的角度
 
-    bool mode_change; //用来标记是否需要应为模式切换而转换角度目标量（矫正模式）和 imu目标量（imu模式）
+    bool init_mode_change,init_mode_change_finish; //用来标记是否完成应为模式切换而转换角度目标量（矫正模式）和 imu目标量（imu模式）
+    bool init_start,init_finish; //用于标记是否开启/结束云台校准模式
+
+    uint32_t init_start_time,init_timer;
 } Gimbal_s;
 
 extern void GimbalInit(void);
