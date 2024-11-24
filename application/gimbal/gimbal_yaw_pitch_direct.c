@@ -70,13 +70,12 @@ float GetGimbalDeltaYawMid(void)
 
 bool Gimbal_direct_init_judge (void)
 {
-  if (( (gimbal_direct.reference.yaw-gimbal_direct.yaw.fdb.pos<0.003f && (-0.003f)<gimbal_direct.reference.yaw-gimbal_direct.yaw.fdb.pos) && (gimbal_direct.reference.pitch-gimbal_direct.pitch.fdb.pos<0.003f && (-0.003f)<gimbal_direct.reference.pitch-gimbal_direct.pitch.fdb.pos) ) || gimbal_direct.init_timer<=1000)
+  if (( ((gimbal_direct.reference.yaw-gimbal_direct.yaw.fdb.pos<0.003f && (-0.003f)<gimbal_direct.reference.yaw-gimbal_direct.yaw.fdb.pos) && (gimbal_direct.reference.pitch-gimbal_direct.pitch.fdb.pos<0.003f && (-0.003f)<gimbal_direct.reference.pitch-gimbal_direct.pitch.fdb.pos) ) && gimbal_direct.init_timer<=1000 )|| gimbal_direct.last_mode==GIMBAL_ZERO_FORCE)
   {
     return true;
   }
   else
   {
-    gimbal_direct.init_finish=true;
     return false;
   }
 }
@@ -122,12 +121,11 @@ void GimbalInit(void)
    MotorInit(&gimbal_direct.pitch,GIMBAL_DIRECT_PITCH_ID,GIMBAL_DIRECT_PITCH_CAN,GIMBAL_DIRECT_PITCH_MOTOR_TYPE,GIMBAL_DIRECT_PITCH_DIRECTION,GIMBAL_DIRECT_PITCH_REDUCTION_RATIO,GIMBAL_DIRECT_PITCH_MODE);
 
    //step5 初始化云台初始化校准相关变量
-   gimbal_direct.init_mode_change=false;
-   gimbal_direct.init_mode_change_finish=false;
-   gimbal_direct.init_start=false;
-   gimbal_direct.init_finish=false;
    gimbal_direct.init_start_time=0;
    gimbal_direct.init_timer=0;
+
+   //step6 设置初始模式
+   gimbal_direct.mode=GIMBAL_ZERO_FORCE;
 
 }
 /*-------------------- Set mode --------------------*/
@@ -143,24 +141,19 @@ void GimbalSetMode(void)
   if ((switch_is_down(gimbal_direct.rc->rc.s[0])) || toe_is_error(DBUS_TOE)) //安全档优先级最高
   {
     gimbal_direct.mode=GIMBAL_ZERO_FORCE;
-    gimbal_direct.init_start=false;
-    gimbal_direct.init_finish=false;
-    gimbal_direct.init_mode_change=false;
-    gimbal_direct.init_mode_change_finish=false;
   }
   //初始校准模式
-  else if (Gimbal_direct_init_judge())  
+  else if (gimbal_direct.mode==GIMBAL_ZERO_FORCE || gimbal_direct.mode==GIMBAL_INIT)  
   {
     gimbal_direct.mode=GIMBAL_INIT;
-    gimbal_direct.init_start=true;
+    if (Gimbal_direct_init_judge())//判断是否需要跳出循环
+    {
+      gimbal_direct.mode=GIMBAL_IMU;
+    }
   }
   //上，中档陀螺仪控制
   else 
   {
-    if (gimbal_direct.init_mode_change==false && gimbal_direct.init_finish) 
-    {
-      gimbal_direct.init_mode_change=true;
-    }
     gimbal_direct.mode=GIMBAL_IMU;
   }
 }
@@ -184,14 +177,16 @@ void GimbalObserver(void)
 
   if (gimbal_direct.mode==GIMBAL_INIT) //初始化校准模式时钟更新
   {
-    if (gimbal_direct.init_start==false)
+    if (gimbal_direct.last_mode==GIMBAL_ZERO_FORCE)
     {
-      gimbal_direct.init_start=true;
       gimbal_direct.init_timer=xTaskGetTickCount();
     }
 
-    gimbal_direct.init_timer=xTaskGetTickCount()-gimbal_direct.init_timer;
+    gimbal_direct.init_timer=xTaskGetTickCount()-gimbal_direct.init_start_time;
   }
+
+  gimbal_direct.last_mode=gimbal_direct.mode;
+
 
 }
 
@@ -204,18 +199,18 @@ void GimbalObserver(void)
  */
 void GimbalReference(void) 
 {
-    if (gimbal_direct.mode==GIMBAL_INIT)
-    {
-      gimbal_direct.reference.pitch=GIMBAL_DIRECT_PITCH_MID-0.2f;
-      gimbal_direct.reference.yaw=GIMBAL_DIRECT_YAW_MID;
-    }
+  if (gimbal_direct.mode==GIMBAL_INIT)
+  {
+    gimbal_direct.reference.pitch=GIMBAL_DIRECT_PITCH_MID-0.2f;
+    gimbal_direct.reference.yaw=GIMBAL_DIRECT_YAW_MID;
+  }
   if (gimbal_direct.mode==GIMBAL_IMU)
   {
-    if (gimbal_direct.init_mode_change==true)
+    if (gimbal_direct.last_mode==GIMBAL_INIT)
     {
       gimbal_direct.reference.pitch=gimbal_direct.feedback.pitch;
       gimbal_direct.reference.yaw=gimbal_direct.feedback.yaw;
-      gimbal_direct.init_mode_change_finish=true;
+      gimbal_direct.init_timer=0;
     }
     else 
     {
@@ -283,7 +278,11 @@ void GimbalSendCmd(void)
 {
     CanCmdDjiMotor(2,0x1FF,gimbal_direct.yaw.set.curr,gimbal_direct.pitch.set.curr,0,0);
 
-    ModifyDebugDataPackage(1,GetGimbalDeltaYawMid(),"gd");
+    ModifyDebugDataPackage(1,gimbal_direct.init_timer,"init_T");
+    ModifyDebugDataPackage(2,gimbal_direct.mode==GIMBAL_INIT,"init");
+    ModifyDebugDataPackage(3,gimbal_direct.mode==GIMBAL_IMU,"imu");
+    ModifyDebugDataPackage(4,gimbal_direct.mode==GIMBAL_ZERO_FORCE,"safe");
+
 }
 
 
