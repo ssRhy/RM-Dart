@@ -70,7 +70,7 @@ float GetGimbalDeltaYawMid(void)
 
 bool Gimbal_direct_init_judge (void)
 {
-  if (( ((gimbal_direct.reference.yaw-gimbal_direct.yaw.fdb.pos<0.003f && (-0.003f)<gimbal_direct.reference.yaw-gimbal_direct.yaw.fdb.pos) && (gimbal_direct.reference.pitch-gimbal_direct.pitch.fdb.pos<0.003f && (-0.003f)<gimbal_direct.reference.pitch-gimbal_direct.pitch.fdb.pos) ) && gimbal_direct.init_timer<=1000 )|| gimbal_direct.last_mode==GIMBAL_ZERO_FORCE)
+  if ( ((gimbal_direct.reference.yaw-gimbal_direct.yaw.fdb.pos<0.003f && (-0.003f)<gimbal_direct.reference.yaw-gimbal_direct.yaw.fdb.pos) && (gimbal_direct.reference.pitch-gimbal_direct.pitch.fdb.pos<0.003f && (-0.003f)<gimbal_direct.reference.pitch-gimbal_direct.pitch.fdb.pos) ) || gimbal_direct.init_timer>=GIMBAL_INIT_TIME )
   {
     return true;
   }
@@ -146,7 +146,7 @@ void GimbalSetMode(void)
   else if (gimbal_direct.mode==GIMBAL_ZERO_FORCE || gimbal_direct.mode==GIMBAL_INIT)  
   {
     gimbal_direct.mode=GIMBAL_INIT;
-    if (Gimbal_direct_init_judge())//判断是否需要跳出循环
+    if (Gimbal_direct_init_judge()==true)//判断是否需要跳出循环
     {
       gimbal_direct.mode=GIMBAL_IMU;
     }
@@ -179,7 +179,7 @@ void GimbalObserver(void)
   {
     if (gimbal_direct.last_mode==GIMBAL_ZERO_FORCE)
     {
-      gimbal_direct.init_timer=xTaskGetTickCount();
+      gimbal_direct.init_start_time=xTaskGetTickCount();
     }
 
     gimbal_direct.init_timer=xTaskGetTickCount()-gimbal_direct.init_start_time;
@@ -282,7 +282,7 @@ void GimbalSendCmd(void)
     ModifyDebugDataPackage(2,gimbal_direct.mode==GIMBAL_INIT,"init");
     ModifyDebugDataPackage(3,gimbal_direct.mode==GIMBAL_IMU,"imu");
     ModifyDebugDataPackage(4,gimbal_direct.mode==GIMBAL_ZERO_FORCE,"safe");
-
+    ModifyDebugDataPackage(5,gimbal_direct.init_timer,"init_time");
 }
 
 

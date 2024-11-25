@@ -46,6 +46,9 @@
 #define MAX_OUT_CHASSIS_GIMBAL_FOLLOW_ANGLE (0.0f)
 
 /*-------------------- Gimbal --------------------*/
+//gimbal_init-------------------------------
+#define GIMBAL_INIT_TIME (uint32_t)2000
+
 //mouse sensitivity ---------------------
 #define MOUSE_SENSITIVITY (0.5f)
 //remote controller sensitivity ---------------------
