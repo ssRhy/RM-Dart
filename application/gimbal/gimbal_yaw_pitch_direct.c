@@ -53,8 +53,7 @@ void Angle_solution(void)
  * @param[in]      none
  * @retval         float
  */
-
-float GetGimbalDeltaYawMid(void)
+inline float GetGimbalDeltaYawMid(void)
 {
   return loop_fp32_constrain(gimbal_direct.yaw.fdb.pos-GIMBAL_DIRECT_YAW_MID,-PI,PI);
 }

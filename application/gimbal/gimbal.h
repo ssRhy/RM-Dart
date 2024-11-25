@@ -47,6 +47,14 @@ typedef struct
 
 extern GimbalApi_t gimbal;
 
+// API
+
+extern inline uint8_t GetGimbalStatus(void);
+extern inline uint32_t GetGimbalDuration(void);
+extern inline float GetGimbalSpeed(uint8_t axis);
+extern inline float GetGimbalVelocity(uint8_t axis);
+extern inline float GetGimbalDeltaYawMid(void);
+
 #endif  // GIMBAL_TYPE
 #endif  // GIMBAL_H
 /*------------------------------ End of File ------------------------------*/
