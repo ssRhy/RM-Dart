@@ -31,6 +31,7 @@
 #include "CAN_cmd_dji.h"
 #include "detect_task.h"
 #include "usb_debug.h"
+#include "cmsis_os.h"
 
 
 /**
@@ -65,7 +66,7 @@ typedef struct
 typedef struct
 {
     const RC_ctrl_t * rc;  // 遥控器指针
-    GimbalMode_e mode;     // 模式
+    GimbalMode_e mode,last_mode;     // 模式
 
     /*-------------------- Motors --------------------*/
     Motor_s yaw,pitch;
@@ -81,7 +82,7 @@ typedef struct
 
     float angle_zero_for_imu; //pitch电机处于中值时imupitch的角度
 
-    bool mode_change; //用来标记是否需要应为模式切换而转换角度目标量（矫正模式）和 imu目标量（imu模式）
+    uint32_t init_start_time,init_timer;
 } Gimbal_s;
 
 extern void GimbalInit(void);
