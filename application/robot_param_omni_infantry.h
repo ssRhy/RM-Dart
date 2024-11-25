@@ -46,10 +46,13 @@
 #define MAX_OUT_CHASSIS_GIMBAL_FOLLOW_ANGLE (0.0f)
 
 /*-------------------- Gimbal --------------------*/
+//gimbal_init-------------------------------
+#define GIMBAL_INIT_TIME (uint32_t)2000
+
 //mouse sensitivity ---------------------
 #define MOUSE_SENSITIVITY (0.5f)
 //remote controller sensitivity ---------------------
-#define REMOTE_CONTROLLER_SENSITIVITY (1500000.0f)
+#define REMOTE_CONTROLLER_SENSITIVITY (100000.0f)
 //motor parameters ---------------------
 //电机id
 #define GIMBAL_DIRECT_YAW_ID ((uint8_t)1)
@@ -80,7 +83,7 @@
 #define GIMBAL_LOWER_LIMIT_PITCH (-0.5f)
 
 //电机角度中值设置
-#define GIMBAL_DIRECT_PITCH_MID (0.7435f) //云台初始电机角度中值暂时为0，以后有需要就更改，校正模式pitch已关闭
+#define GIMBAL_DIRECT_PITCH_MID (0.7435f) //云台初始化正对齐的时候使用的pitch轴正中心量
 #define GIMBAL_DIRECT_YAW_MID (2.0916f) //云台初始化正对齐的时候使用的yaw轴正中心量
 
 //PID parameters ---------------------

@@ -9,7 +9,6 @@
                 "_DEBUG",
                 "UNICODE",
                 "_UNICODE",
-                //STM32项目编译所用到的宏定义
                 "USE_HAL_DRIVER",
                 "STM32F407xx",
                 "USE_HAL_DRIVER",
@@ -20,10 +19,10 @@
                 "ARM_MATH_MATRIX_CHECK",
                 "ARM_MATH_ROUNDING"
             ],
-            "compilerPath": "C:\\MinGW64\\bin\\gcc.exe",
             "cStandard": "c99",
             "cppStandard": "c++14",
-            "intelliSenseMode": "windows-gcc-x64"
+            "intelliSenseMode": "windows-gcc-x64",
+            "compilerPath": "C:\\Program Files (x86)\\Dev-Cpp\\MinGW64\\bin\\gcc.exe"
         }
     ],
     "version": 4
