@@ -7,6 +7,7 @@
   *  Version    Date            Author          Modification
   *  V1.1.0     2024-11-3     Harry_Wong        1. 完成云台所有基本控制
   *  V1.1.1     2024-11-11    Harry_Wong        1.为云台随动添加了yaw轴偏转角度的API
+  *  V1.1.2     2024-11-25    Harry_Wong        1.云台模式设置逻辑重构，准备函数给底盘表明是否处于初始化模式
   @verbatim
   ==============================================================================
 
@@ -153,8 +154,16 @@ void GimbalSetMode(void)
   //上，中档陀螺仪控制
   else 
   {
-    gimbal_direct.mode=GIMBAL_IMU;
+    if ((switch_is_mid(gimbal_direct.rc->rc.s[0])))
+    {
+      gimbal_direct.mode=GIMBAL_IMU;
+    }
+    else
+    {
+      gimbal_direct.mode=GIMBAL_SELF_AIM;
+    }
   }
+
 }
 /*-------------------- Observe --------------------*/
  
@@ -203,7 +212,8 @@ void GimbalReference(void)
     gimbal_direct.reference.pitch=GIMBAL_DIRECT_PITCH_MID-0.2f;
     gimbal_direct.reference.yaw=GIMBAL_DIRECT_YAW_MID;
   }
-  if (gimbal_direct.mode==GIMBAL_IMU)
+
+  else if (gimbal_direct.mode==GIMBAL_IMU)
   {
     if (gimbal_direct.last_mode==GIMBAL_INIT)
     {
@@ -223,10 +233,13 @@ void GimbalReference(void)
       gimbal_direct.reference.pitch= fp32_constrain(gimbal_direct.reference.pitch-(float)gimbal_direct.rc->rc.ch[1]/REMOTE_CONTROLLER_SENSITIVITY,GIMBAL_LOWER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu,GIMBAL_UPPER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu);
       gimbal_direct.reference.yaw = loop_fp32_constrain(gimbal_direct.reference.yaw-(float)gimbal_direct.rc->rc.ch[0]/REMOTE_CONTROLLER_SENSITIVITY,-PI,PI);
     }
-    
   }
   
-
+  else if (gimbal_direct.mode==GIMBAL_SELF_AIM)
+  {
+    gimbal_direct.reference.pitch= fp32_constrain(gimbal_direct.reference.pitch-(float)GetScCmdGimbalAngle(AX_PITCH),GIMBAL_LOWER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu,GIMBAL_UPPER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu);
+    gimbal_direct.reference.yaw = loop_fp32_constrain(gimbal_direct.reference.yaw-(float)GetScCmdGimbalAngle(AX_YAW),-PI,PI);
+  }
   
 }
 
@@ -244,7 +257,7 @@ void GimbalConsole(void)
     gimbal_direct.pitch.set.curr=0;
     gimbal_direct.yaw.set.curr=0;
   }
-  else if (gimbal_direct.mode == GIMBAL_IMU)
+  else if (gimbal_direct.mode == GIMBAL_IMU || gimbal_direct.mode==GIMBAL_SELF_AIM)
   {
     gimbal_direct.pitch.set.vel=PID_calc(&gimbal_direct_pid.pitch_angle,gimbal_direct.feedback.pitch,gimbal_direct.reference.pitch);
     gimbal_direct.pitch.set.curr=PID_calc(&gimbal_direct_pid.pitch_velocity,gimbal_direct.imu->pitch_vel,gimbal_direct.pitch.set.vel);

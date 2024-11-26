@@ -40,7 +40,8 @@
 typedef enum {
     GIMBAL_ZERO_FORCE,  // 云台无力，所有控制量置0
     GIMBAL_IMU,        // 云台陀螺仪控制
-    GIMBAL_INIT,
+    GIMBAL_INIT,        //云台校准模式
+    GIMBAL_SELF_AIM     //云台自瞄模式
 } GimbalMode_e;
 
 
