@@ -220,7 +220,7 @@ float uint_to_float(int x_int, float x_min, float x_max, int bits)
 /**
  * @brief 低通滤波器初始化
  * @param filter 滤波器结构体
- * @param alpha  平滑系数
+ * @param alpha  平滑系数 [0,1] 0为不对输入数据滤波
  */
 void LowPassFilterInit(LowPassFilter_t * filter, float alpha)
 {
@@ -236,7 +236,7 @@ void LowPassFilterInit(LowPassFilter_t * filter, float alpha)
  */
 float LowPassFilterCalc(LowPassFilter_t * filter, float input)
 {
-    float output = filter->alpha * input + (1.0f - filter->alpha) * filter->out;
+    float output = (1.0f - filter->alpha) * input + filter->alpha * filter->out;
     filter->out = output;
 
     return output;

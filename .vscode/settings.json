@@ -124,7 +124,8 @@
         "shoot_fric_trigger.h": "c",
         "calibrate_task.h": "c",
         "bsp_rc.h": "c",
-        "macro_typedef.h": "c"
+        "macro_typedef.h": "c",
+        "ahrs_middleware.h": "c"
     },
     "C_Cpp.codeAnalysis.clangTidy.enabled": true,
     "[cpp]": {

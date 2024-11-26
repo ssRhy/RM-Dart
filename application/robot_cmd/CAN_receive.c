@@ -294,8 +294,7 @@ const DjiMotorMeasure_t * GetDjiMotorMeasurePoint(uint8_t can, uint8_t i)
  */
 static void GetDjiFdbData(Motor_s * p_motor, const DjiMotorMeasure_t * p_dji_motor_measure)
 {
-    p_motor->fdb.vel = p_dji_motor_measure->speed_rpm * RPM_TO_OMEGA * p_motor->reduction_ratio *
-                       p_motor->direction;
+    p_motor->fdb.vel = p_dji_motor_measure->speed_rpm * RPM_TO_OMEGA;
     p_motor->fdb.pos = p_dji_motor_measure->ecd * 2 * M_PI / 8192 - M_PI;
     p_motor->fdb.temp = p_dji_motor_measure->temperate;
     p_motor->fdb.curr = p_dji_motor_measure->given_current;

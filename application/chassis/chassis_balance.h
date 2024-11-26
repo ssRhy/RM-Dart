@@ -22,7 +22,6 @@
 
 #if (CHASSIS_TYPE == CHASSIS_BALANCE)
 #include "IMU_task.h"
-#include "chassis.h"
 #include "custom_typedef.h"
 #include "kalman_filter.h"
 #include "math.h"
@@ -48,12 +47,14 @@ typedef enum {
     CHASSIS_STAND_UP,   // 底盘起立，从倒地状态到站立状态的中间过程
     CHASSIS_CALIBRATE,  // 底盘校准
     CHASSIS_FOLLOW_GIMBAL_YAW,  // 底盘跟随云台（运动方向为云台坐标系方向，需进行坐标转换）
-    CHASSIS_FLOATING,  // 底盘悬空状态
-    CHASSIS_CRASHING,  // 底盘接地状态，进行缓冲
-    CHASSIS_FREE,      // 底盘不跟随云台
-    CHASSIS_AUTO,      // 底盘自动模式
-    CHASSIS_DEBUG,     // 调试模式
-    CHASSIS_CUSTOM     // 自定义模式
+    CHASSIS_FLOATING,   // 底盘悬空状态
+    CHASSIS_CRASHING,   // 底盘接地状态，进行缓冲
+    CHASSIS_FREE,       // 底盘不跟随云台
+    CHASSIS_AUTO,       // 底盘自动模式
+    CHASSIS_OFF_HOOK,   // 底盘脱困模式
+    CHASSIS_DEBUG,      // 调试模式
+    CHASSIS_POS_DEBUG,  // 位控调试模式
+    CHASSIS_CUSTOM      // 自定义模式
 } ChassisMode_e;
 
 typedef struct Leg
@@ -89,23 +90,44 @@ typedef struct Leg
         float Velocity;  // rad/s
     } wheel;
 
-    float J[2][2];  // 雅可比矩阵
-    float Fn;       // N
+    float J[2][2];           // 雅可比矩阵
+    float Fn;                // N 支撑力
+    uint32_t take_off_time;  // 离地时间
+    uint32_t touch_time;     // 触地时间
+    bool is_take_off;        // 是否离地
 } Leg_t;
 
 typedef struct Body
 {
-    float x;
-    float x_dot;
-    float x_accel;
+    float x;          // (m)机体位移距离
+    float x_dot;      // (m/s)机体速度直接反馈值
+    float x_dot_obv;  // (m/s)机体速度观测值
+    float x_acc;      // (m/s^2)机体x轴加速度直接反馈值
+    float x_acc_obv;  // (m/s^2)机体x轴加速度观测值
+
+    float x_accel;  // 机体坐标系下x轴加速度
+    float y_accel;  // 机体坐标系下y轴加速度
+    float z_accel;  // 机体坐标系下z轴加速度
+
+    float gx, gy, gz;  //重力加速度在机体坐标系下的分量，用于消除重力加速度对加速度计的影响
+
     float phi;
     float phi_dot;
 
     float roll;
     float roll_dot;
+    float pitch;
+    float pitch_dot;
     float yaw;
     float yaw_dot;
 } Body_t;
+
+typedef struct
+{
+    float x_accel;  // 世界坐标系下x轴加速度
+    float y_accel;  // 世界坐标系下y轴加速度
+    float z_accel;  // 世界坐标系下z轴加速度
+} World_t;
 
 //状态向量
 typedef struct LegState
@@ -119,23 +141,12 @@ typedef struct LegState
 } LegState_t;
 
 /**
- * @brief      比例系数结构体
- * @note       比例系数，用于手动优化控制效果
- */
-typedef struct
-{
-    float k[2][6];
-    float Tp;
-    float T;
-    float length;
-} Ratio_t;
-
-/**
  * @brief 状态
  */
 typedef struct
 {
     Body_t body;
+    World_t world;
     Leg_t leg[2];             // 0-左 1-右
     LegState_t leg_state[2];  // 0-左 1-右
     ChassisSpeedVector_t speed_vector;
@@ -149,6 +160,7 @@ typedef struct
     Body_t body;
     LegState_t leg_state[2];  // 0-左 1-右
     float rod_L0[2];          // 0-左 1-右
+    float rod_Angle[2];       // 0-左 1-右
     ChassisSpeedVector_t speed_vector;
 } Ref_t;
 
@@ -209,6 +221,7 @@ typedef struct LPF
     LowPassFilter_t leg_phi0_accel_filter[2];
     LowPassFilter_t leg_theta_accel_filter[2];
     LowPassFilter_t support_force_filter[2];
+    LowPassFilter_t roll;
 } LPF_t;
 
 /**
@@ -220,7 +233,6 @@ typedef struct
     const RC_ctrl_t * rc;  // 底盘使用的遥控器指针
     const Imu_t * imu;     // imu数据
     ChassisMode_e mode;    // 底盘模式
-    ChassisState_e state;  // 底盘状态
     uint8_t error_code;    // 底盘错误代码
 
     /*-------------------- Motors --------------------*/
@@ -236,10 +248,8 @@ typedef struct
     PID_t pid;  // PID控制器
     LPF_t lpf;  // 低通滤波器
 
-    Ratio_t ratio;  // 比例系数
-
-    uint32_t last_time;  // 上一次更新时间
-    uint32_t duration;   // 任务周期
+    uint32_t last_time;  // (ms)上一次更新时间
+    uint32_t duration;   // (ms)任务周期
     float dyaw;  // (rad)(feedback)当前位置与云台中值角度差（用于坐标转换）
     uint16_t yaw_mid;  // (ecd)(preset)云台中值角度
 } Chassis_s;
@@ -251,6 +261,7 @@ typedef struct Calibrate
     uint32_t stpo_time[4];  //停止时间
     bool reached[4];        //是否到达限位
     bool calibrated;        //完成校准
+    bool toggle;            //切换校准状态
 } Calibrate_s;
 
 typedef struct GroundTouch
@@ -277,7 +288,6 @@ extern void ChassisObserver(void);
 extern void ChassisReference(void);
 extern void ChassisConsole(void);
 extern void ChassisSendCmd(void);
-
 
 extern void SetCali(const fp32 motor_middle[4]);
 extern bool_t CmdCali(fp32 motor_middle[4]);

@@ -9,6 +9,7 @@
 #include "stm32f4xx_hal.h"
 #include "usb_debug.h"
 #include "user_lib.h"
+#include "gimbal.h"
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
 uint32_t develop_high_water;
@@ -35,7 +36,7 @@ void develop_task(void const * pvParameters)
 
     while (1) {
         
-
+        float a = GetGimbalDeltaYawMid();
         vTaskDelay(1);
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
