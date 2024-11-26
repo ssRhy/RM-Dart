@@ -212,6 +212,7 @@ typedef struct
 /**
  * @brief  通用电机结构体
  * @note   包括电机的信息、状态量和控制量
+ * @note   电机信息部分的参数不影响电机的反馈数据，由用户自行使用与处理
  */
 typedef struct __Motor
 {
@@ -219,7 +220,7 @@ typedef struct __Motor
     uint8_t id;             // 电机ID
     MotorType_e type;       // 电机类型
     uint8_t can;            // 电机所用CAN口
-    float reduction_ratio;  // 电机减速比
+    float reduction_ratio;  // 电机减速比，例如2006为36:1，则reduction_ratio=36
     int8_t direction;       // 电机旋转方向（1或-1）
     uint16_t mode;          // 电机模式
     bool offline;           // 电机是否离线

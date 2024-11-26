@@ -155,7 +155,6 @@ typedef struct
 {
     const RC_ctrl_t * rc;  // 底盘使用的遥控器指针
     ChassisMode_e mode;    // 底盘模式
-    ChassisState_e state;  // 底盘状态
     uint8_t error_code;    // 底盘错误代码
 
     /*-------------------- Motors --------------------*/

@@ -103,7 +103,7 @@ void MechanicalArmInit(void)
         MAX_IOUT_JOINT_4_SPEED);
 
     // #Low pass filter init ---------------------
-    LowPassFilterInit(&MECHANICAL_ARM.FirstOrderFilter.filter[3], 0.015f);
+    LowPassFilterInit(&MECHANICAL_ARM.FirstOrderFilter.filter[3], 0.985f);
 }
 
 /*-------------------- Handle exception --------------------*/

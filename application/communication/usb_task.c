@@ -23,6 +23,7 @@
 #include "CRC8_CRC16.h"
 #include "cmsis_os.h"
 #include "data_exchange.h"
+#include "macro_typedef.h"
 #include "usb_debug.h"
 #include "usb_device.h"
 #include "usb_typdef.h"
@@ -89,7 +90,7 @@ static ReceiveDataPidDebug_s RECEIVE_PID_DEBUG_DATA;
 static ReceiveDataVirtualRc_s RECEIVE_VIRTUAL_RC_DATA;
 
 // 机器人控制指令数据
-static RobotCmdData_t ROBOT_CMD_DATA;
+RobotCmdData_t ROBOT_CMD_DATA;
 static RC_ctrl_t VIRTUAL_RC_CTRL;
 
 // 发送数据间隔时间
@@ -152,7 +153,6 @@ void usb_task(void const * argument)
     UsbInit();
 
     while (1) {
-
         UsbSendData();
         UsbReceiveData();
         GetCmdData();
@@ -187,7 +187,7 @@ void usb_task(void const * argument)
 static void UsbInit(void)
 {
     // 订阅数据
-    IMU = Subscribe(IMU_NAME);                        // 获取IMU数据指针
+    IMU = Subscribe(IMU_NAME);                             // 获取IMU数据指针
     FDB_SPEED_VECTOR = Subscribe(CHASSIS_FDB_SPEED_NAME);  // 获取底盘速度矢量指针
 
     // 数据置零
@@ -527,3 +527,19 @@ void ModifyDebugDataPackage(uint8_t index, float data, const char * name)
 
     //TODO:添加对数据名称的一些检查工作
 }
+
+/**
+ * @brief 获取上位机控制指令：云台姿态，基于欧拉角 r×p×y
+ * @param axis 轴id，可配合定义好的轴id宏 AX_PITCH,AX_YAW 使用
+ * @return (rad) 云台姿态
+ */
+inline float GetScCmdGimbalAngle(uint8_t axis)
+{
+    if (axis == AX_YAW) {
+        return ROBOT_CMD_DATA.gimbal.yaw;
+    } else if (axis == AX_PITCH) {
+        return ROBOT_CMD_DATA.gimbal.pitch;
+    }
+    return 0.0f;
+}
+/*------------------------------ End of File ------------------------------*/
