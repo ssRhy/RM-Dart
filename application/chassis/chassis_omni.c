@@ -91,7 +91,10 @@ void ChassisSetMode(void)
             break;
         }
         case CHASSIS_FOLLOW_GIMBAL_YAW:{//云台跟随模式
-
+            // if (0)//(Gimbal_direct_init_judge())
+            // {
+                
+            // }
             CHASSIS.ref.speed_vector.wz = CHASSIS.dyaw; 
             CHASSIS.wz_set = PID_calc(&CHASSIS.chassis_angle_pid, CHASSIS.fdb.speed_vector.wz, CHASSIS.ref.speed_vector.wz);//
             break;
@@ -249,10 +252,9 @@ void ChassisSendCmd(void)
     CHASSIS.wheel_motor[2].set.curr, CHASSIS.wheel_motor[3].set.curr);
 
   }
-  ModifyDebugDataPackage(2, CHASSIS.dyaw, "dyaw");
-  ModifyDebugDataPackage(3, CHASSIS.wz_set, "wz_set");  
-  //ModifyDebugDataPackage(4, CHASSIS.vx_set, "CHASSIS.vx_set");
-  //ModifyDebugDataPackage(5, CHASSIS.vy_set, "CHASSIS.vy_set");
+  //ModifyDebugDataPackage(2, CHASSIS.dyaw, "dyaw");
+  //ModifyDebugDataPackage(3, CHASSIS.wz_set, "wz_set");  
+
 }
 
 #endif //CHASSIS_MECANUM_WHEEL

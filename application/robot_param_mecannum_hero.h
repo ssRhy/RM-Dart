@@ -82,7 +82,7 @@ typedef enum {
 #define CHASSIS_WZ_SET_SCALE 0.1f
 #define MOTOR_DISTANCE_TO_CENTER 0.2f
 
-#define CHASSIA_SPIN_SPEED 1.5f     
+#define CHASSIA_SPIN_SPEED 1.5f        //小陀螺旋转速度设定
 #define CHASSIA_STOP_SPEED 0.0f
 
 //chassis forward or back max speed
@@ -96,10 +96,13 @@ typedef enum {
 #define NORMAL_MIN_CHASSIS_SPEED_WX 0.0f
 
 /*-------------------- Gimbal --------------------*/
+//gimbal_init-------------------------------
+#define GIMBAL_INIT_TIME (uint32_t)2000
+
 //mouse sensitivity ---------------------
 #define MOUSE_SENSITIVITY (0.5f)
 //remote controller sensitivity ---------------------
-#define REMOTE_CONTROLLER_SENSITIVITY (1500000.0f)
+#define REMOTE_CONTROLLER_SENSITIVITY (100000.0f)
 //motor parameters ---------------------
 //电机id
 #define GIMBAL_DIRECT_YAW_ID ((uint8_t)1)
@@ -135,7 +138,7 @@ typedef enum {
 
 //PID parameters ---------------------
 //YAW ANGLE
-#define KP_GIMBAL_YAW_ANGLE (3.0f)//3.0f
+#define KP_GIMBAL_YAW_ANGLE (3.0f)
 #define KI_GIMBAL_YAW_ANGLE (0.003f)
 #define KD_GIMBAL_YAW_ANGLE (0.8f)
 #define MAX_IOUT_GIMBAL_YAW_ANGLE (0.05f)
