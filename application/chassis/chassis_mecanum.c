@@ -65,45 +65,6 @@ void ChassisSetMode(void)
     } else if (switch_is_down(CHASSIS.rc->rc.s[CHASSIS_MODE_CHANNEL])) {
         CHASSIS.mode = CHASSIS_ZERO_FORCE;
     }
-
-    uint8_t i;
-    //具体模式设定
-    switch (CHASSIS.mode) {
-        case CHASSIS_ZERO_FORCE: { 
-            CHASSIS.wz_set = CHASSIA_STOP_SPEED;
-            CHASSIS.vx_set = CHASSIA_STOP_SPEED;
-            CHASSIS.vy_set = CHASSIA_STOP_SPEED;
-            break;
-        }
-        case CHASSIS_FOLLOW_GIMBAL_YAW:{//云台跟随模式
-
-            CHASSIS.ref.speed_vector.wz = CHASSIS.dyaw; 
-            CHASSIS.wz_set = PID_calc(&CHASSIS.chassis_angle_pid, CHASSIS.fdb.speed_vector.wz, CHASSIS.ref.speed_vector.wz);//
-            break;
-        }
-        case CHASSIS_STOP:
-            break;
-        case CHASSIS_FREE:{//底盘不跟随云台
-            CHASSIS.wz_set = NORMAL_MAX_CHASSIS_SPEED_WX;//暂时让这个模式下小陀螺生效
-            break;
-        }
-        case CHASSIS_SPIN:{//小陀螺模式
-			CHASSIS.wz_set = NORMAL_MAX_CHASSIS_SPEED_WX;
-            break;
-        }
-        case CHASSIS_AUTO:
-            break;
-        case CHASSIS_OPEN: {
-            uint16_t current;
-            current = CHASSIS.rc->rc.ch[CHASSIS_X_CHANNEL] * 3000 * RC_TO_ONE;
-            for (i = 0; i < 4; i++) {
-                CHASSIS.wheel_motor[0].set.curr = current;
-            }
-            break;
-        }
-        default:
-            break;
-    }
 }
 
 
@@ -185,6 +146,46 @@ void ChassisReference(void) {
 	cos_yaw = cosf(CHASSIS.dyaw);
     CHASSIS.vy_set = cos_yaw * CHASSIS.vy_rc_set - sin_yaw * CHASSIS.vx_rc_set;
 	CHASSIS.vx_set = sin_yaw * CHASSIS.vy_rc_set + cos_yaw * CHASSIS.vx_rc_set;
+
+
+    uint8_t i;
+    //具体模式设定
+    switch (CHASSIS.mode) {
+        case CHASSIS_ZERO_FORCE: { 
+            CHASSIS.wz_set = CHASSIA_STOP_SPEED;
+            CHASSIS.vx_set = CHASSIA_STOP_SPEED;
+            CHASSIS.vy_set = CHASSIA_STOP_SPEED;
+            break;
+        }
+        case CHASSIS_FOLLOW_GIMBAL_YAW:{//云台跟随模式
+
+            CHASSIS.ref.speed_vector.wz = CHASSIS.dyaw; 
+            CHASSIS.wz_set = PID_calc(&CHASSIS.chassis_angle_pid, CHASSIS.fdb.speed_vector.wz, CHASSIS.ref.speed_vector.wz);//
+            break;
+        }
+        case CHASSIS_STOP:
+            break;
+        case CHASSIS_FREE:{//底盘不跟随云台
+            CHASSIS.wz_set = NORMAL_MIN_CHASSIS_SPEED_WX;//暂时让这个模式下小陀螺不生效
+            break;
+        }
+        case CHASSIS_SPIN:{//小陀螺模式
+			CHASSIS.wz_set = NORMAL_MAX_CHASSIS_SPEED_WX;
+            break;
+        }
+        case CHASSIS_AUTO:
+            break;
+        case CHASSIS_OPEN: {
+            uint16_t current;
+            current = CHASSIS.rc->rc.ch[CHASSIS_X_CHANNEL] * 3000 * RC_TO_ONE;
+            for (i = 0; i < 4; i++) {
+                CHASSIS.wheel_motor[0].set.curr = current;
+            }
+            break;
+        }
+        default:
+            break;
+    }
 }
 
 /*-------------------- Console --------------------*/
