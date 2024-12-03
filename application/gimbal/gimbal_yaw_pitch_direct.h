@@ -41,7 +41,6 @@ typedef enum {
     GIMBAL_ZERO_FORCE,  // 云台无力，所有控制量置0
     GIMBAL_IMU,        // 云台陀螺仪控制
     GIMBAL_INIT,        //云台校准模式
-    GIMBAL_SELF_AIM     //云台自瞄模式
 } GimbalMode_e;
 
 
@@ -84,6 +83,8 @@ typedef struct
     float angle_zero_for_imu; //pitch电机处于中值时imupitch的角度
 
     uint32_t init_start_time,init_timer;
+
+    bool init_continue;
 } Gimbal_s;
 
 extern void GimbalInit(void);

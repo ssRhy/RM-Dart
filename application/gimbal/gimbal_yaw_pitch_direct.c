@@ -42,26 +42,7 @@ void Angle_solution(void)
   gimbal_direct.angle_zero_for_imu=imu_delta-motor_delta;
 }
 
-
-
-
-/*-------------------------The end of internal functions--------------------------------------*/
-
-/*----------------GetGimbalDeltaYawMid--------------------*/
-
-/**
- * @brief          (rad) 获取yaw轴和中值的差值
- * @param[in]      none
- * @retval         float
- */
-inline float GetGimbalDeltaYawMid(void)
-{
-  return loop_fp32_constrain(gimbal_direct.yaw.fdb.pos-GIMBAL_DIRECT_YAW_MID,-PI,PI);
-}
-
-
 /*----------------Gimbal_direct_init_judge--------------------*/
-
 /**
  * @brief          判断是否需要继续初始化云台校准
  * @param[in]      none
@@ -79,6 +60,35 @@ bool Gimbal_direct_init_judge (void)
     return false;
   }
 }
+
+
+/*-------------------------The end of internal functions--------------------------------------*/
+
+/*----------------GetGimbalDeltaYawMid--------------------*/
+
+/**
+ * @brief          (rad) 获取yaw轴和中值的差值
+ * @param[in]      none
+ * @retval         float
+ */
+inline float GetGimbalDeltaYawMid(void)
+{
+  return loop_fp32_constrain(gimbal_direct.yaw.fdb.pos-GIMBAL_DIRECT_YAW_MID,-PI,PI);
+}
+
+/*----------------Gimbal_init_judge_return--------------------*/
+
+/**
+ * @brief          对外宣称自己是否继续校准
+ * @param[in]      none
+ * @retval         bool 解释是否需要继续初始化
+ */
+
+inline bool GimbalInitJudgeReturn(void)
+{
+  return gimbal_direct.init_continue;
+}
+
 
 
 /*-------------------- Init --------------------*/
@@ -123,6 +133,7 @@ void GimbalInit(void)
    //step5 初始化云台初始化校准相关变量
    gimbal_direct.init_start_time=0;
    gimbal_direct.init_timer=0;
+   gimbal_direct.init_continue=false;
 
    //step6 设置初始模式
    gimbal_direct.mode=GIMBAL_ZERO_FORCE;
@@ -141,12 +152,14 @@ void GimbalSetMode(void)
   if ((switch_is_down(gimbal_direct.rc->rc.s[0])) || toe_is_error(DBUS_TOE)) //安全档优先级最高
   {
     gimbal_direct.mode=GIMBAL_ZERO_FORCE;
+    gimbal_direct.init_continue=false;
   }
   //初始校准模式
   else if (gimbal_direct.mode==GIMBAL_ZERO_FORCE || gimbal_direct.mode==GIMBAL_INIT)  
   {
     gimbal_direct.mode=GIMBAL_INIT;
-    if (Gimbal_direct_init_judge()==true)//判断是否需要跳出循环
+    gimbal_direct.init_continue=Gimbal_direct_init_judge();
+    if (gimbal_direct.init_continue==true)//判断是否需要跳出循环
     {
       gimbal_direct.mode=GIMBAL_IMU;
     }
@@ -154,16 +167,8 @@ void GimbalSetMode(void)
   //上，中档陀螺仪控制
   else 
   {
-    if ((switch_is_mid(gimbal_direct.rc->rc.s[0])))
-    {
-      gimbal_direct.mode=GIMBAL_IMU;
-    }
-    else
-    {
-      gimbal_direct.mode=GIMBAL_SELF_AIM;
-    }
+    gimbal_direct.mode=GIMBAL_IMU;
   }
-
 }
 /*-------------------- Observe --------------------*/
  
@@ -234,13 +239,6 @@ void GimbalReference(void)
       gimbal_direct.reference.yaw = loop_fp32_constrain(gimbal_direct.reference.yaw-(float)gimbal_direct.rc->rc.ch[0]/REMOTE_CONTROLLER_SENSITIVITY,-PI,PI);
     }
   }
-  
-  else if (gimbal_direct.mode==GIMBAL_SELF_AIM)
-  {
-    gimbal_direct.reference.pitch= fp32_constrain(gimbal_direct.reference.pitch-(float)GetScCmdGimbalAngle(AX_PITCH),GIMBAL_LOWER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu,GIMBAL_UPPER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu);
-    gimbal_direct.reference.yaw = loop_fp32_constrain(gimbal_direct.reference.yaw-(float)GetScCmdGimbalAngle(AX_YAW),-PI,PI);
-  }
-  
 }
 
 /*-------------------- Console --------------------*/
@@ -257,7 +255,7 @@ void GimbalConsole(void)
     gimbal_direct.pitch.set.curr=0;
     gimbal_direct.yaw.set.curr=0;
   }
-  else if (gimbal_direct.mode == GIMBAL_IMU || gimbal_direct.mode==GIMBAL_SELF_AIM)
+  else if (gimbal_direct.mode == GIMBAL_IMU)
   {
     gimbal_direct.pitch.set.vel=PID_calc(&gimbal_direct_pid.pitch_angle,gimbal_direct.feedback.pitch,gimbal_direct.reference.pitch);
     gimbal_direct.pitch.set.curr=PID_calc(&gimbal_direct_pid.pitch_velocity,gimbal_direct.imu->pitch_vel,gimbal_direct.pitch.set.vel);
@@ -290,11 +288,7 @@ void GimbalSendCmd(void)
 {
     CanCmdDjiMotor(2,0x1FF,gimbal_direct.yaw.set.curr,gimbal_direct.pitch.set.curr,0,0);
 
-    ModifyDebugDataPackage(1,gimbal_direct.init_timer,"init_T");
-    ModifyDebugDataPackage(2,gimbal_direct.mode==GIMBAL_INIT,"init");
-    ModifyDebugDataPackage(3,gimbal_direct.mode==GIMBAL_IMU,"imu");
-    ModifyDebugDataPackage(4,gimbal_direct.mode==GIMBAL_ZERO_FORCE,"safe");
-    ModifyDebugDataPackage(5,gimbal_direct.init_timer,"init_time");
+    ModifyDebugDataPackage(1,toe_is_error(DBUS_TOE),"DBUS_ERR");
 }
 
 
