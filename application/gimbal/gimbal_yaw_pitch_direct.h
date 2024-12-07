@@ -101,7 +101,5 @@ extern void GimbalSendCmd(void);
 
 extern inline float GetGimbalDeltaYawMid(void);
 
-extern inline bool GimbalInitJudgeReturn(void);
-
 #endif  // GIMBAL_YAW_PITCH_H
 #endif  // GIMBAL_YAW_PITCH
