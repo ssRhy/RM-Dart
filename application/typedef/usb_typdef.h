@@ -15,15 +15,16 @@
 
 #define DEBUG_DATA_SEND_ID        ((uint8_t)0x01)
 #define IMU_DATA_SEND_ID          ((uint8_t)0x02)
-#define EVENT_DATA_SEND_ID        ((uint8_t)0x03)
-#define PID_DEBUG_DATA_SEND_ID    ((uint8_t)0x04)
-#define ALL_ROBOT_HP_SEND_ID      ((uint8_t)0x05)
-#define GAME_STATUS_SEND_ID       ((uint8_t)0x06)
-#define ROBOT_MOTION_DATA_SEND_ID ((uint8_t)0x07)
-#define GROUND_ROBOT_POSITION_SEND_ID ((uint8_t)0x08)
-#define RFID_STATUS_SEND_ID       ((uint8_t)0x09)
-#define ROBOT_STATUS_SEND_ID      ((uint8_t)0x0A)
-#define JOINT_STATE_SEND_ID       ((uint8_t)0x0B)
+#define ROBOT_INFO_DATA_SEND_ID   ((uint8_t)0x03)
+#define EVENT_DATA_SEND_ID        ((uint8_t)0x04)
+#define PID_DEBUG_DATA_SEND_ID    ((uint8_t)0x05)
+#define ALL_ROBOT_HP_SEND_ID      ((uint8_t)0x06)
+#define GAME_STATUS_SEND_ID       ((uint8_t)0x07)
+#define ROBOT_MOTION_DATA_SEND_ID ((uint8_t)0x08)
+#define GROUND_ROBOT_POSITION_SEND_ID ((uint8_t)0x09)
+#define RFID_STATUS_SEND_ID       ((uint8_t)0x0A)
+#define ROBOT_STATUS_SEND_ID      ((uint8_t)0x0B)
+#define JOINT_STATE_SEND_ID       ((uint8_t)0x0C)
 
 #define ROBOT_CMD_DATA_RECEIVE_ID  ((uint8_t)0x01)
 #define PID_DEBUG_DATA_RECEIVE_ID  ((uint8_t)0x02)
@@ -75,11 +76,52 @@ typedef struct
     uint16_t crc;
 } __packed__ SendDataImu_s;
 
+// 机器人信息数据包
+typedef struct
+{
+    FrameHeader_t frame_header;  // 数据段id = 0x03
+    uint32_t time_stamp;
+    struct
+    {
+        /// @brief 机器人部位类型 2 bytes
+        struct
+        {
+            uint16_t chassis : 3;
+            uint16_t gimbal : 3;
+            uint16_t shoot : 3;
+            uint16_t arm : 3;
+            uint16_t custom_controller : 3;
+            uint16_t reserve : 1;
+        } __packed__ type;
+        /// @brief 机器人部位状态 1 byte
+        /// @note 0: 正常，1: 错误
+        struct
+        {
+            uint8_t chassis : 1;
+            uint8_t gimbal : 1;
+            uint8_t shoot : 1;
+            uint8_t arm : 1;
+            uint8_t custom_controller : 1;
+            uint8_t reserve : 3;
+        } __packed__ state;
+        // /// @brief 机器人裁判系统信息 7 bytes
+        // struct
+        // {
+        //     uint8_t id;
+        //     uint8_t color;  // 0-red 1-blue 2-unknown
+        //     bool attacked;
+        //     uint16_t hp;
+        //     uint16_t heat;
+        // } __packed__ referee;
+    } __packed__ data;
+    uint16_t crc;
+} __packed__ SendDataRobotInfo_s;
+
 // 事件数据包
 
 typedef struct
 {
-    FrameHeader_t frame_header;  // 数据段id = 0x03
+    FrameHeader_t frame_header;  // 数据段id = 0x04
     uint32_t time_stamp;
 
     uint8_t supply_station_front;
@@ -103,7 +145,7 @@ typedef struct
 // PID调参数据包
 typedef struct
 {
-    FrameHeader_t frame_header;  // 数据段id = 0x04
+    FrameHeader_t frame_header;  // 数据段id = 0x05
     uint32_t time_stamp;
     struct
     {
@@ -117,7 +159,7 @@ typedef struct
 // 全场机器人hp信息数据包
 typedef struct
 {
-    FrameHeader_t frame_header;  // 数据段id = 0x05
+    FrameHeader_t frame_header;  // 数据段id = 0x06
     uint32_t time_stamp;
     struct
     {
@@ -144,7 +186,7 @@ typedef struct
 // 比赛信息数据包
 typedef struct
 {
-    FrameHeader_t frame_header;  // 数据段id = 0x06
+    FrameHeader_t frame_header;  // 数据段id = 0x07
     uint32_t time_stamp;
     struct
     {
@@ -157,7 +199,7 @@ typedef struct
 // 机器人运动数据包
 typedef struct
 {
-    FrameHeader_t frame_header;  // 数据段id = 0x07
+    FrameHeader_t frame_header;  // 数据段id = 0x08
     uint32_t time_stamp;
     struct
     {
@@ -174,7 +216,7 @@ typedef struct
 // 地面机器人位置数据包
 typedef struct
 {
-    FrameHeader_t frame_header;  // 数据段id = 0x08
+    FrameHeader_t frame_header;  // 数据段id = 0x09
     uint32_t time_stamp;
     
     float hero_x;
@@ -198,7 +240,7 @@ typedef struct
 // RFID状态数据包
 typedef struct
 {
-    FrameHeader_t frame_header;  // 数据段id = 0x09
+    FrameHeader_t frame_header;  // 数据段id = 0x0A
     uint32_t time_stamp;
 
     bool base_gain_point;                       
@@ -228,7 +270,7 @@ typedef struct
 // 机器人状态数据包
 typedef struct
 {
-    FrameHeader_t frame_header;  // 数据段id = 0x0A
+    FrameHeader_t frame_header;  // 数据段id = 0x0B
     uint32_t time_stamp;
 
     uint8_t robot_id;
@@ -253,9 +295,10 @@ typedef struct
     uint16_t crc;
 } __packed__ SendDataRobotStatus_s;
 
+// 云台状态数据包
 typedef struct
 {
-    FrameHeader_t frame_header;  // 数据段id = 0x0B
+    FrameHeader_t frame_header;  // 数据段id = 0x0C
     uint32_t time_stamp;
     struct
     {
