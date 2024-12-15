@@ -25,7 +25,6 @@
 #include "usb_task.h"
 #include "motor.h" 
 #include "detect_task.h"
-#include "gimbal_yaw_pitch_direct.h"
 #include "math.h"
 
 Motor_s __Motor;
@@ -135,10 +134,15 @@ void ChassisReference(void) {
             break;
         }
         case CHASSIS_FOLLOW_GIMBAL_YAW:{//云台跟随模式
-            // if (0)//(Gimbal_direct_init_judge())
-            // {
-                
-            // }
+        
+            //GimbalSpeedVectorToChassisSpeedVector();
+            fp32 sin_yaw = 0.0f, cos_yaw = 0.0f;
+	        // 控制vx vy
+	        sin_yaw = sinf(CHASSIS.dyaw);
+	        cos_yaw = cosf(CHASSIS.dyaw);
+            CHASSIS.vy_set = cos_yaw * CHASSIS.vy_rc_set - sin_yaw * CHASSIS.vx_rc_set;
+	        CHASSIS.vx_set = sin_yaw * CHASSIS.vy_rc_set + cos_yaw * CHASSIS.vx_rc_set;
+
             CHASSIS.ref.speed_vector.wz = CHASSIS.dyaw; 
             CHASSIS.wz_set = PID_calc(&CHASSIS.chassis_angle_pid, -CHASSIS.dyaw, 0);//反转dyaw角度
             break;
@@ -197,14 +201,6 @@ void ChassisReference(void) {
     if (spinflag){
         CHASSIS.wz_set = NORMAL_MAX_CHASSIS_SPEED_WX;
     }*/
-
-   //GimbalSpeedVectorToChassisSpeedVector();
-   fp32 sin_yaw = 0.0f, cos_yaw = 0.0f;
-	// 控制vx vy
-	sin_yaw = sinf(CHASSIS.dyaw);
-	cos_yaw = cosf(CHASSIS.dyaw);
-    CHASSIS.vy_set = cos_yaw * CHASSIS.vy_rc_set - sin_yaw * CHASSIS.vx_rc_set;
-	CHASSIS.vx_set = sin_yaw * CHASSIS.vy_rc_set + cos_yaw * CHASSIS.vx_rc_set;
 }
 
 /*-------------------- Console --------------------*/
