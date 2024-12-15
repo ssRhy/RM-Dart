@@ -57,7 +57,7 @@ typedef struct
 // IMU 数据包
 typedef struct
 {
-    FrameHeader_t frame_header;  // 数据段id = 0x06
+    FrameHeader_t frame_header;  // 数据段id = 0x02
     uint32_t time_stamp;
     struct
     {
@@ -79,7 +79,7 @@ typedef struct
 // 机器人信息数据包
 typedef struct
 {
-    FrameHeader_t frame_header;  // 数据段id = 0x04
+    FrameHeader_t frame_header;  // 数据段id = 0x03
     uint32_t time_stamp;
     struct
     {
@@ -121,7 +121,7 @@ typedef struct
 
 typedef struct
 {
-    FrameHeader_t frame_header;  // 数据段id = 0x14
+    FrameHeader_t frame_header;  // 数据段id = 0x04
     uint32_t time_stamp;
 
     struct
@@ -146,7 +146,7 @@ typedef struct
 // PID调参数据包
 typedef struct
 {
-    FrameHeader_t frame_header;  // 数据段id = 0x02
+    FrameHeader_t frame_header;  // 数据段id = 0x05
     uint32_t time_stamp;
     struct
     {
@@ -160,7 +160,7 @@ typedef struct
 // 全场机器人hp信息数据包
 typedef struct
 {
-    FrameHeader_t frame_header;  // 数据段id = 0x15
+    FrameHeader_t frame_header;  // 数据段id = 0x06
     uint32_t time_stamp;
     struct
     {
@@ -187,7 +187,7 @@ typedef struct
 // 比赛信息数据包
 typedef struct
 {
-    FrameHeader_t frame_header;  // 数据段id = 0x16
+    FrameHeader_t frame_header;  // 数据段id = 0x07
     uint32_t time_stamp;
     struct
     {
@@ -200,7 +200,7 @@ typedef struct
 // 地面机器人位置数据包
 typedef struct
 {
-    FrameHeader_t frame_header;  // 数据段id = 0x17
+    FrameHeader_t frame_header;  // 数据段id = 0x08
     uint32_t time_stamp;
     
     struct
@@ -226,7 +226,7 @@ typedef struct
 // 机器人运动数据包
 typedef struct
 {
-    FrameHeader_t frame_header;  // 数据段id = 0x05
+    FrameHeader_t frame_header;  // 数据段id = 0x09
     uint32_t time_stamp;
     struct
     {
@@ -243,7 +243,7 @@ typedef struct
 // RFID状态数据包
 typedef struct
 {
-    FrameHeader_t frame_header;  // 数据段id = 0x18
+    FrameHeader_t frame_header;  // 数据段id = 0x0A
     uint32_t time_stamp;
 
     struct
@@ -275,7 +275,7 @@ typedef struct
 // 机器人状态数据包
 typedef struct
 {
-    FrameHeader_t frame_header;  // 数据段id = 0x19
+    FrameHeader_t frame_header;  // 数据段id = 0x0B
     uint32_t time_stamp;
 
     struct
@@ -305,7 +305,7 @@ typedef struct
 // 云台状态数据包
 typedef struct
 {
-    FrameHeader_t frame_header;  // 数据段id = 0x03
+    FrameHeader_t frame_header;  // 数据段id = 0x0C
     uint32_t time_stamp;
     struct
     {
