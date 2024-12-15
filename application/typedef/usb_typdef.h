@@ -54,27 +54,27 @@ typedef struct
     uint16_t checksum;
 } __packed__ SendDataDebug_s;
 
-// // IMU 数据包
-// typedef struct
-// {
-//     FrameHeader_t frame_header;  // 数据段id = 0x06
-//     uint32_t time_stamp;
-//     struct
-//     {
-//         float yaw;    // rad
-//         float pitch;  // rad
-//         float roll;   // rad
+// IMU 数据包
+typedef struct
+{
+    FrameHeader_t frame_header;  // 数据段id = 0x06
+    uint32_t time_stamp;
+    struct
+    {
+        float yaw;    // rad
+        float pitch;  // rad
+        float roll;   // rad
 
-//         float yaw_vel;    // rad/s
-//         float pitch_vel;  // rad/s
-//         float roll_vel;   // rad/s
+        float yaw_vel;    // rad/s
+        float pitch_vel;  // rad/s
+        float roll_vel;   // rad/s
 
-//         // float x_accel;  // m/s^2
-//         // float y_accel;  // m/s^2
-//         // float z_accel;  // m/s^2
-//     } __packed__ data;
-//     uint16_t crc;
-// } __packed__ SendDataImu_s;
+        // float x_accel;  // m/s^2
+        // float y_accel;  // m/s^2
+        // float z_accel;  // m/s^2
+    } __packed__ data;
+    uint16_t crc;
+} __packed__ SendDataImu_s;
 
 // 机器人信息数据包
 typedef struct

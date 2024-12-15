@@ -70,7 +70,7 @@ uint32_t usb_high_water;
 // Variable Declarations
 static uint8_t USB_RX_BUF[USB_RX_DATA_SIZE];
 
-// static const Imu_t * IMU;
+static const Imu_t * IMU;
 static const ChassisSpeedVector_t * FDB_SPEED_VECTOR;
 
 // 判断USB连接状态用到的一些变量
@@ -82,7 +82,7 @@ static uint32_t CONTINUE_RECEIVE_CNT = 0;
 // 数据发送结构体
 // clang-format off
 static SendDataDebug_s       SEND_DATA_DEBUG;
-// static SendDataImu_s         SEND_DATA_IMU;
+static SendDataImu_s         SEND_DATA_IMU;
 static SendDataRobotStateInfo_s   SEND_DATA_ROBOT_STATE_INFO;
 static SendDataEvent_s       SEND_DATA_EVENT;
 static SendDataPidDebug_s    SEND_DATA_PID;
@@ -137,7 +137,7 @@ static void UsbInit(void);
 /*******************************************************************************/
 
 static void UsbSendDebugData(void);
-// static void UsbSendImuData(void);
+static void UsbSendImuData(void);
 static void UsbSendRobotStateInfoData(void);
 static void UsbSendEventData(void);
 // static void UsbSendPIdDebugData(void);
@@ -212,7 +212,7 @@ void usb_task(void const * argument)
 static void UsbInit(void)
 {
     // 订阅数据
-    // IMU = Subscribe(IMU_NAME);                             // 获取IMU数据指针
+    IMU = Subscribe(IMU_NAME);                             // 获取IMU数据指针
     FDB_SPEED_VECTOR = Subscribe(CHASSIS_FDB_SPEED_NAME);  // 获取底盘速度矢量指针
 
     // 数据置零
@@ -241,11 +241,11 @@ static void UsbInit(void)
     }
     
     // 2.初始化IMU数据包
-    // SEND_DATA_IMU.frame_header.sof = SEND_SOF;
-    // SEND_DATA_IMU.frame_header.len = (uint8_t)(sizeof(SendDataImu_s) - 6);
-    // SEND_DATA_IMU.frame_header.id = IMU_DATA_SEND_ID;
-    // append_CRC8_check_sum(  // 添加帧头 CRC8 校验位
-    //     (uint8_t *)(&SEND_DATA_IMU.frame_header), sizeof(SEND_DATA_IMU.frame_header));
+    SEND_DATA_IMU.frame_header.sof = SEND_SOF;
+    SEND_DATA_IMU.frame_header.len = (uint8_t)(sizeof(SendDataImu_s) - 6);
+    SEND_DATA_IMU.frame_header.id = IMU_DATA_SEND_ID;
+    append_CRC8_check_sum(  // 添加帧头 CRC8 校验位
+        (uint8_t *)(&SEND_DATA_IMU.frame_header), sizeof(SEND_DATA_IMU.frame_header));
     /*******************************************************************************/
     /* Referee                                                                     */
     /*******************************************************************************/
@@ -345,7 +345,7 @@ static void UsbSendData(void)
     // 发送Debug数据
     CheckDurationAndSend(Debug);
     // 发送Imu数据
-    // CheckDurationAndSend(Imu);
+    CheckDurationAndSend(Imu);
     // 发送RobotStateInfo数据
     CheckDurationAndSend(RobotStateInfo);
     // 发送Event数据
@@ -460,25 +460,25 @@ static void UsbSendDebugData(void)
  * @brief 发送IMU数据
  * @param duration 发送周期
  */
-// static void UsbSendImuData(void)
-// {
-//     if (IMU == NULL) {
-//         return;
-//     }
+static void UsbSendImuData(void)
+{
+    if (IMU == NULL) {
+        return;
+    }
 
-//     SEND_DATA_IMU.time_stamp = HAL_GetTick();
+    SEND_DATA_IMU.time_stamp = HAL_GetTick();
 
-//     SEND_DATA_IMU.data.yaw = IMU->yaw;
-//     SEND_DATA_IMU.data.pitch = IMU->pitch;
-//     SEND_DATA_IMU.data.roll = IMU->roll;
+    SEND_DATA_IMU.data.yaw = IMU->yaw;
+    SEND_DATA_IMU.data.pitch = IMU->pitch;
+    SEND_DATA_IMU.data.roll = IMU->roll;
 
-//     SEND_DATA_IMU.data.yaw_vel = IMU->yaw_vel;
-//     SEND_DATA_IMU.data.pitch_vel = IMU->pitch_vel;
-//     SEND_DATA_IMU.data.roll_vel = IMU->roll_vel;
+    SEND_DATA_IMU.data.yaw_vel = IMU->yaw_vel;
+    SEND_DATA_IMU.data.pitch_vel = IMU->pitch_vel;
+    SEND_DATA_IMU.data.roll_vel = IMU->roll_vel;
 
-//     append_CRC16_check_sum((uint8_t *)&SEND_DATA_IMU, sizeof(SendDataImu_s));
-//     USB_Transmit((uint8_t *)&SEND_DATA_IMU, sizeof(SendDataImu_s));
-// }
+    append_CRC16_check_sum((uint8_t *)&SEND_DATA_IMU, sizeof(SendDataImu_s));
+    USB_Transmit((uint8_t *)&SEND_DATA_IMU, sizeof(SendDataImu_s));
+}
 
 /**
  * @brief 发送机器人信息数据
