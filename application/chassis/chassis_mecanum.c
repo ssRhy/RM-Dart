@@ -142,7 +142,7 @@ void ChassisReference(void) {
 	        cos_yaw = cosf(CHASSIS.dyaw);
             CHASSIS.vy_set = cos_yaw * CHASSIS.vy_rc_set - sin_yaw * CHASSIS.vx_rc_set;
 	        CHASSIS.vx_set = sin_yaw * CHASSIS.vy_rc_set + cos_yaw * CHASSIS.vx_rc_set;
-        
+
             CHASSIS.ref.speed_vector.wz = CHASSIS.dyaw; 
             CHASSIS.wz_set = PID_calc(&CHASSIS.chassis_angle_pid, -CHASSIS.dyaw, 0);//反转dyaw角度
             break;
@@ -154,6 +154,15 @@ void ChassisReference(void) {
             break;
         }
         case CHASSIS_SPIN:{//小陀螺模式
+
+            //GimbalSpeedVectorToChassisSpeedVector();
+            fp32 sin_yaw = 0.0f, cos_yaw = 0.0f;
+	        // 控制vx vy
+	        sin_yaw = sinf(CHASSIS.dyaw);
+	        cos_yaw = cosf(CHASSIS.dyaw);
+            CHASSIS.vy_set = cos_yaw * CHASSIS.vy_rc_set - sin_yaw * CHASSIS.vx_rc_set;
+	        CHASSIS.vx_set = sin_yaw * CHASSIS.vy_rc_set + cos_yaw * CHASSIS.vx_rc_set;
+            
 			CHASSIS.wz_set = NORMAL_MAX_CHASSIS_SPEED_WX;
             break;
         }
@@ -170,6 +179,15 @@ void ChassisReference(void) {
         default:
             break;
     }
+
+    
+    //GimbalSpeedVectorToChassisSpeedVector();
+    fp32 sin_yaw = 0.0f, cos_yaw = 0.0f;
+	// 控制vx vy
+	sin_yaw = sinf(CHASSIS.dyaw);
+	cos_yaw = cosf(CHASSIS.dyaw);
+    CHASSIS.vy_set = cos_yaw * CHASSIS.vy_rc_set - sin_yaw * CHASSIS.vx_rc_set;
+	CHASSIS.vx_set = sin_yaw * CHASSIS.vy_rc_set + cos_yaw * CHASSIS.vx_rc_set;
 
     //键盘控制
     if (CHASSIS.rc->key.v & KEY_PRESSED_OFFSET_W)
@@ -213,6 +231,16 @@ void ChassisReference(void) {
 void ChassisConsole(void)
 {
     uint8_t i;
+
+    // 判断是否出错，若出错则将电流全部置零
+    if (toe_is_error(DBUS_TOE))
+    {
+        for (i = 0; i < 4; i++)
+        {
+            CHASSIS.wheel_motor[i].set.curr = CHASSIA_CURR_ZERO; 
+        }
+        return;
+    }
     
     //麦轮解算
     CHASSIS.wheel_motor[0].set.vel = -CHASSIS.vx_set + CHASSIS.vy_set + (CHASSIS_WZ_SET_SCALE - 1.0f) * CHASSIS.wz_set;
@@ -239,16 +267,11 @@ void ChassisConsole(void)
 
 void ChassisSendCmd(void)
 {
-    if (toe_is_error(DBUS_TOE))
-  {
-    CanCmdDjiMotor(1,0x200,0,0,0,0);             
-  }
-  else
-  {
+
     CanCmdDjiMotor(1, 0x200, 
     CHASSIS.wheel_motor[0].set.curr, CHASSIS.wheel_motor[1].set.curr,
     CHASSIS.wheel_motor[2].set.curr, CHASSIS.wheel_motor[3].set.curr);
-  }
+
   //ModifyDebugDataPackage(4, CHASSIS.vx_set, "CHASSIS.vx_set");
   //ModifyDebugDataPackage(5, CHASSIS.vy_set, "CHASSIS.vy_set");
 }

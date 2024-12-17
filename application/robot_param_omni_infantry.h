@@ -94,7 +94,8 @@ typedef enum {
 //底盘小陀螺速度
 #define NORMAL_MAX_CHASSIS_SPEED_WX 250.0f
 #define NORMAL_MIN_CHASSIS_SPEED_WX 0.0f
-
+//当底盘数据错误时电流值给0
+#define CHASSIA_CURR_ZERO 0.0f
 
 /*-------------------- Gimbal --------------------*/
 //gimbal_init-------------------------------
