@@ -76,15 +76,14 @@ inline float GetGimbalDeltaYawMid(void)
   return loop_fp32_constrain(gimbal_direct.yaw.fdb.pos-GIMBAL_DIRECT_YAW_MID,-PI,PI);
 }
 
-/*----------------Gimbal_init_judge_return--------------------*/
+/*----------------GetGimbalInitJudgeReturn--------------------*/
 
 /**
  * @brief          对外宣称自己是否继续校准
  * @param[in]      none
  * @retval         bool 解释是否需要继续初始化
  */
-
-inline bool GimbalInitJudgeReturn(void)
+inline bool GetGimbalInitJudgeReturn(void)
 {
   return gimbal_direct.init_continue;
 }

@@ -24,6 +24,19 @@
 // inline void ChassisSetCali(void);
 // inline void ChassisCmdCali(void);
 
+#define rc_deadband_limit(input, output, dealine)          \
+    {                                                      \
+        if ((input) > (dealine) || (input) < -(dealine)) { \
+            (output) = (input);                            \
+        } else {                                           \
+            (output) = 0;                                  \
+        }                                                  \
+    }
+
+typedef enum __ChassisState {
+    CHASSIS_STATE_NORNAL,  // 底盘正常状态
+    CHASSIS_STATE_ERROR    // 底盘错误状态
+} ChassisState_e;
 
 /**
  * @brief 获取底盘状态（未启用）

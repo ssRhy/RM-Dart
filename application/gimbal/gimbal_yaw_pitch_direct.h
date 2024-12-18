@@ -25,9 +25,8 @@
 #include "motor.h"
 #include "pid.h"
 #include "remote_control.h"
-#include "robot_param.h"
 #include "struct_typedef.h"
-#include  "user_lib.h"
+#include "user_lib.h"
 #include "CAN_cmd_dji.h"
 #include "detect_task.h"
 #include "usb_debug.h"
@@ -98,8 +97,6 @@ extern void GimbalReference(void);
 extern void GimbalConsole(void);
 
 extern void GimbalSendCmd(void);
-
-extern inline float GetGimbalDeltaYawMid(void);
 
 #endif  // GIMBAL_YAW_PITCH_H
 #endif  // GIMBAL_YAW_PITCH

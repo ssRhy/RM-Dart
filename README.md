@@ -7,6 +7,7 @@
 [![Author](https://img.shields.io/badge/Author-小企鹅-orange.svg)](https://gitee.com/Ljw0401)
 [![Maintainer](https://img.shields.io/badge/Maintainer-YZX-orange.svg)](https://gitee.com/yuan-zaixiu)
 [![Collaborator](https://img.shields.io/badge/Collaborator-WHR-orange.svg)](https://gitee.com/Harry_Wong)
+[![Collaborator](https://img.shields.io/badge/Collaborator-furrry-orange.svg)](https://gitee.com/furrry)
 
 ![language](https://img.shields.io/badge/language-C-blue.svg)
 ![license](https://img.shields.io/badge/license-MIT-green.svg)
@@ -104,3 +105,8 @@
 本文的详细补充内容写在 [附录](./doc/appendix.md) 中。
 
 如发现本项目中的问题，请添加至[问题列表](./doc/questions.md)并与相关负责人联系，如果有解决方案可以提交pull request。
+
+## 通讯信息
+
+- 作者 Penguin （总负责） 微信：18968748997 QQ：1357482552
+- 合作者 whr （负责：直连云台）

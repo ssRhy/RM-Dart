@@ -37,6 +37,7 @@ void develop_task(void const * pvParameters)
     while (1) {
         
         float a = GetGimbalDeltaYawMid();
+        bool b = GetGimbalInitJudgeReturn();
         vTaskDelay(1);
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
