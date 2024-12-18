@@ -1,21 +1,21 @@
 /**
   * @file       robot_param_omni_infantry.h
   * @brief      这里是全向轮步兵机器人参数配置文件，包括物理参数、PID参数等
-  * @history
-  *  Version    Date            Author          Modification
-  *  V1.1.0     2024-11-3     Harry_Wong        1. 完成云台所有基本控制
   */
 
 #ifndef INCLUDED_ROBOT_PARAM_H
 #define INCLUDED_ROBOT_PARAM_H
 #include "robot_typedef.h"
 
-#define CHASSIS_TYPE CHASSIS_OMNI_WHEEL  // 选择底盘类型
-#define GIMBAL_TYPE GIMBAL_YAW_PITCH_DIRECT    // 选择云台类型
-#define SHOOT_TYPE SHOOT_NONE            // 选择发射机构类型
-#define CONTROL_TYPE CHASSIS_AND_GIMBAL  // 选择控制类型
+#define CHASSIS_MODE_CHANNEL   0  // 选择底盘状态 开关通道号
+
+#define CHASSIS_TYPE CHASSIS_MECANUM_WHEEL  // 选择底盘类型
+#define GIMBAL_TYPE GIMBAL_YAW_PITCH_DIRECT // 选择云台类型
+#define SHOOT_TYPE SHOOT_NONE               // 选择发射机构类型
+#define CONTROL_TYPE CHASSIS_AND_GIMBAL           // 选择控制类型
 #define MECHANICAL_ARM_TYPE MECHANICAL_ARM_NONE  //选择机械臂类型
 
+// 机器人物理参数
 typedef enum {
     // 底盘CAN1
     WHEEL1 = 0,
