@@ -20,17 +20,21 @@
 #if (GIMBAL_TYPE == GIMBAL_YAW_PITCH_DIRECT)
 #ifndef GIMBAL_YAW_PITCH_H
 #define GIMBAL_YAW_PITCH_H
-#include "IMU_task.h"//陀螺仪文件
+#include "IMU.h"//陀螺仪文件
 #include "gimbal.h"
 #include "motor.h"
 #include "pid.h"
 #include "remote_control.h"
+#include "robot_param.h"
 #include "struct_typedef.h"
-#include "user_lib.h"
+#include  "user_lib.h"
 #include "CAN_cmd_dji.h"
 #include "detect_task.h"
 #include "usb_debug.h"
 #include "cmsis_os.h"
+#include "CAN_receive.h"
+#include "math.h"
+#include "macro_typedef.h"
 
 
 /**
@@ -65,15 +69,13 @@ typedef struct
 typedef struct
 {
     const RC_ctrl_t * rc;  // 遥控器指针
-    GimbalMode_e mode,last_mode;     // 模式
+    GimbalMode_e mode,last_mode;  // 模式
 
     /*-------------------- Motors --------------------*/
     Motor_s yaw,pitch;
     /*-------------------- Values --------------------*/
-    const Imu_t  *imu;  // IMU数据
-
     Values_t reference;    // 期望值
-    Values_t feedback;     // 状态值
+    Values_t feedback_pos,feedback_vel;     // 状态值(目前专供给IMU数据)
     Values_t upper_limit;  // 上限值
     Values_t lower_limit;  // 下限值
 
