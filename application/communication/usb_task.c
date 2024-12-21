@@ -29,6 +29,7 @@
 #include "usb_typdef.h"
 #include "usbd_cdc_if.h"
 #include "usbd_conf.h"
+#include "supervisory_computer_cmd.h"
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
 uint32_t usb_high_water;
@@ -691,5 +692,73 @@ inline float GetScCmdGimbalAngle(uint8_t axis)
         return ROBOT_CMD_DATA.gimbal.pitch;
     }
     return 0.0f;
+}
+
+/**
+ * @brief 获取上位机控制指令：底盘坐标系下axis方向运动线速度
+ * @param axis 轴id，可配合定义好的轴id宏使用
+ * @return float (m/s) 底盘坐标系下axis方向运动线速度
+ */
+inline float GetScCmdChassisSpeed(uint8_t axis)
+{
+    if (axis == AX_X)
+    {
+        return ROBOT_CMD_DATA.speed_vector.vx;
+    } 
+    else if (axis == AX_Y) 
+    {
+        return ROBOT_CMD_DATA.speed_vector.vy;
+    }
+    else if (axis == AX_Z)
+    {
+        return 0;
+    }
+    return 0.0f;
+}
+
+/**
+ * @brief 获取上位机控制指令：底盘坐标系下axis方向运动角速度
+ * @param axis 轴id，可配合定义好的轴id宏使用
+ * @return float (rad/s) 底盘坐标系下axis方向运动角速度
+ */
+inline float GetScCmdChassisVelocity(uint8_t axis)
+{
+    if (axis == AX_Z)
+    {
+        return ROBOT_CMD_DATA.speed_vector.wz;
+    } 
+    return 0.0f;
+}
+
+
+/**
+ * @brief 获取上位机控制指令：底盘离地高度，平衡底盘中可用作腿长参数
+ * @param void
+ * @return (m) 底盘离地高度
+ */
+inline float GetScCmdChassisHeight(void)
+{
+    return ROBOT_CMD_DATA.chassis.leg_length;
+}
+
+/**
+ * @brief 获取上位机控制指令：开火
+ * @param void
+ * @return bool 是否开火
+ */
+inline bool GetScCmdFire(void)
+{
+    return ROBOT_CMD_DATA.shoot.fire;
+}
+
+
+/**
+ * @brief 获取上位机控制指令：启动摩擦轮
+ * @param void
+ * @return bool 是否启动摩擦轮
+ */
+inline bool GetScCmdFricOn(void)
+{
+    return ROBOT_CMD_DATA.shoot.fric_on;
 }
 /*------------------------------ End of File ------------------------------*/
