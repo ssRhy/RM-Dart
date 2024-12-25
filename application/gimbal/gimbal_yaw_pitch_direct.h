@@ -42,8 +42,10 @@
  */
 typedef enum {
     GIMBAL_ZERO_FORCE,  // 云台无力，所有控制量置0
-    GIMBAL_IMU,        // 云台陀螺仪控制
-    GIMBAL_INIT,        //云台校准模式
+    GIMBAL_IMU,         // 云台陀螺仪控制(角度控制)
+    GIMBAL_INIT,        //云台矫正模式
+    GIMBAL_DBUS_ERR,    //遥控器断联相关处理任务
+    GIMBAL_GAP,         //跳出矫正进入IMU/AUTO_AIM模式之前的存储数据模式
 } GimbalMode_e;
 
 
@@ -69,7 +71,7 @@ typedef struct
 typedef struct
 {
     const RC_ctrl_t * rc;  // 遥控器指针
-    GimbalMode_e mode,last_mode;  // 模式
+    GimbalMode_e mode,last_mode,mode_before_rc_err;  // 模式
 
     /*-------------------- Motors --------------------*/
     Motor_s yaw,pitch;
@@ -85,7 +87,7 @@ typedef struct
 
     uint32_t init_start_time,init_timer;
 
-    bool init_continue;
+    bool init_continue; //是否继续进行校准模式
 } Gimbal_s;
 
 extern void GimbalInit(void);
