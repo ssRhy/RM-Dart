@@ -163,8 +163,10 @@ void GimbalInit(void)
    gimbal_direct.last_mode = GIMBAL_ZERO_FORCE;
    gimbal_direct.mode_before_rc_err = GIMBAL_ZERO_FORCE;
 
-   //step7 云台基准值测量逻辑
+   //step7 云台基准值初始化
    gimbal_direct.init_base = false;
+   gimbal_direct.imu_base.pitch=0.0f;
+   gimbal_direct.imu_base.yaw=0.0f;
 }
 /*-------------------- Set mode --------------------*/
 
