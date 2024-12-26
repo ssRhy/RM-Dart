@@ -26,6 +26,8 @@
 #include "motor.h" 
 #include "detect_task.h"
 #include "math.h"
+#include "gimbal.h"
+#include "supervisory_computer_cmd.h"
 
 Motor_s __Motor;
 Chassis_s CHASSIS;
@@ -74,7 +76,7 @@ void ChassisInit(void)
 void ChassisSetMode(void)
 {
     if (switch_is_up(CHASSIS.rc->rc.s[CHASSIS_MODE_CHANNEL])) {
-        CHASSIS.mode = CHASSIS_SPIN;
+        CHASSIS.mode = CHASSIS_NAVIGATION;
     } else if (switch_is_mid(CHASSIS.rc->rc.s[CHASSIS_MODE_CHANNEL]) && (GetGimbalInitJudgeReturn())) {
         CHASSIS.mode = CHASSIS_FOLLOW_GIMBAL_YAW;
     } else if (switch_is_down(CHASSIS.rc->rc.s[CHASSIS_MODE_CHANNEL]) || !(GetGimbalInitJudgeReturn())) {
@@ -175,6 +177,13 @@ void ChassisReference(void) {
                 CHASSIS.wheel_motor[0].set.curr = current;
             }
             break;
+        }
+        case CHASSIS_NAVIGATION:{
+            fp32 sin_yaw = sinf(CHASSIS.dyaw), cos_yaw = cosf(CHASSIS.dyaw);
+
+            CHASSIS.vy_set = cos_yaw *GetScCmdChassisSpeed(AX_Y) - sin_yaw *GetScCmdChassisSpeed(AX_X);
+	        CHASSIS.vx_set = sin_yaw *GetScCmdChassisSpeed(AX_Y) + cos_yaw *GetScCmdChassisSpeed(AX_X);
+            CHASSIS.wz_set = GetScCmdChassisVelocity(AX_Z);
         }
         default:
             break;
