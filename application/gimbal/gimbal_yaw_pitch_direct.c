@@ -64,7 +64,7 @@ bool Gimbal_direct_init_judge (void)
 
 /*-------------------------The end of internal functions--------------------------------------*/
 
-/*----------------GetGimbalDeltaYawMid--------------------*/
+/* ---------------- GetGimbalDeltaYawMid -------------------- */
 
 /**
  * @brief          (rad) 获取yaw轴和中值的差值
@@ -76,7 +76,7 @@ inline float GetGimbalDeltaYawMid(void)
   return loop_fp32_constrain(gimbal_direct.yaw.fdb.pos-GIMBAL_DIRECT_YAW_MID,-M_PI,M_PI);
 }
 
-/*----------------GetGimbalInitJudgeReturn--------------------*/
+/* ---------------- GetGimbalInitJudgeReturn -------------------- */
 
 /**
  * @brief          对外宣称自己是否继续校准
@@ -88,6 +88,28 @@ inline bool GetGimbalInitJudgeReturn(void)
   return gimbal_direct.init_continue;
 }
 
+/* --------------------- CmdGimbalJointState ------------------- */
+
+/**
+ * @brief          返回云台的imu基准值
+ * @param[in]      uint8_t 轴id
+ * @retval         云台的基准值返回 （float)
+ */
+inline float CmdGimbalJointState(uint8_t axis)
+{
+  if ( axis == AX_PITCH )
+  {
+    return gimbal_direct.imu_base.pitch;
+  }
+  else if ( axis == AX_YAW )
+  {
+    return gimbal_direct.imu_base.yaw;
+  }
+  else 
+  {
+    return 0.0;
+  }
+}
 
 
 /*-------------------- Init --------------------*/
@@ -140,6 +162,9 @@ void GimbalInit(void)
    gimbal_direct.mode=GIMBAL_ZERO_FORCE;
    gimbal_direct.last_mode = GIMBAL_ZERO_FORCE;
    gimbal_direct.mode_before_rc_err = GIMBAL_ZERO_FORCE;
+
+   //step7 云台基准值测量逻辑
+   gimbal_direct.init_base = false;
 }
 /*-------------------- Set mode --------------------*/
 
@@ -183,6 +208,11 @@ void GimbalSetMode(void)
   {
     gimbal_direct.mode=GIMBAL_IMU;
   }
+
+  else if (switch_is_mid(gimbal_direct.rc->rc.s[0]))
+  {
+    gimbal_direct.mode=GIMBAL_AUTO_AIM;
+  }
 }
 /*-------------------- Observe --------------------*/
  
@@ -216,15 +246,20 @@ void GimbalObserver(void)
 
     gimbal_direct.init_timer=xTaskGetTickCount()-gimbal_direct.init_start_time;
   }
+  else
+  {
+      gimbal_direct.init_timer=0;
+  }
 
-  else if (gimbal_direct.mode == GIMBAL_DBUS_ERR && gimbal_direct.last_mode != GIMBAL_DBUS_ERR )
+  if (gimbal_direct.mode == GIMBAL_DBUS_ERR && gimbal_direct.last_mode != GIMBAL_DBUS_ERR )
   {
     gimbal_direct.mode_before_rc_err=gimbal_direct.last_mode;
   }
-  
-  else if (gimbal_direct.mode != GIMBAL_INIT)
+
+  if (gimbal_direct.mode == GIMBAL_GAP && gimbal_direct.init_base==false)
   {
-      gimbal_direct.init_timer=0;
+    gimbal_direct.imu_base.pitch=gimbal_direct.feedback_pos.pitch;
+    gimbal_direct.imu_base.yaw=gimbal_direct.feedback_pos.yaw;
   }
 
   gimbal_direct.last_mode=gimbal_direct.mode; //上一运行模式更新
@@ -274,6 +309,12 @@ void GimbalReference(void)
       // clang-format on
     }
   }
+
+  else if (gimbal_direct.mode == GIMBAL_AUTO_AIM)
+  {
+    gimbal_direct.reference.pitch = GetScCmdGimbalAngle(AX_PITCH);
+    gimbal_direct.reference.yaw   = GetScCmdGimbalAngle(AX_YAW);
+  }
 }
 
 /*-------------------- Console --------------------*/
@@ -290,7 +331,7 @@ void GimbalConsole(void)
     gimbal_direct.pitch.set.curr=0;
     gimbal_direct.yaw.set.curr=0;
   }
-  else if (gimbal_direct.mode == GIMBAL_IMU || gimbal_direct.mode== GIMBAL_GAP)
+  else if (gimbal_direct.mode == GIMBAL_IMU || gimbal_direct.mode== GIMBAL_GAP || gimbal_direct.mode == GIMBAL_AUTO_AIM)
   {
     gimbal_direct.pitch.set.vel=PID_calc(&gimbal_direct_pid.pitch_angle,gimbal_direct.feedback_pos.pitch,gimbal_direct.reference.pitch);
     gimbal_direct.pitch.set.curr=PID_calc(&gimbal_direct_pid.pitch_velocity,gimbal_direct.feedback_vel.pitch,gimbal_direct.pitch.set.vel);
@@ -322,6 +363,8 @@ void GimbalConsole(void)
 void GimbalSendCmd(void) 
 {
     CanCmdDjiMotor(2,0x1FF,gimbal_direct.yaw.set.curr,gimbal_direct.pitch.set.curr,0,0);
+
+
 }
 
 

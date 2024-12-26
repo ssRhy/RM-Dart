@@ -35,6 +35,7 @@
 #include "CAN_receive.h"
 #include "math.h"
 #include "macro_typedef.h"
+#include "supervisory_computer_cmd.h"
 
 
 /**
@@ -46,6 +47,7 @@ typedef enum {
     GIMBAL_INIT,        //云台矫正模式
     GIMBAL_DBUS_ERR,    //遥控器断联相关处理任务
     GIMBAL_GAP,         //跳出矫正进入IMU/AUTO_AIM模式之前的存储数据模式
+    GIMBAL_AUTO_AIM,    //自瞄模式
 } GimbalMode_e;
 
 
@@ -80,6 +82,7 @@ typedef struct
     Values_t feedback_pos,feedback_vel;     // 状态值(目前专供给IMU数据)
     Values_t upper_limit;  // 上限值
     Values_t lower_limit;  // 下限值
+    Values_t imu_base; //云台的陀螺仪基准位置
 
     PID_t pid;  // PID控制器
 
@@ -87,7 +90,7 @@ typedef struct
 
     uint32_t init_start_time,init_timer;
 
-    bool init_continue; //是否继续进行校准模式
+    bool init_continue,init_base; //是否继续进行校准模式 / 是否需要更新云台基准位置
 } Gimbal_s;
 
 extern void GimbalInit(void);
