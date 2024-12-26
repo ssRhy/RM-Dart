@@ -28,6 +28,7 @@
 #include "math.h"
 #include "gimbal.h"
 #include "supervisory_computer_cmd.h"
+#include "usb_debug.h"
 
 Motor_s __Motor;
 Chassis_s CHASSIS;
@@ -181,8 +182,8 @@ void ChassisReference(void) {
         case CHASSIS_NAVIGATION:{
             fp32 sin_yaw = sinf(CHASSIS.dyaw), cos_yaw = cosf(CHASSIS.dyaw);
 
-            CHASSIS.vy_set = cos_yaw *GetScCmdChassisSpeed(AX_Y) - sin_yaw *GetScCmdChassisSpeed(AX_X);
-	        CHASSIS.vx_set = sin_yaw *GetScCmdChassisSpeed(AX_Y) + cos_yaw *GetScCmdChassisSpeed(AX_X);
+            CHASSIS.vy_set = -(cos_yaw *GetScCmdChassisSpeed(AX_Y) - sin_yaw *GetScCmdChassisSpeed(AX_X));
+	        CHASSIS.vx_set = (sin_yaw *GetScCmdChassisSpeed(AX_Y) + cos_yaw *GetScCmdChassisSpeed(AX_X));
             CHASSIS.wz_set = GetScCmdChassisVelocity(AX_Z);
         }
         default:
@@ -270,10 +271,6 @@ void ChassisSendCmd(void)
     CanCmdDjiMotor(1, 0x200, 
     CHASSIS.wheel_motor[0].set.curr, CHASSIS.wheel_motor[1].set.curr,
     CHASSIS.wheel_motor[2].set.curr, CHASSIS.wheel_motor[3].set.curr);
-
-  //ModifyDebugDataPackage(2, CHASSIS.dyaw, "dyaw");
-  //ModifyDebugDataPackage(3, CHASSIS.wz_set, "wz_set");  
-
 }
 
 #endif //CHASSIS_MECANUM_WHEEL
