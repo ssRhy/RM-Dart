@@ -10,7 +10,7 @@
 #define INCLUDED_ROBOT_PARAM_H
 #include "robot_typedef.h"
 
-#define CHASSIS_TYPE CHASSIS_OMNI_WHEEL  // 选择底盘类型
+#define CHASSIS_TYPE CHASSIS_NONE  // 选择底盘类型
 #define GIMBAL_TYPE GIMBAL_YAW_PITCH_DIRECT    // 选择云台类型
 #define SHOOT_TYPE SHOOT_NONE            // 选择发射机构类型
 #define CONTROL_TYPE CHASSIS_AND_GIMBAL  // 选择控制类型
@@ -99,12 +99,14 @@ typedef enum {
 
 /*-------------------- Gimbal --------------------*/
 //gimbal_init-------------------------------
-#define GIMBAL_INIT_TIME (uint32_t)2000
+#define GIMBAL_INIT_TIME (uint32_t)1000
 
 //mouse sensitivity ---------------------
 #define MOUSE_SENSITIVITY (0.5f)
 //remote controller sensitivity ---------------------
 #define REMOTE_CONTROLLER_SENSITIVITY (100000.0f)
+#define REMOTE_CONTROLLER_MAX_DEADLINE (20.0f)
+#define REMOTE_CONTROLLER_MIN_DEADLINE (-20.0f)
 //motor parameters ---------------------
 //电机id
 #define GIMBAL_DIRECT_YAW_ID ((uint8_t)1)
@@ -140,22 +142,22 @@ typedef enum {
 
 //PID parameters ---------------------
 //YAW ANGLE
-#define KP_GIMBAL_YAW_ANGLE (3.0f)
+#define KP_GIMBAL_YAW_ANGLE (9.00f)
 #define KI_GIMBAL_YAW_ANGLE (0.003f)
-#define KD_GIMBAL_YAW_ANGLE (0.8f)
+#define KD_GIMBAL_YAW_ANGLE (0.75f)
 #define MAX_IOUT_GIMBAL_YAW_ANGLE (0.05f)
 #define MAX_OUT_GIMBAL_YAW_ANGLE (20.0f)
 //VELOCITY:角速度
-#define KP_GIMBAL_YAW_VELOCITY (800.0f)
-#define KI_GIMBAL_YAW_VELOCITY (20.0f)
-#define KD_GIMBAL_YAW_VELOCITY (100.0f)
+#define KP_GIMBAL_YAW_VELOCITY (5000.0f)
+#define KI_GIMBAL_YAW_VELOCITY (1.0f)
+#define KD_GIMBAL_YAW_VELOCITY (0.1f)
 #define MAX_IOUT_GIMBAL_YAW_VELOCITY (10000.0f)
 #define MAX_OUT_GIMBAL_YAW_VELOCITY (30000.0f)
 
 //PITCH ANGLE
-#define KP_GIMBAL_PITCH_ANGLE (3.0f)
-#define KI_GIMBAL_PITCH_ANGLE (0.003f)
-#define KD_GIMBAL_PITCH_ANGLE (0.8f)
+#define KP_GIMBAL_PITCH_ANGLE (4.5f)
+#define KI_GIMBAL_PITCH_ANGLE (0.0001f)
+#define KD_GIMBAL_PITCH_ANGLE (3.0f)
 #define MAX_IOUT_GIMBAL_PITCH_ANGLE (1.0f)
 #define MAX_OUT_GIMBAL_PITCH_ANGLE (10.0f)
 //VELOCITY:角速度
