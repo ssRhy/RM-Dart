@@ -454,10 +454,25 @@ uint16_t GetOtherBoardDataUint16(uint8_t data_id, uint8_t data_offset)
 /**
  * @brief          获取超级电容反馈数据
  * @param[out]     p_sup_cap 超级电容结构体 
+ * @note           测试期间临时使用，后续将会删除，正式版中使用GetSupCapMeasure
  * @return         none
  */
 void GetSupCapFdbData(SupCapMeasure_s * p_sup_cap)
 {
     memcpy(p_sup_cap, &SUP_CAP_MEASURE, sizeof(SupCapMeasure_s));
 }
+
+/**
+ * @brief          获取超级电容反馈数据
+ * @param[out]     p_sup_cap 超级电容结构体 
+ * @return         none
+ */
+void GetSupCapMeasure(SupCap_s * p_sup_cap)
+{
+    p_sup_cap->fdb.voltage_in = SUP_CAP_MEASURE.voltage_in / 100.0f;
+    p_sup_cap->fdb.voltage_cap = SUP_CAP_MEASURE.voltage_cap / 100.0f;
+    p_sup_cap->fdb.current_in = SUP_CAP_MEASURE.current_in / 50.0f;
+    p_sup_cap->fdb.power_target = SUP_CAP_MEASURE.power_target;
+}
+
 /************************ END OF FILE ************************/
