@@ -314,8 +314,8 @@ void GimbalReference(void)
 
   else if (gimbal_direct.mode == GIMBAL_AUTO_AIM)
   {
-    gimbal_direct.reference.pitch = GetScCmdGimbalAngle(AX_PITCH);
-    gimbal_direct.reference.yaw   = GetScCmdGimbalAngle(AX_YAW);
+    gimbal_direct.reference.pitch = fp32_constrain(gimbal_direct.imu_base.pitch + GetScCmdGimbalAngle(AX_PITCH) , GIMBAL_LOWER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu  , GIMBAL_UPPER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu );
+    gimbal_direct.reference.yaw   = loop_fp32_constrain(gimbal_direct.reference.yaw + GetScCmdGimbalAngle(AX_YAW) , -M_PI , M_PI );
   }
 }
 
