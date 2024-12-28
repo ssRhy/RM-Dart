@@ -10,7 +10,7 @@
 #define INCLUDED_ROBOT_PARAM_H
 #include "robot_typedef.h"
 
-#define CHASSIS_TYPE CHASSIS_OMNI_WHEEL  // 选择底盘类型
+#define CHASSIS_TYPE CHASSIS_NONE  // 选择底盘类型
 #define GIMBAL_TYPE GIMBAL_YAW_PITCH_DIRECT    // 选择云台类型
 #define SHOOT_TYPE SHOOT_NONE            // 选择发射机构类型
 #define CONTROL_TYPE CHASSIS_AND_GIMBAL  // 选择控制类型
@@ -137,8 +137,8 @@ typedef enum {
 #define GIMBAL_LOWER_LIMIT_PITCH (-0.5f)
 
 //电机角度中值设置
-#define GIMBAL_DIRECT_PITCH_MID (0.7435f) //云台初始化正对齐的时候使用的pitch轴正中心量
-#define GIMBAL_DIRECT_YAW_MID (2.0916f) //云台初始化正对齐的时候使用的yaw轴正中心量
+#define GIMBAL_DIRECT_PITCH_MID (2.3731f) //云台初始化正对齐的时候使用的pitch轴正中心量
+#define GIMBAL_DIRECT_YAW_MID (2.1246f) //云台初始化正对齐的时候使用的yaw轴正中心量
 
 //PID parameters ---------------------
 //YAW ANGLE

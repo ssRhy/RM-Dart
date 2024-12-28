@@ -211,7 +211,7 @@ void GimbalSetMode(void)
     gimbal_direct.mode=GIMBAL_IMU;
   }
 
-  else if (switch_is_mid(gimbal_direct.rc->rc.s[0]))
+  else if (switch_is_up(gimbal_direct.rc->rc.s[0]))
   {
     gimbal_direct.mode=GIMBAL_AUTO_AIM;
   }
@@ -366,7 +366,9 @@ void GimbalSendCmd(void)
 {
     CanCmdDjiMotor(2,0x1FF,gimbal_direct.yaw.set.curr,gimbal_direct.pitch.set.curr,0,0);
 
-
+    ModifyDebugDataPackage(1,GetScCmdGimbalAngle(AX_PITCH),"pitch");
+    ModifyDebugDataPackage(2,GetScCmdGimbalAngle(AX_YAW),"yaw");
+    ModifyDebugDataPackage(3,(gimbal_direct.mode == GIMBAL_AUTO_AIM),"mode");
 }
 
 
