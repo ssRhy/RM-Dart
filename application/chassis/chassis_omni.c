@@ -61,10 +61,10 @@ void ChassisInit(void)
         MAX_OUT_CHASSIS_GIMBAL_FOLLOW_ANGLE,MAX_IOUT_CHASSIS_GIMBAL_FOLLOW_ANGLE);
     
     /*-------------------- 初始化底盘电机 --------------------*/
-    MotorInit(&CHASSIS.wheel_motor[0], 1, 1, DJI_M3508, 1, 1, 1);
-    MotorInit(&CHASSIS.wheel_motor[1], 2, 1, DJI_M3508, 1, 1, 1);
-    MotorInit(&CHASSIS.wheel_motor[2], 3, 1, DJI_M3508, 1, 1, 1);
-    MotorInit(&CHASSIS.wheel_motor[3], 4, 1, DJI_M3508, 1, 1, 1);
+    MotorInit(&CHASSIS.wheel_motor[0], 1, 1, DJI_M3508, 1, 19, 1);
+    MotorInit(&CHASSIS.wheel_motor[1], 2, 1, DJI_M3508, 1, 19, 1);
+    MotorInit(&CHASSIS.wheel_motor[2], 3, 1, DJI_M3508, 1, 19, 1);
+    MotorInit(&CHASSIS.wheel_motor[3], 4, 1, DJI_M3508, 1, 19, 1);
 }
 
 /*-------------------- Set mode --------------------*/
@@ -243,11 +243,21 @@ void ChassisConsole(void)
         return;
     }
     
-    //麦轮解算
-    CHASSIS.wheel_motor[0].set.vel = -CHASSIS.vx_set + CHASSIS.vy_set + (CHASSIS_WZ_SET_SCALE - 1.0f) * CHASSIS.wz_set;
-    CHASSIS.wheel_motor[1].set.vel =  CHASSIS.vx_set + CHASSIS.vy_set + (CHASSIS_WZ_SET_SCALE - 1.0f) * CHASSIS.wz_set;
-    CHASSIS.wheel_motor[2].set.vel =  CHASSIS.vx_set - CHASSIS.vy_set + (CHASSIS_WZ_SET_SCALE - 1.0f) * CHASSIS.wz_set;
-    CHASSIS.wheel_motor[3].set.vel = -CHASSIS.vx_set - CHASSIS.vy_set + (CHASSIS_WZ_SET_SCALE - 1.0f) * CHASSIS.wz_set; 
+    if (CHASSIS.mode == CHASSIS_NAVIGATION)
+    {
+        CHASSIS.wheel_motor[0].set.vel = (-CHASSIS.vx_set + CHASSIS.vy_set + (0.295) * CHASSIS.wz_set)/(M_PI*0.16)*CHASSIS.wheel_motor[0].reduction_ratio;
+        CHASSIS.wheel_motor[1].set.vel =  (CHASSIS.vx_set + CHASSIS.vy_set + (0.295) * CHASSIS.wz_set)/(M_PI*0.16)*CHASSIS.wheel_motor[1].reduction_ratio;
+        CHASSIS.wheel_motor[2].set.vel =  (CHASSIS.vx_set - CHASSIS.vy_set + (0.295) * CHASSIS.wz_set)/(M_PI*0.16)*CHASSIS.wheel_motor[2].reduction_ratio;
+        CHASSIS.wheel_motor[3].set.vel = (-CHASSIS.vx_set - CHASSIS.vy_set + (0.295) * CHASSIS.wz_set)/(M_PI*0.16)*CHASSIS.wheel_motor[3].reduction_ratio; 
+    }
+    else{
+        //麦轮解算
+        CHASSIS.wheel_motor[0].set.vel = -CHASSIS.vx_set + CHASSIS.vy_set + (CHASSIS_WZ_SET_SCALE - 1.0f) * CHASSIS.wz_set;
+        CHASSIS.wheel_motor[1].set.vel =  CHASSIS.vx_set + CHASSIS.vy_set + (CHASSIS_WZ_SET_SCALE - 1.0f) * CHASSIS.wz_set;
+        CHASSIS.wheel_motor[2].set.vel =  CHASSIS.vx_set - CHASSIS.vy_set + (CHASSIS_WZ_SET_SCALE - 1.0f) * CHASSIS.wz_set;
+        CHASSIS.wheel_motor[3].set.vel = -CHASSIS.vx_set - CHASSIS.vy_set + (CHASSIS_WZ_SET_SCALE - 1.0f) * CHASSIS.wz_set;
+    }
+     
 
     //pid速度计算            
     for (i = 0; i < 4; i++)
