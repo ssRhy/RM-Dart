@@ -258,12 +258,6 @@ void GimbalObserver(void)
     gimbal_direct.mode_before_rc_err=gimbal_direct.last_mode;
   }
 
-  if (gimbal_direct.mode == GIMBAL_GAP && gimbal_direct.init_base==false)
-  {
-    gimbal_direct.imu_base.pitch=gimbal_direct.feedback_pos.pitch;
-    gimbal_direct.imu_base.yaw=gimbal_direct.feedback_pos.yaw;
-  }
-
   gimbal_direct.last_mode=gimbal_direct.mode; //上一运行模式更新
 
 
@@ -372,10 +366,6 @@ void GimbalConsole(void)
 void GimbalSendCmd(void) 
 {
     CanCmdDjiMotor(2,0x1FF,gimbal_direct.yaw.set.curr,gimbal_direct.pitch.set.curr,0,0);
-
-    ModifyDebugDataPackage(1,GetScCmdGimbalAngle(AX_PITCH),"pitch");
-    ModifyDebugDataPackage(2,GetScCmdGimbalAngle(AX_YAW),"yaw");
-    ModifyDebugDataPackage(3,(gimbal_direct.mode == GIMBAL_AUTO_AIM),"mode");
 }
 
 
