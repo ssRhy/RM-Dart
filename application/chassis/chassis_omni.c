@@ -26,6 +26,7 @@
 #include "motor.h" 
 #include "detect_task.h"
 #include "math.h"
+#include "gimbal.h"
 
 Motor_s __Motor;
 Chassis_s CHASSIS;
