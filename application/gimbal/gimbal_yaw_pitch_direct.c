@@ -288,6 +288,13 @@ void GimbalReference(void)
   {
     gimbal_direct.reference.pitch=gimbal_direct.feedback_pos.pitch;
     gimbal_direct.reference.yaw=gimbal_direct.feedback_pos.yaw;
+
+    if (gimbal_direct.init_base == false)
+    {
+      gimbal_direct.imu_base.pitch=gimbal_direct.feedback_pos.pitch;
+      gimbal_direct.imu_base.yaw=gimbal_direct.feedback_pos.yaw;
+      gimbal_direct.init_base=true;
+    }
   }
 
   else if (gimbal_direct.mode==GIMBAL_IMU)
@@ -315,7 +322,7 @@ void GimbalReference(void)
   else if (gimbal_direct.mode == GIMBAL_AUTO_AIM)
   {
     gimbal_direct.reference.pitch = fp32_constrain(gimbal_direct.imu_base.pitch + GetScCmdGimbalAngle(AX_PITCH) , GIMBAL_LOWER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu  , GIMBAL_UPPER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu );
-    gimbal_direct.reference.yaw   = loop_fp32_constrain(gimbal_direct.reference.yaw + GetScCmdGimbalAngle(AX_YAW) , -M_PI , M_PI );
+    gimbal_direct.reference.yaw   = loop_fp32_constrain(gimbal_direct.imu_base.yaw + GetScCmdGimbalAngle(AX_YAW) , -M_PI , M_PI );
   }
 }
 
