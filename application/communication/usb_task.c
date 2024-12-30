@@ -30,6 +30,7 @@
 #include "usbd_cdc_if.h"
 #include "usbd_conf.h"
 #include "supervisory_computer_cmd.h"
+#include "gimbal.h"
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
 uint32_t usb_high_water;
@@ -620,8 +621,8 @@ static void UsbSendRobotStatusData(void)
 static void UsbSendJointStateData(void)
 {
     SEND_JOINT_STATE_DATA.time_stamp = HAL_GetTick();
-    SEND_JOINT_STATE_DATA.data.pitch = 1.0f;
-    SEND_JOINT_STATE_DATA.data.yaw = 2.0f;
+    SEND_JOINT_STATE_DATA.data.pitch = CmdGimbalJointState(AX_PITCH);
+    SEND_JOINT_STATE_DATA.data.yaw = CmdGimbalJointState(AX_YAW);
     append_CRC16_check_sum((uint8_t *)&SEND_JOINT_STATE_DATA, sizeof(SendDataJointState_s));
     USB_Transmit((uint8_t *)&SEND_JOINT_STATE_DATA, sizeof(SendDataJointState_s));
 }
