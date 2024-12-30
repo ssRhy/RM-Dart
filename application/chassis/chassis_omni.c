@@ -243,20 +243,10 @@ void ChassisConsole(void)
         return;
     }
     
-    if (CHASSIS.mode == CHASSIS_NAVIGATION)
-    {
         CHASSIS.wheel_motor[0].set.vel = (sqrt(2)*( -CHASSIS.vx_set + CHASSIS.vy_set) - (0.295f) * CHASSIS.wz_set)/(M_PI*0.16f)*CHASSIS.wheel_motor[0].reduction_ratio;
-        CHASSIS.wheel_motor[1].set.vel = (sqrt(2)*( CHASSIS.vx_set + CHASSIS.vy_set )- (0.295f) * CHASSIS.wz_set)/(M_PI*0.16f)*CHASSIS.wheel_motor[1].reduction_ratio;
-        CHASSIS.wheel_motor[2].set.vel = (sqrt(2)*( CHASSIS.vx_set - CHASSIS.vy_set )- (0.295f) * CHASSIS.wz_set)/(M_PI*0.16f)*CHASSIS.wheel_motor[2].reduction_ratio;
+        CHASSIS.wheel_motor[1].set.vel = (sqrt(2)*( CHASSIS.vx_set + CHASSIS.vy_set ) - (0.295f) * CHASSIS.wz_set)/(M_PI*0.16f)*CHASSIS.wheel_motor[1].reduction_ratio;
+        CHASSIS.wheel_motor[2].set.vel = (sqrt(2)*( CHASSIS.vx_set - CHASSIS.vy_set ) - (0.295f) * CHASSIS.wz_set)/(M_PI*0.16f)*CHASSIS.wheel_motor[2].reduction_ratio;
         CHASSIS.wheel_motor[3].set.vel = (sqrt(2)*( -CHASSIS.vx_set - CHASSIS.vy_set )- (0.295f) * CHASSIS.wz_set)/(M_PI*0.16f)*CHASSIS.wheel_motor[3].reduction_ratio; 
-    }
-    else{
-        //麦轮解算
-        CHASSIS.wheel_motor[0].set.vel = -CHASSIS.vx_set + CHASSIS.vy_set + (CHASSIS_WZ_SET_SCALE - 1.0f) * CHASSIS.wz_set;
-        CHASSIS.wheel_motor[1].set.vel =  CHASSIS.vx_set + CHASSIS.vy_set + (CHASSIS_WZ_SET_SCALE - 1.0f) * CHASSIS.wz_set;
-        CHASSIS.wheel_motor[2].set.vel =  CHASSIS.vx_set - CHASSIS.vy_set + (CHASSIS_WZ_SET_SCALE - 1.0f) * CHASSIS.wz_set;
-        CHASSIS.wheel_motor[3].set.vel = -CHASSIS.vx_set - CHASSIS.vy_set + (CHASSIS_WZ_SET_SCALE - 1.0f) * CHASSIS.wz_set;
-    }
      
 
     //pid速度计算            
