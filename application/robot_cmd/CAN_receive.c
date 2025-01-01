@@ -47,6 +47,8 @@ static DmMeasure_s CAN2_DM_MEASURE[DM_NUM];
 static LkMeasure_s CAN1_LK_MEASURE[LK_NUM];
 static LkMeasure_s CAN2_LK_MEASURE[LK_NUM];
 
+static SupCapMeasure_s SUP_CAP_MEASURE;
+
 static uint8_t OTHER_BOARD_DATA_ANY[DATA_NUM][8];
 static uint16_t OTHER_BOARD_DATA_UINT16[DATA_NUM][4];
 
@@ -105,6 +107,22 @@ void LkFdbData(LkMeasure_s * lk_measure, uint8_t * rx_data)
     lk_measure->encoder = (uint16_t)(rx_data[7] << 8 | rx_data[6]);
 
     lk_measure->last_fdb_time = HAL_GetTick();
+}
+
+/**
+ * @brief        SupCapFdbData: 获取超级电容反馈数据函数
+ * @param[out]   dm_measure 电机数据缓存
+ * @param[in]    rx_data 指向包含反馈数据的数组指针
+ * @note         从接收到的数据中提取LK电机的反馈信息
+ */
+void SupCapFdbData(SupCapMeasure_s * sup_cap_measure, uint8_t * rx_data)
+{
+    sup_cap_measure->voltage_in = (uint16_t)(rx_data[1] << 8 | rx_data[0]);
+    sup_cap_measure->voltage_cap = (uint16_t)(rx_data[3] << 8 | rx_data[2]);
+    sup_cap_measure->current_in = (uint16_t)(rx_data[5] << 8 | rx_data[4]);
+    sup_cap_measure->power_target = (uint16_t)(rx_data[7] << 8 | rx_data[6]);
+
+    sup_cap_measure->last_fdb_time = HAL_GetTick();
 }
 
 /**
@@ -174,6 +192,12 @@ static void DecodeStdIdData(hcan_t * CAN, CAN_RxHeaderTypeDef * rx_header, uint8
         default: {
             break;
         }
+    }
+
+    //超级电容通信数据解码
+    if (rx_header->StdId == 0x211) {
+        SupCapFdbData(&SUP_CAP_MEASURE, rx_data);
+        return;
     }
 
     //板间通信数据解码
@@ -426,3 +450,29 @@ uint16_t GetOtherBoardDataUint16(uint8_t data_id, uint8_t data_offset)
 {
     return OTHER_BOARD_DATA_UINT16[data_id][data_offset];
 }
+
+/**
+ * @brief          获取超级电容反馈数据
+ * @param[out]     p_sup_cap 超级电容结构体 
+ * @note           测试期间临时使用，后续将会删除，正式版中使用GetSupCapMeasure
+ * @return         none
+ */
+void GetSupCapFdbData(SupCapMeasure_s * p_sup_cap)
+{
+    memcpy(p_sup_cap, &SUP_CAP_MEASURE, sizeof(SupCapMeasure_s));
+}
+
+/**
+ * @brief          获取超级电容反馈数据
+ * @param[out]     p_sup_cap 超级电容结构体 
+ * @return         none
+ */
+void GetSupCapMeasure(SupCap_s * p_sup_cap)
+{
+    p_sup_cap->fdb.voltage_in = SUP_CAP_MEASURE.voltage_in / 100.0f;
+    p_sup_cap->fdb.voltage_cap = SUP_CAP_MEASURE.voltage_cap / 100.0f;
+    p_sup_cap->fdb.current_in = SUP_CAP_MEASURE.current_in / 50.0f;
+    p_sup_cap->fdb.power_target = SUP_CAP_MEASURE.power_target;
+}
+
+/************************ END OF FILE ************************/

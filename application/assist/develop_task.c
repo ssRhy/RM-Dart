@@ -10,6 +10,7 @@
 #include "usb_debug.h"
 #include "user_lib.h"
 #include "gimbal.h"
+#include "CAN_communication.h"
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
 uint32_t develop_high_water;
@@ -21,6 +22,9 @@ const CaliBuzzerState_e * p_CALI_BUZZER_STATE;
 const ChassisSpeedVector_t * p_CHASSIS_FDB_SPEED;
 const RobotCmdData_t * p_ROBOT_CMD_DATA;
 const bool * p_USB_OFFLINE;
+
+SupCapMeasure_s SUP_CAP_MEASURE;
+SupCap_s SUP_CAP;
 
 void develop_task(void const * pvParameters)
 {
@@ -34,10 +38,26 @@ void develop_task(void const * pvParameters)
     p_ROBOT_CMD_DATA = Subscribe(ROBOT_CMD_DATA_NAME);
     p_USB_OFFLINE = Subscribe(USB_OFFLINE_NAME);
 
+    // 初始化超级电容
+    SupCapInit(&SUP_CAP, 1);
+
     while (1) {
         
         float a = GetGimbalDeltaYawMid();
-        bool b = GetGimbalInitJudgeReturn();
+
+        GetSupCapFdbData(&SUP_CAP_MEASURE);
+        GetSupCapMeasure(&SUP_CAP);
+
+        ModifyDebugDataPackage(0, SUP_CAP_MEASURE.voltage_in, "o_vol_in");
+        ModifyDebugDataPackage(1, SUP_CAP_MEASURE.voltage_cap, "o_vol_cap");
+        ModifyDebugDataPackage(2, SUP_CAP_MEASURE.current_in, "o_cur_in");
+        ModifyDebugDataPackage(3, SUP_CAP_MEASURE.power_target, "o_p_tg");
+
+        ModifyDebugDataPackage(4, SUP_CAP.fdb.voltage_in, "vol_in");
+        ModifyDebugDataPackage(5, SUP_CAP.fdb.voltage_cap, "vol_cap");
+        ModifyDebugDataPackage(6, SUP_CAP.fdb.current_in, "cur_in");
+        ModifyDebugDataPackage(7, SUP_CAP.fdb.power_target, "p_target");
+
         vTaskDelay(1);
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
