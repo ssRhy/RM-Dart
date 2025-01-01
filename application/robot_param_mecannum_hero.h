@@ -1,21 +1,21 @@
 /**
   * @file       robot_param_omni_infantry.h
   * @brief      这里是全向轮步兵机器人参数配置文件，包括物理参数、PID参数等
-  * @history
-  *  Version    Date            Author          Modification
-  *  V1.1.0     2024-11-3     Harry_Wong        1. 完成云台所有基本控制
   */
 
 #ifndef INCLUDED_ROBOT_PARAM_H
 #define INCLUDED_ROBOT_PARAM_H
 #include "robot_typedef.h"
 
-#define CHASSIS_TYPE CHASSIS_NONE  // 选择底盘类型
-#define GIMBAL_TYPE GIMBAL_YAW_PITCH_DIRECT    // 选择云台类型
-#define SHOOT_TYPE SHOOT_NONE            // 选择发射机构类型
-#define CONTROL_TYPE CHASSIS_AND_GIMBAL  // 选择控制类型
+#define CHASSIS_MODE_CHANNEL   0  // 选择底盘状态 开关通道号
+
+#define CHASSIS_TYPE CHASSIS_MECANUM_WHEEL  // 选择底盘类型
+#define GIMBAL_TYPE GIMBAL_YAW_PITCH_DIRECT // 选择云台类型
+#define SHOOT_TYPE SHOOT_NONE               // 选择发射机构类型
+#define CONTROL_TYPE CHASSIS_AND_GIMBAL           // 选择控制类型
 #define MECHANICAL_ARM_TYPE MECHANICAL_ARM_NONE  //选择机械臂类型
 
+// 机器人物理参数
 typedef enum {
     // 底盘CAN1
     WHEEL1 = 0,
@@ -99,14 +99,12 @@ typedef enum {
 
 /*-------------------- Gimbal --------------------*/
 //gimbal_init-------------------------------
-#define GIMBAL_INIT_TIME (uint32_t)1000
+#define GIMBAL_INIT_TIME (uint32_t)2000
 
 //mouse sensitivity ---------------------
 #define MOUSE_SENSITIVITY (0.5f)
 //remote controller sensitivity ---------------------
 #define REMOTE_CONTROLLER_SENSITIVITY (100000.0f)
-#define REMOTE_CONTROLLER_MAX_DEADLINE (20.0f)
-#define REMOTE_CONTROLLER_MIN_DEADLINE (-20.0f)
 //motor parameters ---------------------
 //电机id
 #define GIMBAL_DIRECT_YAW_ID ((uint8_t)1)
@@ -137,27 +135,27 @@ typedef enum {
 #define GIMBAL_LOWER_LIMIT_PITCH (-0.5f)
 
 //电机角度中值设置
-#define GIMBAL_DIRECT_PITCH_MID (2.3731f) //云台初始化正对齐的时候使用的pitch轴正中心量
-#define GIMBAL_DIRECT_YAW_MID (2.1246f) //云台初始化正对齐的时候使用的yaw轴正中心量
+#define GIMBAL_DIRECT_PITCH_MID (0.7435f) //云台初始化正对齐的时候使用的pitch轴正中心量
+#define GIMBAL_DIRECT_YAW_MID (2.0916f) //云台初始化正对齐的时候使用的yaw轴正中心量
 
 //PID parameters ---------------------
 //YAW ANGLE
-#define KP_GIMBAL_YAW_ANGLE (9.00f)
+#define KP_GIMBAL_YAW_ANGLE (3.0f)
 #define KI_GIMBAL_YAW_ANGLE (0.003f)
-#define KD_GIMBAL_YAW_ANGLE (0.75f)
+#define KD_GIMBAL_YAW_ANGLE (0.8f)
 #define MAX_IOUT_GIMBAL_YAW_ANGLE (0.05f)
 #define MAX_OUT_GIMBAL_YAW_ANGLE (20.0f)
 //VELOCITY:角速度
-#define KP_GIMBAL_YAW_VELOCITY (5000.0f)
-#define KI_GIMBAL_YAW_VELOCITY (1.0f)
-#define KD_GIMBAL_YAW_VELOCITY (0.1f)
+#define KP_GIMBAL_YAW_VELOCITY (800.0f)
+#define KI_GIMBAL_YAW_VELOCITY (20.0f)
+#define KD_GIMBAL_YAW_VELOCITY (100.0f)
 #define MAX_IOUT_GIMBAL_YAW_VELOCITY (10000.0f)
 #define MAX_OUT_GIMBAL_YAW_VELOCITY (30000.0f)
 
 //PITCH ANGLE
-#define KP_GIMBAL_PITCH_ANGLE (4.5f)
-#define KI_GIMBAL_PITCH_ANGLE (0.0001f)
-#define KD_GIMBAL_PITCH_ANGLE (3.0f)
+#define KP_GIMBAL_PITCH_ANGLE (3.0f)
+#define KI_GIMBAL_PITCH_ANGLE (0.003f)
+#define KD_GIMBAL_PITCH_ANGLE (0.8f)
 #define MAX_IOUT_GIMBAL_PITCH_ANGLE (1.0f)
 #define MAX_OUT_GIMBAL_PITCH_ANGLE (10.0f)
 //VELOCITY:角速度

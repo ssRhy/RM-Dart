@@ -28,12 +28,12 @@
 //     .GetDuration = GetDuration,
 //     .GetYawMid = GetYawMid,
 // };
-GimbalApi_t gimbal = {
-    .SetCali = NULL,
-    .CmdCali = NULL,
-    .GetStatus = NULL,
-    .GetDuration = NULL,
-    .GetYawMid = NULL,
-};
+// GimbalApi_t gimbal = {
+//     .SetCali = NULL,
+//     .CmdCali = NULL,
+//     .GetStatus = NULL,
+//     .GetDuration = NULL,
+//     .GetYawMid = NULL,
+// };
 #endif  // GIMBAL_TYPE
 /*------------------------------ End of File ------------------------------*/

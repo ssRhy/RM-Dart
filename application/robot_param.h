@@ -22,6 +22,7 @@
 #include "struct_typedef.h"
 
 //导入具体的机器人参数配置文件
+//#include "robot_param_omni_infantry.h"
 #include "robot_param_omni_infantry.h"
 
 // 选择机器人的各种类型
