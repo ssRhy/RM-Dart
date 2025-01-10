@@ -24,14 +24,14 @@
 #define ARM_DM_CAN 2
 //rc parameters ---------------------
 
-#define MECHANICAL_ARM_MODE_CHANNEL 1  // 机械臂模式切换通道
+#define MECHANICAL_ARM_MODE_CHANNEL DT7_SW_LEFT  // 机械臂模式切换通道
 
 //motor parameters ---------------------
 
 #define JOINT_MOTOR_0_ID 1
-#define JOINT_MOTOR_1_ID 1
-#define JOINT_MOTOR_2_ID 2
-#define JOINT_MOTOR_3_ID 3
+#define JOINT_MOTOR_1_ID 2
+#define JOINT_MOTOR_2_ID 3
+#define JOINT_MOTOR_3_ID 1
 #define JOINT_MOTOR_4_ID 6
 #define JOINT_MOTOR_5_ID 7
 
@@ -42,10 +42,10 @@
 #define JOINT_MOTOR_4_CAN ARM_DJI_CAN
 #define JOINT_MOTOR_5_CAN ARM_DJI_CAN
 
-#define JOINT_MOTOR_0_TYPE DJI_M6020
+#define JOINT_MOTOR_0_TYPE DM_4340
 #define JOINT_MOTOR_1_TYPE DM_8009
 #define JOINT_MOTOR_2_TYPE DM_8009
-#define JOINT_MOTOR_3_TYPE DM_4340
+#define JOINT_MOTOR_3_TYPE DJI_M6020
 #define JOINT_MOTOR_4_TYPE DJI_M2006
 #define JOINT_MOTOR_5_TYPE DJI_M2006
 
