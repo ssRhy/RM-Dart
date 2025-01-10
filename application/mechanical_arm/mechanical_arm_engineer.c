@@ -29,7 +29,9 @@
 
 #include "CAN_communication.h"
 #include "bsp_delay.h"
+#include "cmsis_os.h"
 #include "custom_controller_connect.h"
+#include "detect_task.h"
 #include "math.h"
 #include "pid.h"
 #include "signal_generator.h"
@@ -56,8 +58,8 @@
 #define JointMotorInit(index)                                                                    \
     MotorInit(                                                                                   \
         &MECHANICAL_ARM.joint_motor[index], JOINT_MOTOR_##index##_ID, JOINT_MOTOR_##index##_CAN, \
-        JOINT_MOTOR_##index##_TYPE, JOINT_MOTOR_##index##_DIRECTION, 1,                          \
-        JOINT_MOTOR_##index##_MODE)
+        JOINT_MOTOR_##index##_TYPE, JOINT_MOTOR_##index##_DIRECTION,                             \
+        JOINT_MOTOR_##index##_REDUCATION_RATIO, JOINT_MOTOR_##index##_MODE)
 
 #define JointPidInit(index)                                                                \
     {                                                                                      \
@@ -145,6 +147,11 @@ void MechanicalArmSetMode(void)
         return;
     }
 
+    if (toe_is_error(DBUS_TOE)) {
+        MECHANICAL_ARM.mode = MECHANICAL_ARM_SAFE;
+        return;
+    }
+
     if (switch_is_up(MECHANICAL_ARM.rc->rc.s[MECHANICAL_ARM_MODE_CHANNEL])) {
         MECHANICAL_ARM.mode = MECHANICAL_ARM_CUSTOM;
     } else if (switch_is_mid(MECHANICAL_ARM.rc->rc.s[MECHANICAL_ARM_MODE_CHANNEL])) {
@@ -172,6 +179,13 @@ void MechanicalArmObserver(void)
 
     UpdateMotorStatus();
     JointStateObserve();
+
+    ModifyDebugDataPackage(1, MA.fdb.joint[J0].angle, "J0_pos");
+    ModifyDebugDataPackage(2, MA.fdb.joint[J0].velocity, "J0_vel");
+    ModifyDebugDataPackage(3, MA.fdb.joint[J1].angle, "J1_pos");
+    ModifyDebugDataPackage(4, MA.fdb.joint[J1].velocity, "J1_vel");
+    ModifyDebugDataPackage(5, MA.fdb.joint[J2].angle, "J2_pos");
+    ModifyDebugDataPackage(6, MA.fdb.joint[J2].velocity, "J2_vel");
 }
 
 /**
@@ -193,12 +207,13 @@ static void UpdateMotorStatus(void)
 static void JointStateObserve(void)
 {
 #define dangle MECHANICAL_ARM.transform.pos
-    
+
     /*-----处理J0 J1 J2 J3 关节的反馈信息（J4 J5作为差速机构要特殊处理）*/
     uint8_t i;
-    for (i = 0; i < 5; i++) {
+    for (i = 0; i < 4; i++) {
         MA.fdb.joint[i].angle = theta_transform(
-            MA.joint_motor[i].fdb.pos, dangle[i], MA.joint_motor[i].direction, MA.transform.duration[i]);
+            MA.joint_motor[i].fdb.pos, dangle[i], MA.joint_motor[i].direction,
+            MA.transform.duration[i]);
         MA.fdb.joint[i].velocity = MA.joint_motor[i].fdb.vel;
         MA.fdb.joint[i].torque = MA.joint_motor[i].fdb.tor;
     }
@@ -210,7 +225,6 @@ static void JointStateObserve(void)
 
     MA.fdb.joint[J4].angle += MA.fdb.joint[J4].velocity * MA.duration * MS_TO_S;
     MA.fdb.joint[J5].angle += MA.fdb.joint[J5].velocity * MA.duration * MS_TO_S;
-
 }
 
 /******************************************************************/
@@ -318,7 +332,7 @@ void ArmSendCmdFollow(void);
 void MechanicalArmSendCmd(void)
 {
     uint8_t cnt;
-    for (uint8_t i = 0; i < 4; i++) {
+    for (uint8_t i = 0; i < 3; i++) {
         if (cnt % 2 == 0) {
             delay_us(DM_DELAY);
         }
@@ -346,25 +360,25 @@ void MechanicalArmSendCmd(void)
 
 void ArmSendCmdSafe(void)
 {
-    DmMitStop(&MECHANICAL_ARM.joint_motor[J1]);
+    DmMitStop(&MECHANICAL_ARM.joint_motor[J0]);
     delay_us(DM_DELAY);
+    DmMitStop(&MECHANICAL_ARM.joint_motor[J1]);
     DmMitStop(&MECHANICAL_ARM.joint_motor[J2]);
-    DmMitStop(&MECHANICAL_ARM.joint_motor[J3]);
-    CanCmdDjiMotor(ARM_DJI_CAN, 0x1FF, 0, 0, 0, 0);  // J0 J4 J5
+    CanCmdDjiMotor(ARM_DJI_CAN, 0x1FF, 0, 0, 0, 0);  // J3 J4 J5
 }
 
 void ArmSendCmdFollow(void)
 {
-    DmMitCtrl(&MECHANICAL_ARM.joint_motor[J1], DM_KP_FOLLOW, DM_KD_FOLLOW);
+    DmMitCtrl(&MECHANICAL_ARM.joint_motor[J0], DM_KP_FOLLOW, DM_KD_FOLLOW);
     delay_us(DM_DELAY);
+    DmMitCtrl(&MECHANICAL_ARM.joint_motor[J1], DM_KP_FOLLOW, DM_KD_FOLLOW);
     DmMitCtrl(&MECHANICAL_ARM.joint_motor[J2], DM_KP_FOLLOW, DM_KD_FOLLOW);
-    DmMitCtrl(&MECHANICAL_ARM.joint_motor[J3], DM_KP_FOLLOW, DM_KD_FOLLOW);
     // clang-format off
     CanCmdDjiMotor(
         ARM_DJI_CAN, 0x1FF, 
         MECHANICAL_ARM.joint_motor[J0].set.value,
         MECHANICAL_ARM.joint_motor[J4].set.value, 
-        MECHANICAL_ARM.joint_motor[J5].set.value, 0); // J0 J4 J5
+        MECHANICAL_ARM.joint_motor[J5].set.value, 0); // J3 J4 J5
     // clang-format on
 }
 
