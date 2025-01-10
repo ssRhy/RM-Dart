@@ -51,6 +51,8 @@ typedef struct
     MechanicalArmMode_e mode;  // 机械臂模式
     uint8_t error_code;        // 机械臂错误代码
 
+    uint32_t last_time;  // (ms)上一次更新时间
+    uint32_t duration;   // (ms)任务周期
     /*-------------------- Motors --------------------*/
     Motor_s joint_motor[JOINT_NUM];
     /*-------------------- Values --------------------*/
@@ -77,6 +79,7 @@ typedef struct
     struct
     {
         float pos[6];
+        uint8_t duration[6];
     } transform;
 
     // struct
@@ -92,13 +95,16 @@ typedef struct
     struct
     {
         pid_type_def j0[2];
+        pid_type_def j1[2];
+        pid_type_def j2[2];
+        pid_type_def j3[2];
         pid_type_def j4[2];
         pid_type_def j5[2];
     } pid;
 
     struct
     {
-        LowPassFilter_t j0;
+        LowPassFilter_t j3;
         LowPassFilter_t j4;
         LowPassFilter_t j5;
     } lpf;

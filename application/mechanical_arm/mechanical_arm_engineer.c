@@ -9,6 +9,13 @@
   *
   @verbatim
   ==============================================================================
+机械臂相关的一些方向定义
+    - 机械臂水平向前时设置J0关节为0位置
+    - 机械臂竖直向上时设置J1 J2 J3关节为0位置
+
+    - 定义机械臂水平向前时的J0关节位置为0，从上往下看，逆时针为正方向
+    - 定义机械臂竖直向上时的J1 J2关节位置为0，从左看，顺时针为正方向（J1 J2关节的位置为联动位置）
+    - 定义机械臂J3水平(同步带位于两侧)时的J3关节位置为0，从吸盘方向看，逆时针为正方向
 
   ==============================================================================
   @endverbatim
@@ -29,6 +36,8 @@
 #include "usb_debug.h"
 
 /*------------------------------ Macro Definition ------------------------------*/
+
+#define MS_TO_S 0.001f  // ms转s
 
 #define ANGLE_PID 0
 #define VELOCITY_PID 1
@@ -68,6 +77,7 @@
 /*------------------------------ Variable Definition ------------------------------*/
 
 MechanicalArm_s MECHANICAL_ARM;
+#define MA MECHANICAL_ARM
 
 /*------------------------------ Function Definition ------------------------------*/
 
@@ -95,7 +105,7 @@ void MechanicalArmInit(void)
     JointMotorInit(4);
     JointMotorInit(5);
     // #PID init ---------------------
-    JointPidInit(0);
+    JointPidInit(3);
     JointPidInit(4);
     JointPidInit(5);
     // #Initial value setting ---------------------
@@ -107,6 +117,13 @@ void MechanicalArmInit(void)
     MECHANICAL_ARM.transform.pos[J3] = J3_ANGLE_TRANSFORM;
     MECHANICAL_ARM.transform.pos[J4] = J4_ANGLE_TRANSFORM;
     MECHANICAL_ARM.transform.pos[J5] = J5_ANGLE_TRANSFORM;
+
+    MECHANICAL_ARM.transform.duration[J0] = 1;
+    MECHANICAL_ARM.transform.duration[J1] = 1;
+    MECHANICAL_ARM.transform.duration[J2] = 1;
+    MECHANICAL_ARM.transform.duration[J3] = 2;
+    MECHANICAL_ARM.transform.duration[J4] = 1;
+    MECHANICAL_ARM.transform.duration[J5] = 1;
 }
 
 /******************************************************************/
@@ -150,6 +167,9 @@ static void JointStateObserve(void);
 
 void MechanicalArmObserver(void)
 {
+    MA.duration = xTaskGetTickCount() - MA.last_time;
+    MA.last_time = xTaskGetTickCount();
+
     UpdateMotorStatus();
     JointStateObserve();
 }
@@ -172,13 +192,25 @@ static void UpdateMotorStatus(void)
  */
 static void JointStateObserve(void)
 {
+#define dangle MECHANICAL_ARM.transform.pos
+    
+    /*-----处理J0 J1 J2 J3 关节的反馈信息（J4 J5作为差速机构要特殊处理）*/
     uint8_t i;
-    for (i = 0; i < 6; i++) {
-        MECHANICAL_ARM.fdb.joint[i].angle = theta_transform(
-            MECHANICAL_ARM.joint_motor[i].fdb.pos, MECHANICAL_ARM.transform.pos[i], 1, 1);
-        MECHANICAL_ARM.fdb.joint[i].velocity = MECHANICAL_ARM.joint_motor[i].fdb.vel;
-        MECHANICAL_ARM.fdb.joint[i].torque = MECHANICAL_ARM.joint_motor[i].fdb.tor;
+    for (i = 0; i < 5; i++) {
+        MA.fdb.joint[i].angle = theta_transform(
+            MA.joint_motor[i].fdb.pos, dangle[i], MA.joint_motor[i].direction, MA.transform.duration[i]);
+        MA.fdb.joint[i].velocity = MA.joint_motor[i].fdb.vel;
+        MA.fdb.joint[i].torque = MA.joint_motor[i].fdb.tor;
     }
+#undef dangle
+
+    /*-----处理J4 J5 关节的反馈信息*/
+    MA.fdb.joint[J4].velocity = MA.joint_motor[J4].fdb.vel;
+    MA.fdb.joint[J5].velocity = MA.joint_motor[J5].fdb.vel;
+
+    MA.fdb.joint[J4].angle += MA.fdb.joint[J4].velocity * MA.duration * MS_TO_S;
+    MA.fdb.joint[J5].angle += MA.fdb.joint[J5].velocity * MA.duration * MS_TO_S;
+
 }
 
 /******************************************************************/

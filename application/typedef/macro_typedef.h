@@ -21,5 +21,6 @@
 #define DT7_CH_RV 3 // DT7遥控器右侧竖直摇杆通道号
 #define DT7_CH_ROLLER 4 // DT7遥控器左上角滚轮通道号
 
+
 #endif  // MACRO_TYPEDEF_H
 /*------------------------------ End of File ------------------------------*/
