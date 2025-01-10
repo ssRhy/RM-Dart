@@ -19,9 +19,6 @@
 #define GIMBAL_H
 
 #include "robot_param.h"
-
-#if GIMBAL_TYPE != GIMBAL_NONE
-
 #include "struct_typedef.h"
 #include "stdbool.h"
 
@@ -34,6 +31,9 @@ extern inline float GetGimbalVelocity(uint8_t axis);
 extern inline float GetGimbalDeltaYawMid(void);
 extern inline bool GetGimbalInitJudgeReturn(void);
 extern inline float CmdGimbalJointState(uint8_t axis);
+
+#if GIMBAL_TYPE != GIMBAL_NONE
+
 #endif  // GIMBAL_TYPE
 #endif  // GIMBAL_H
 /*------------------------------ End of File ------------------------------*/
