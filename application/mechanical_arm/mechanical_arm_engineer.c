@@ -36,8 +36,8 @@
 #include "pid.h"
 #include "remote_control.h"
 #include "signal_generator.h"
-#include "usb_debug.h"
 #include "string.h"
+#include "usb_debug.h"
 
 /*------------------------------ Macro Definition ------------------------------*/
 
@@ -61,8 +61,8 @@
 #define J1_KP_FOLLOW 0
 #define J1_KD_FOLLOW 10
 
-#define J2_KP_FOLLOW 1
-#define J2_KD_FOLLOW 0.5
+#define J2_KP_FOLLOW 0
+#define J2_KD_FOLLOW 10
 
 #define JointMotorInit(index)                                                                    \
     MotorInit(                                                                                   \
@@ -140,8 +140,9 @@ void MechanicalArmInit(void)
     memset(&MECHANICAL_ARM.fdb, 0, sizeof(MECHANICAL_ARM.fdb));
     memset(&MECHANICAL_ARM.ref, 0, sizeof(MECHANICAL_ARM.ref));
     // #ref init ---------------------
-    MECHANICAL_ARM.ref.joint[J0].angle = 0;
+    MECHANICAL_ARM.ref.joint[J0].angle = 0.0f;
     MECHANICAL_ARM.ref.joint[J1].angle = MECHANICAL_ARM.limit.max.pos[J1];
+    MECHANICAL_ARM.ref.joint[J2].angle = MECHANICAL_ARM.limit.min.pos[J2];
 
     // #Initial value setting ---------------------
     MECHANICAL_ARM.mode = MECHANICAL_ARM_SAFE;
@@ -276,18 +277,22 @@ void MechanicalArmReference(void)
         } break;
         case MECHANICAL_ARM_DEBUG: {
             // j0
-            MA.ref.joint[J0].angle = GetDt7RcCh(DT7_CH_ROLLER) * M_PI / 3;
+            MA.ref.joint[J0].angle += GetDt7RcCh(DT7_CH_ROLLER) * 0.002f;
             MA.ref.joint[J0].angle =
                 fp32_constrain(MA.ref.joint[J0].angle, MA.limit.min.pos[J0], MA.limit.max.pos[J0]);
 
             // j1
-            // MA.ref.joint[J1].angle = GenerateSinWave(0.8, MAX_JOINT_1_POSITION-0.8f, 3);
             MA.ref.joint[J1].angle += GetDt7RcCh(DT7_CH_RH) * 0.002f;
             MA.ref.joint[J1].angle =
                 fp32_constrain(MA.ref.joint[J1].angle, MA.limit.min.pos[J1], MA.limit.max.pos[J1]);
 
             // j2
-            MA.ref.joint[J2].angle = 0;
+            // MA.ref.joint[J2].angle = GenerateSinWave(0.8, MA.limit.min.pos[J2] + 0.6f, 3);
+            MA.ref.joint[J2].angle += GetDt7RcCh(DT7_CH_RV) * 0.002f;
+            MA.ref.joint[J2].angle =
+                fp32_constrain(MA.ref.joint[J2].angle, MA.limit.min.pos[J2], MA.limit.max.pos[J2]);
+
+            // j3
             MA.ref.joint[J3].angle = 0;
             MA.ref.joint[J4].angle = 0;
             MA.ref.joint[J5].angle = 0;
@@ -365,8 +370,10 @@ void MechanicalArmConsole(void)
                 MA.joint_motor[J1].direction * MA.joint_motor[J1].reduction_ratio;
             MA.joint_motor[J1].set.tor = 0;
 
-            MA.joint_motor[J2].set.pos = 0;
-            MA.joint_motor[J2].set.vel = 0;
+            // J2
+            MA.joint_motor[J2].set.vel =
+                PID_calc(&MA.pid.j2[0], MA.fdb.joint[J2].angle, MA.ref.joint[J2].angle) *
+                MA.joint_motor[J2].direction * MA.joint_motor[J2].reduction_ratio;
             MA.joint_motor[J2].set.tor = 0;
         } break;
         case MECHANICAL_ARM_FOLLOW:
@@ -424,11 +431,11 @@ void MechanicalArmSendCmd(void)
             ArmSendCmdSafe();
         }
     }
-    ModifyDebugDataPackage(1, MA.fdb.joint[J1].angle, "J_pos_f");
-    ModifyDebugDataPackage(2, MA.ref.joint[J1].angle, "J_pos_r");
-    ModifyDebugDataPackage(3, MA.fdb.joint[J1].velocity, "J_vel_f");
-    ModifyDebugDataPackage(4, MA.fdb.joint[J1].torque, "J_tor_f");
-    ModifyDebugDataPackage(5, MA.pid.j1[0].out * 2.24f, "pid out");
+    ModifyDebugDataPackage(1, MA.fdb.joint[J2].angle, "J_pos_f");
+    ModifyDebugDataPackage(2, MA.ref.joint[J2].angle, "J_pos_r");
+    ModifyDebugDataPackage(3, MA.fdb.joint[J2].velocity, "J_vel_f");
+    ModifyDebugDataPackage(4, MA.fdb.joint[J2].torque, "J_tor_f");
+    ModifyDebugDataPackage(5, MA.pid.j2[0].out * 2.24f, "pid out");
 }
 
 void ArmSendCmdSafe(void)
@@ -445,7 +452,7 @@ void ArmSendCmdDebug(void)
     DmMitCtrlVelocity(&MECHANICAL_ARM.joint_motor[J0], J0_KD_FOLLOW);
     delay_us(DM_DELAY);
     DmMitCtrlVelocity(&MECHANICAL_ARM.joint_motor[J1], J1_KD_FOLLOW);
-    DmMitStop(&MECHANICAL_ARM.joint_motor[J2]);
+    DmMitCtrlVelocity(&MECHANICAL_ARM.joint_motor[J2], J2_KD_FOLLOW);
     CanCmdDjiMotor(ARM_DJI_CAN, 0x1FF, 0, 0, 0, 0);  // J3 J4 J5
 }
 
