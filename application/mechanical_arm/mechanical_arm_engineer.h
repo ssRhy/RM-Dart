@@ -78,7 +78,7 @@ typedef struct
 
     struct
     {
-        float pos[6];
+        float dpos[6];
         uint8_t duration[6];
     } transform;
 

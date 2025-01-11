@@ -34,6 +34,7 @@
 #include "detect_task.h"
 #include "math.h"
 #include "pid.h"
+#include "remote_control.h"
 #include "signal_generator.h"
 #include "usb_debug.h"
 
@@ -52,8 +53,15 @@
 #define J5 5
 
 #define DM_DELAY 250  // (us)dm电机发送延时
-#define DM_KP_FOLLOW 1
-#define DM_KD_FOLLOW 0.5
+
+#define J0_KP_FOLLOW 15
+#define J0_KD_FOLLOW 2
+
+#define J1_KP_FOLLOW 1
+#define J1_KD_FOLLOW 0.5
+
+#define J2_KP_FOLLOW 1
+#define J2_KD_FOLLOW 0.5
 
 #define JointMotorInit(index)                                                                    \
     MotorInit(                                                                                   \
@@ -107,22 +115,25 @@ void MechanicalArmInit(void)
     JointMotorInit(4);
     JointMotorInit(5);
     // #PID init ---------------------
+    JointPidInit(0);
+    JointPidInit(1);
+    JointPidInit(2);
     JointPidInit(3);
     JointPidInit(4);
     JointPidInit(5);
     // #Initial value setting ---------------------
     MECHANICAL_ARM.mode = MECHANICAL_ARM_SAFE;
     MECHANICAL_ARM.error_code = 0;
-    MECHANICAL_ARM.transform.pos[J0] = J0_ANGLE_TRANSFORM;
-    MECHANICAL_ARM.transform.pos[J1] = J1_ANGLE_TRANSFORM;
-    MECHANICAL_ARM.transform.pos[J2] = J2_ANGLE_TRANSFORM;
-    MECHANICAL_ARM.transform.pos[J3] = J3_ANGLE_TRANSFORM;
-    MECHANICAL_ARM.transform.pos[J4] = J4_ANGLE_TRANSFORM;
-    MECHANICAL_ARM.transform.pos[J5] = J5_ANGLE_TRANSFORM;
+    MECHANICAL_ARM.transform.dpos[J0] = J0_ANGLE_TRANSFORM;
+    MECHANICAL_ARM.transform.dpos[J1] = J1_ANGLE_TRANSFORM;
+    MECHANICAL_ARM.transform.dpos[J2] = J2_ANGLE_TRANSFORM;
+    MECHANICAL_ARM.transform.dpos[J3] = J3_ANGLE_TRANSFORM;
+    MECHANICAL_ARM.transform.dpos[J4] = J4_ANGLE_TRANSFORM;
+    MECHANICAL_ARM.transform.dpos[J5] = J5_ANGLE_TRANSFORM;
 
-    MECHANICAL_ARM.transform.duration[J0] = 1;
-    MECHANICAL_ARM.transform.duration[J1] = 1;
-    MECHANICAL_ARM.transform.duration[J2] = 1;
+    MECHANICAL_ARM.transform.duration[J0] = 4;
+    MECHANICAL_ARM.transform.duration[J1] = 4;
+    MECHANICAL_ARM.transform.duration[J2] = 4;
     MECHANICAL_ARM.transform.duration[J3] = 2;
     MECHANICAL_ARM.transform.duration[J4] = 1;
     MECHANICAL_ARM.transform.duration[J5] = 1;
@@ -180,12 +191,10 @@ void MechanicalArmObserver(void)
     UpdateMotorStatus();
     JointStateObserve();
 
-    ModifyDebugDataPackage(1, MA.fdb.joint[J0].angle, "J0_pos");
-    ModifyDebugDataPackage(2, MA.fdb.joint[J0].velocity, "J0_vel");
-    ModifyDebugDataPackage(3, MA.fdb.joint[J1].angle, "J1_pos");
-    ModifyDebugDataPackage(4, MA.fdb.joint[J1].velocity, "J1_vel");
-    ModifyDebugDataPackage(5, MA.fdb.joint[J2].angle, "J2_pos");
-    ModifyDebugDataPackage(6, MA.fdb.joint[J2].velocity, "J2_vel");
+    ModifyDebugDataPackage(1, MA.fdb.joint[J0].angle, "J0_pos_f");
+    ModifyDebugDataPackage(2, MA.fdb.joint[J0].velocity, "J0_vel_f");
+    ModifyDebugDataPackage(3, MA.ref.joint[J0].angle, "J0_pos_r");
+    ModifyDebugDataPackage(4, MA.joint_motor[J0].fdb.tor, "J0_tor");
 }
 
 /**
@@ -206,16 +215,19 @@ static void UpdateMotorStatus(void)
  */
 static void JointStateObserve(void)
 {
-#define dangle MECHANICAL_ARM.transform.pos
+#define dangle MECHANICAL_ARM.transform.dpos
 
     /*-----处理J0 J1 J2 J3 关节的反馈信息（J4 J5作为差速机构要特殊处理）*/
     uint8_t i;
     for (i = 0; i < 4; i++) {
         MA.fdb.joint[i].angle = theta_transform(
-            MA.joint_motor[i].fdb.pos, dangle[i], MA.joint_motor[i].direction,
-            MA.transform.duration[i]);
-        MA.fdb.joint[i].velocity = MA.joint_motor[i].fdb.vel;
-        MA.fdb.joint[i].torque = MA.joint_motor[i].fdb.tor;
+                                    MA.joint_motor[i].fdb.pos, dangle[i],
+                                    MA.joint_motor[i].direction, MA.transform.duration[i]) /
+                                MA.joint_motor[i].reduction_ratio;
+        MA.fdb.joint[i].velocity = MA.joint_motor[i].fdb.vel / MA.joint_motor[i].reduction_ratio *
+                                   MA.joint_motor[i].direction;
+        MA.fdb.joint[i].torque = MA.joint_motor[i].fdb.tor * MA.joint_motor[i].reduction_ratio *
+                                 MA.joint_motor[i].direction;
     }
 #undef dangle
 
@@ -238,14 +250,21 @@ void MechanicalArmReference(void)
     uint8_t i;
     switch (MECHANICAL_ARM.mode) {
         case MECHANICAL_ARM_CUSTOM: {
-            MECHANICAL_ARM.ref.joint[J0].angle = MECHANICAL_ARM.rc->rc.ch[4] * RC_TO_ONE * M_PI;
-            MECHANICAL_ARM.ref.joint[J1].angle = MECHANICAL_ARM.rc->rc.ch[0] * RC_TO_ONE * M_PI;
-            MECHANICAL_ARM.ref.joint[J2].angle = MECHANICAL_ARM.rc->rc.ch[1] * RC_TO_ONE * M_PI;
-            MECHANICAL_ARM.ref.joint[J3].angle = 0;
-            MECHANICAL_ARM.ref.joint[J4].angle = MECHANICAL_ARM.rc->rc.ch[2] * RC_TO_ONE * M_PI;
-            MECHANICAL_ARM.ref.joint[J5].angle = MECHANICAL_ARM.rc->rc.ch[3] * RC_TO_ONE * M_PI;
+            // MECHANICAL_ARM.ref.joint[J0].angle = MECHANICAL_ARM.rc->rc.ch[4] * RC_TO_ONE * M_PI;
+            // MECHANICAL_ARM.ref.joint[J1].angle = MECHANICAL_ARM.rc->rc.ch[0] * RC_TO_ONE * M_PI;
+            // MECHANICAL_ARM.ref.joint[J2].angle = MECHANICAL_ARM.rc->rc.ch[1] * RC_TO_ONE * M_PI;
+            // MECHANICAL_ARM.ref.joint[J3].angle = 0;
+            // MECHANICAL_ARM.ref.joint[J4].angle = MECHANICAL_ARM.rc->rc.ch[2] * RC_TO_ONE * M_PI;
+            // MECHANICAL_ARM.ref.joint[J5].angle = MECHANICAL_ARM.rc->rc.ch[3] * RC_TO_ONE * M_PI;
         } break;
-        case MECHANICAL_ARM_DEBUG:
+        case MECHANICAL_ARM_DEBUG: {
+            MECHANICAL_ARM.ref.joint[J0].angle = GetDt7RcCh(DT7_CH_RH) * M_PI / 3;
+            MECHANICAL_ARM.ref.joint[J1].angle = 0;
+            MECHANICAL_ARM.ref.joint[J2].angle = 0;
+            MECHANICAL_ARM.ref.joint[J3].angle = 0;
+            MECHANICAL_ARM.ref.joint[J4].angle = 0;
+            MECHANICAL_ARM.ref.joint[J5].angle = 0;
+        } break;
         case MECHANICAL_ARM_FOLLOW:
         case MECHANICAL_ARM_CALIBRATE:
         case MECHANICAL_ARM_SAFE:
@@ -267,43 +286,79 @@ void MechanicalArmConsole(void)
 {
     switch (MECHANICAL_ARM.mode) {
         case MECHANICAL_ARM_CUSTOM: {
-            // 优先处理dm电机部分
-            // 位置
-            MECHANICAL_ARM.joint_motor[J1].set.pos =
-                theta_transform(MECHANICAL_ARM.ref.joint[J1].angle, -J1_ANGLE_TRANSFORM, 1, 1);
-            MECHANICAL_ARM.joint_motor[J2].set.pos =
-                theta_transform(MECHANICAL_ARM.ref.joint[J2].angle, -J2_ANGLE_TRANSFORM, 1, 1);
-            MECHANICAL_ARM.joint_motor[J3].set.pos =
-                theta_transform(MECHANICAL_ARM.ref.joint[J3].angle, -J3_ANGLE_TRANSFORM, 1, 1);
-            // 速度
-            MECHANICAL_ARM.joint_motor[J1].set.vel = 0;
-            MECHANICAL_ARM.joint_motor[J2].set.vel = 0;
-            MECHANICAL_ARM.joint_motor[J3].set.vel = 0;
+            // // 优先处理dm电机部分
+            // // 位置
+            // MECHANICAL_ARM.joint_motor[J0].set.pos =
+            //     theta_transform(MECHANICAL_ARM.ref.joint[J0].angle, -J0_ANGLE_TRANSFORM, 1, 1);
+            // MECHANICAL_ARM.joint_motor[J1].set.pos =
+            //     theta_transform(MECHANICAL_ARM.ref.joint[J1].angle, -J1_ANGLE_TRANSFORM, 1, 1);
+            // MECHANICAL_ARM.joint_motor[J2].set.pos =
+            //     theta_transform(MECHANICAL_ARM.ref.joint[J2].angle, -J2_ANGLE_TRANSFORM, 1, 1);
+            // // 速度
+            // MECHANICAL_ARM.joint_motor[J1].set.vel = 0;
+            // MECHANICAL_ARM.joint_motor[J2].set.vel = 0;
+            // MECHANICAL_ARM.joint_motor[J3].set.vel = 0;
 
-            // 然后再处理dji电机部分，涉及到pid计算
-            // J0
-            PID_calc(
-                &MECHANICAL_ARM.pid.j0[ANGLE_PID], MECHANICAL_ARM.fdb.joint[J0].angle,
-                MECHANICAL_ARM.ref.joint[J0].angle);
-            MECHANICAL_ARM.joint_motor[J0].set.value = PID_calc(
-                &MECHANICAL_ARM.pid.j0[VELOCITY_PID], MECHANICAL_ARM.fdb.joint[J0].velocity,
-                MECHANICAL_ARM.pid.j0[ANGLE_PID].out);
-            // J4
-            PID_calc(
-                &MECHANICAL_ARM.pid.j4[ANGLE_PID], MECHANICAL_ARM.fdb.joint[J4].angle,
-                MECHANICAL_ARM.ref.joint[J4].angle);
-            MECHANICAL_ARM.joint_motor[J4].set.value = PID_calc(
-                &MECHANICAL_ARM.pid.j4[VELOCITY_PID], MECHANICAL_ARM.fdb.joint[J4].velocity,
-                MECHANICAL_ARM.pid.j4[ANGLE_PID].out);
-            // J5
-            PID_calc(
-                &MECHANICAL_ARM.pid.j5[ANGLE_PID], MECHANICAL_ARM.fdb.joint[J5].angle,
-                MECHANICAL_ARM.ref.joint[J5].angle);
-            MECHANICAL_ARM.joint_motor[J5].set.value = PID_calc(
-                &MECHANICAL_ARM.pid.j5[VELOCITY_PID], MECHANICAL_ARM.fdb.joint[J5].velocity,
-                MECHANICAL_ARM.pid.j5[ANGLE_PID].out);
+            // // 然后再处理dji电机部分，涉及到pid计算
+            // // J0
+            // PID_calc(
+            //     &MECHANICAL_ARM.pid.j0[ANGLE_PID], MECHANICAL_ARM.fdb.joint[J0].angle,
+            //     MECHANICAL_ARM.ref.joint[J0].angle);
+            // MECHANICAL_ARM.joint_motor[J0].set.value = PID_calc(
+            //     &MECHANICAL_ARM.pid.j0[VELOCITY_PID], MECHANICAL_ARM.fdb.joint[J0].velocity,
+            //     MECHANICAL_ARM.pid.j0[ANGLE_PID].out);
+            // // J4
+            // PID_calc(
+            //     &MECHANICAL_ARM.pid.j4[ANGLE_PID], MECHANICAL_ARM.fdb.joint[J4].angle,
+            //     MECHANICAL_ARM.ref.joint[J4].angle);
+            // MECHANICAL_ARM.joint_motor[J4].set.value = PID_calc(
+            //     &MECHANICAL_ARM.pid.j4[VELOCITY_PID], MECHANICAL_ARM.fdb.joint[J4].velocity,
+            //     MECHANICAL_ARM.pid.j4[ANGLE_PID].out);
+            // // J5
+            // PID_calc(
+            //     &MECHANICAL_ARM.pid.j5[ANGLE_PID], MECHANICAL_ARM.fdb.joint[J5].angle,
+            //     MECHANICAL_ARM.ref.joint[J5].angle);
+            // MECHANICAL_ARM.joint_motor[J5].set.value = PID_calc(
+            //     &MECHANICAL_ARM.pid.j5[VELOCITY_PID], MECHANICAL_ARM.fdb.joint[J5].velocity,
+            //     MECHANICAL_ARM.pid.j5[ANGLE_PID].out);
         } break;
-        case MECHANICAL_ARM_DEBUG:
+        case MECHANICAL_ARM_DEBUG: {
+            //机械臂基本不会出现过圈问题，不考虑过圈时的最优旋转方向问题。
+
+            float joint_pos[6] = {0, 0, 0, 0, 0, 0};
+            float joint_vel[6] = {0, 0, 0, 0, 0, 0};
+            float joint_tor[6] = {0, 0, 0, 0, 0, 0};
+            float dpos;
+            float vel;
+
+            for (uint8_t i = 0; i < 6; i++) {
+                joint_pos[i] = theta_transform(
+                    MA.ref.joint[i].angle, -MA.transform.dpos[i], MA.joint_motor[i].direction,
+                    MA.transform.duration[i]);
+                dpos = MA.ref.joint[i].angle - MA.fdb.joint[i].angle;
+                vel = 0;  //fp32_constrain(dpos / 0.1f * MA.joint_motor[i].direction, -10, 10);
+                joint_vel[i] = vel;
+                if (fabsf(dpos) < 0.1f) {  // 抑制震荡
+                    joint_tor[i] = -MA.fdb.joint[i].velocity * 0.5f * MA.joint_motor[i].direction;
+                    joint_vel[i] = 0;
+                }
+            }
+
+            // DM电机
+            MA.joint_motor[J0].set.pos = joint_pos[J0];
+            MA.joint_motor[J0].set.vel = joint_vel[J0];
+            MA.joint_motor[J0].set.tor = joint_tor[J0];
+            ModifyDebugDataPackage(8, joint_vel[J0], "J vel");
+            ModifyDebugDataPackage(9, joint_tor[J0], "J tor");
+
+            MA.joint_motor[J1].set.pos = joint_pos[J1];
+            MA.joint_motor[J1].set.vel = 0;
+            MA.joint_motor[J1].set.tor = 0;
+
+            MA.joint_motor[J2].set.pos = joint_pos[J2];
+            MA.joint_motor[J2].set.vel = 0;
+            MA.joint_motor[J2].set.tor = 0;
+        } break;
         case MECHANICAL_ARM_FOLLOW:
         case MECHANICAL_ARM_CALIBRATE:
         case MECHANICAL_ARM_SAFE:
@@ -327,6 +382,7 @@ void MechanicalArmConsole(void)
 /******************************************************************/
 
 void ArmSendCmdSafe(void);
+void ArmSendCmdDebug(void);
 void ArmSendCmdFollow(void);
 
 void MechanicalArmSendCmd(void)
@@ -349,7 +405,9 @@ void MechanicalArmSendCmd(void)
             ArmSendCmdFollow();
         } break;
         case MECHANICAL_ARM_CALIBRATE:
-        case MECHANICAL_ARM_DEBUG:
+        case MECHANICAL_ARM_DEBUG: {
+            ArmSendCmdDebug();
+        } break;
         case MECHANICAL_ARM_CUSTOM:
         case MECHANICAL_ARM_SAFE:
         default: {
@@ -367,12 +425,21 @@ void ArmSendCmdSafe(void)
     CanCmdDjiMotor(ARM_DJI_CAN, 0x1FF, 0, 0, 0, 0);  // J3 J4 J5
 }
 
+void ArmSendCmdDebug(void)
+{
+    DmMitCtrl(&MECHANICAL_ARM.joint_motor[J0], J0_KP_FOLLOW, J0_KD_FOLLOW);
+    delay_us(DM_DELAY);
+    DmMitStop(&MECHANICAL_ARM.joint_motor[J1]);
+    DmMitStop(&MECHANICAL_ARM.joint_motor[J2]);
+    CanCmdDjiMotor(ARM_DJI_CAN, 0x1FF, 0, 0, 0, 0);  // J3 J4 J5
+}
+
 void ArmSendCmdFollow(void)
 {
-    DmMitCtrl(&MECHANICAL_ARM.joint_motor[J0], DM_KP_FOLLOW, DM_KD_FOLLOW);
+    DmMitCtrl(&MECHANICAL_ARM.joint_motor[J0], J0_KP_FOLLOW, J0_KD_FOLLOW);
     delay_us(DM_DELAY);
-    DmMitCtrl(&MECHANICAL_ARM.joint_motor[J1], DM_KP_FOLLOW, DM_KD_FOLLOW);
-    DmMitCtrl(&MECHANICAL_ARM.joint_motor[J2], DM_KP_FOLLOW, DM_KD_FOLLOW);
+    DmMitCtrl(&MECHANICAL_ARM.joint_motor[J1], J1_KP_FOLLOW, J1_KD_FOLLOW);
+    DmMitCtrl(&MECHANICAL_ARM.joint_motor[J2], J2_KP_FOLLOW, J2_KD_FOLLOW);
     // clang-format off
     CanCmdDjiMotor(
         ARM_DJI_CAN, 0x1FF, 
@@ -383,4 +450,6 @@ void ArmSendCmdFollow(void)
 }
 
 #endif
+
+#undef MA
 /*------------------------------ End of File ------------------------------*/
