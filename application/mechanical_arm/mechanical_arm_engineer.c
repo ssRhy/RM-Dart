@@ -54,8 +54,8 @@
 
 #define DM_DELAY 250  // (us)dm电机发送延时
 
-#define J0_KP_FOLLOW 15
-#define J0_KD_FOLLOW 2
+#define J0_KP_FOLLOW 0
+#define J0_KD_FOLLOW 1.5
 
 #define J1_KP_FOLLOW 1
 #define J1_KD_FOLLOW 0.5
@@ -190,11 +190,6 @@ void MechanicalArmObserver(void)
 
     UpdateMotorStatus();
     JointStateObserve();
-
-    ModifyDebugDataPackage(1, MA.fdb.joint[J0].angle, "J0_pos_f");
-    ModifyDebugDataPackage(2, MA.fdb.joint[J0].velocity, "J0_vel_f");
-    ModifyDebugDataPackage(3, MA.ref.joint[J0].angle, "J0_pos_r");
-    ModifyDebugDataPackage(4, MA.joint_motor[J0].fdb.tor, "J0_tor");
 }
 
 /**
@@ -325,37 +320,17 @@ void MechanicalArmConsole(void)
         case MECHANICAL_ARM_DEBUG: {
             //机械臂基本不会出现过圈问题，不考虑过圈时的最优旋转方向问题。
 
-            float joint_pos[6] = {0, 0, 0, 0, 0, 0};
-            float joint_vel[6] = {0, 0, 0, 0, 0, 0};
-            float joint_tor[6] = {0, 0, 0, 0, 0, 0};
-            float dpos;
-            float vel;
-
-            for (uint8_t i = 0; i < 6; i++) {
-                joint_pos[i] = theta_transform(
-                    MA.ref.joint[i].angle, -MA.transform.dpos[i], MA.joint_motor[i].direction,
-                    MA.transform.duration[i]);
-                dpos = MA.ref.joint[i].angle - MA.fdb.joint[i].angle;
-                vel = 0;  //fp32_constrain(dpos / 0.1f * MA.joint_motor[i].direction, -10, 10);
-                joint_vel[i] = vel;
-                if (fabsf(dpos) < 0.1f) {  // 抑制震荡
-                    joint_tor[i] = -MA.fdb.joint[i].velocity * 0.5f * MA.joint_motor[i].direction;
-                    joint_vel[i] = 0;
-                }
-            }
-
             // DM电机
-            MA.joint_motor[J0].set.pos = joint_pos[J0];
-            MA.joint_motor[J0].set.vel = joint_vel[J0];
-            MA.joint_motor[J0].set.tor = joint_tor[J0];
-            ModifyDebugDataPackage(8, joint_vel[J0], "J vel");
-            ModifyDebugDataPackage(9, joint_tor[J0], "J tor");
+            MA.joint_motor[J0].set.vel =
+                PID_calc(&MA.pid.j0[0], MA.fdb.joint[J0].angle, MA.ref.joint[J0].angle) *
+                MA.joint_motor[J0].direction * MA.joint_motor[J0].reduction_ratio;
+            MA.joint_motor[J0].set.tor = 0;
 
-            MA.joint_motor[J1].set.pos = joint_pos[J1];
+            MA.joint_motor[J1].set.pos = 0;
             MA.joint_motor[J1].set.vel = 0;
             MA.joint_motor[J1].set.tor = 0;
 
-            MA.joint_motor[J2].set.pos = joint_pos[J2];
+            MA.joint_motor[J2].set.pos = 0;
             MA.joint_motor[J2].set.vel = 0;
             MA.joint_motor[J2].set.tor = 0;
         } break;
@@ -414,6 +389,10 @@ void MechanicalArmSendCmd(void)
             ArmSendCmdSafe();
         }
     }
+    ModifyDebugDataPackage(1, MA.fdb.joint[J0].angle, "J0_pos_f");
+    ModifyDebugDataPackage(2, MA.ref.joint[J0].angle, "J0_pos_r");
+    ModifyDebugDataPackage(3, MA.fdb.joint[J0].velocity, "J0_vel_f");
+    ModifyDebugDataPackage(4, MA.pid.j0[0].out * 2.24f, "pid0 out");
 }
 
 void ArmSendCmdSafe(void)
@@ -427,7 +406,7 @@ void ArmSendCmdSafe(void)
 
 void ArmSendCmdDebug(void)
 {
-    DmMitCtrl(&MECHANICAL_ARM.joint_motor[J0], J0_KP_FOLLOW, J0_KD_FOLLOW);
+    DmMitCtrlVelocity(&MECHANICAL_ARM.joint_motor[J0], J0_KD_FOLLOW);
     delay_us(DM_DELAY);
     DmMitStop(&MECHANICAL_ARM.joint_motor[J1]);
     DmMitStop(&MECHANICAL_ARM.joint_motor[J2]);

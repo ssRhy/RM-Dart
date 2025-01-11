@@ -91,11 +91,11 @@
 #define MIN_JOINT_4_POSITION 0.0f
 //PID parameters ---------------------
 //J0角度环PID参数
-#define KP_JOINT_0_ANGLE 0.0f
-#define KI_JOINT_0_ANGLE 0.0f
+#define KP_JOINT_0_ANGLE 10.0f
+#define KI_JOINT_0_ANGLE 0.1f
 #define KD_JOINT_0_ANGLE 0.0f
-#define MAX_IOUT_JOINT_0_ANGLE 0.0f
-#define MAX_OUT_JOINT_0_ANGLE 0.0f
+#define MAX_IOUT_JOINT_0_ANGLE 0.3f
+#define MAX_OUT_JOINT_0_ANGLE 5.0f
 //J0速度环PID参数
 #define KP_JOINT_0_VELOCITY 0.0f
 #define KI_JOINT_0_VELOCITY 0.0f
