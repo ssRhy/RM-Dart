@@ -79,14 +79,14 @@
 #define J5_ANGLE_TRANSFORM 0.0f
 //upper_limit parameters ---------------------
 #define MAX_JOINT_0_POSITION M_PI * 3 / 2
-#define MAX_JOINT_1_POSITION 1.23264265060425f
+#define MAX_JOINT_1_POSITION 1.2f
 #define MAX_JOINT_2_POSITION M_PI
 #define MAX_JOINT_3_POSITION 6.283185f
 #define MAX_JOINT_4_POSITION M_PI
 #define MAX_JOINT_5_POSITION M_PI
 //lower_limit parameters ---------------------
 #define MIN_JOINT_0_POSITION -MAX_JOINT_0_POSITION
-#define MIN_JOINT_1_POSITION -1.31446933746338f
+#define MIN_JOINT_1_POSITION -1.1f
 #define MIN_JOINT_2_POSITION 0.0f
 #define MIN_JOINT_3_POSITION 0.0f
 #define MIN_JOINT_4_POSITION 0.0f
@@ -106,10 +106,10 @@
 #define MAX_OUT_JOINT_0_VELOCITY 0.0f
 
 //J1角度环PID参数
-#define KP_JOINT_1_ANGLE 1.0f
-#define KI_JOINT_1_ANGLE 0.0f
+#define KP_JOINT_1_ANGLE 10.0f
+#define KI_JOINT_1_ANGLE 0.1f
 #define KD_JOINT_1_ANGLE 0.0f
-#define MAX_IOUT_JOINT_1_ANGLE 0.0f
+#define MAX_IOUT_JOINT_1_ANGLE 0.3f
 #define MAX_OUT_JOINT_1_ANGLE 5.0f
 //J1速度环PID参数
 #define KP_JOINT_1_VELOCITY 0.0f

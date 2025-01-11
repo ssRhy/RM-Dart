@@ -37,6 +37,7 @@
 #include "remote_control.h"
 #include "signal_generator.h"
 #include "usb_debug.h"
+#include "string.h"
 
 /*------------------------------ Macro Definition ------------------------------*/
 
@@ -58,7 +59,7 @@
 #define J0_KD_FOLLOW 1.5
 
 #define J1_KP_FOLLOW 0
-#define J1_KD_FOLLOW 2
+#define J1_KD_FOLLOW 10
 
 #define J2_KP_FOLLOW 1
 #define J2_KD_FOLLOW 0.5
@@ -135,6 +136,13 @@ void MechanicalArmInit(void)
     MECHANICAL_ARM.limit.min.pos[J3] = MIN_JOINT_3_POSITION;
     MECHANICAL_ARM.limit.min.pos[J4] = MIN_JOINT_4_POSITION;
     MECHANICAL_ARM.limit.min.pos[J5] = MIN_JOINT_5_POSITION;
+    // #memset ---------------------
+    memset(&MECHANICAL_ARM.fdb, 0, sizeof(MECHANICAL_ARM.fdb));
+    memset(&MECHANICAL_ARM.ref, 0, sizeof(MECHANICAL_ARM.ref));
+    // #ref init ---------------------
+    MECHANICAL_ARM.ref.joint[J0].angle = 0;
+    MECHANICAL_ARM.ref.joint[J1].angle = MECHANICAL_ARM.limit.max.pos[J1];
+
     // #Initial value setting ---------------------
     MECHANICAL_ARM.mode = MECHANICAL_ARM_SAFE;
     MECHANICAL_ARM.error_code = 0;
@@ -268,12 +276,13 @@ void MechanicalArmReference(void)
         } break;
         case MECHANICAL_ARM_DEBUG: {
             // j0
-            MA.ref.joint[J0].angle = GetDt7RcCh(DT7_CH_RH) * M_PI / 3;
+            MA.ref.joint[J0].angle = GetDt7RcCh(DT7_CH_ROLLER) * M_PI / 3;
             MA.ref.joint[J0].angle =
                 fp32_constrain(MA.ref.joint[J0].angle, MA.limit.min.pos[J0], MA.limit.max.pos[J0]);
 
             // j1
-            MA.ref.joint[J1].angle = GenerateSinWave(0.8, MAX_JOINT_1_POSITION, 3);
+            // MA.ref.joint[J1].angle = GenerateSinWave(0.8, MAX_JOINT_1_POSITION-0.8f, 3);
+            MA.ref.joint[J1].angle += GetDt7RcCh(DT7_CH_RH) * 0.002f;
             MA.ref.joint[J1].angle =
                 fp32_constrain(MA.ref.joint[J1].angle, MA.limit.min.pos[J1], MA.limit.max.pos[J1]);
 
