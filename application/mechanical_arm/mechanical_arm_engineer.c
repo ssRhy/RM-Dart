@@ -235,9 +235,9 @@ static void JointStateObserve(void)
 {
 #define dangle MECHANICAL_ARM.transform.dpos
 
-    /*-----处理J0 J1 J2 J3 关节的反馈信息（J4 J5作为差速机构要特殊处理）*/
+    /*-----处理J0 J1 J2关节的反馈信息（J4 J5作为差速机构要特殊处理）*/
     uint8_t i;
-    for (i = 0; i < 4; i++) {
+    for (i = 0; i < 3; i++) {
         MA.fdb.joint[i].angle = theta_transform(
                                     MA.joint_motor[i].fdb.pos, dangle[i],
                                     MA.joint_motor[i].direction, MA.transform.duration[i]) /
@@ -247,6 +247,20 @@ static void JointStateObserve(void)
         MA.fdb.joint[i].torque = MA.joint_motor[i].fdb.tor * MA.joint_motor[i].reduction_ratio *
                                  MA.joint_motor[i].direction;
     }
+    /*-----处理J3关节的反馈信息(涉及到多圈计数问题)*/
+    static float last_angle, angle_fdb = 0;
+    angle_fdb = theta_transform(
+                    MA.joint_motor[J3].fdb.pos, dangle[J3], MA.joint_motor[J3].direction,
+                    MA.transform.duration[J3]) /
+                MA.joint_motor[J3].reduction_ratio;
+
+    if (fabs(angle_fdb - last_angle) > M_PI) {
+        MA.fdb.joint[J3].round += (MA.joint_motor[J3].fdb.pos - last_angle) < 0 ? 1 : -1;
+    }
+
+    last_angle = angle_fdb;
+
+    MA.fdb.joint[J3].angle = angle_fdb + M_PI * 2 * MA.fdb.joint[J3].round;
 #undef dangle
 
     /*-----处理J4 J5 关节的反馈信息*/
@@ -431,11 +445,19 @@ void MechanicalArmSendCmd(void)
             ArmSendCmdSafe();
         }
     }
-    ModifyDebugDataPackage(1, MA.fdb.joint[J2].angle, "J_pos_f");
-    ModifyDebugDataPackage(2, MA.ref.joint[J2].angle, "J_pos_r");
-    ModifyDebugDataPackage(3, MA.fdb.joint[J2].velocity, "J_vel_f");
-    ModifyDebugDataPackage(4, MA.fdb.joint[J2].torque, "J_tor_f");
-    ModifyDebugDataPackage(5, MA.pid.j2[0].out * 2.24f, "pid out");
+    ModifyDebugDataPackage(1, MA.fdb.joint[J3].angle, "J_pos_f");
+    ModifyDebugDataPackage(2, MA.ref.joint[J3].angle, "J_pos_r");
+    ModifyDebugDataPackage(3, MA.fdb.joint[J3].velocity, "J_vel_f");
+    ModifyDebugDataPackage(4, MA.fdb.joint[J3].torque, "J_tor_f");
+    ModifyDebugDataPackage(5, MA.fdb.joint[J3].round, "round");
+    ModifyDebugDataPackage(6, MA.pid.j3[0].out, "pid out");
+    ModifyDebugDataPackage(
+        7,
+        theta_transform(
+            MA.joint_motor[J3].fdb.pos, MA.transform.dpos[J3], MA.joint_motor[J3].direction,
+            MA.transform.duration[J3]) /
+            MA.joint_motor[J3].reduction_ratio,
+        "angle_fdb");
 }
 
 void ArmSendCmdSafe(void)

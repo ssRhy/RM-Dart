@@ -21,7 +21,7 @@
 //PID parameters ---------------------
 
 /*-------------------- Mechanical arm --------------------*/
-#define ARM_DJI_CAN 1
+#define ARM_DJI_CAN 2
 #define ARM_DM_CAN 2
 //rc parameters ---------------------
 
