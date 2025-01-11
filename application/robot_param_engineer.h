@@ -5,11 +5,11 @@
 
 #ifndef INCLUDED_ROBOT_PARAM_H
 #define INCLUDED_ROBOT_PARAM_H
+#include "macro_typedef.h"
 #include "motor.h"
 #include "robot_typedef.h"
-#include "macro_typedef.h"
 
-#define MECHANICAL_ARM_TYPE MECHANICAL_ARM_ENGINEER_ARM    // 选择机械臂类型
+#define MECHANICAL_ARM_TYPE MECHANICAL_ARM_ENGINEER_ARM  // 选择机械臂类型
 
 // 机器人物理参数
 
@@ -78,17 +78,19 @@
 #define J4_ANGLE_TRANSFORM 0.0f
 #define J5_ANGLE_TRANSFORM 0.0f
 //upper_limit parameters ---------------------
-#define MAX_JOINT_0_POSITION 6.283185f  //2*M_PI
-#define MAX_JOINT_1_POSITION M_PI
+#define MAX_JOINT_0_POSITION M_PI * 3 / 2
+#define MAX_JOINT_1_POSITION 1.23264265060425f
 #define MAX_JOINT_2_POSITION M_PI
 #define MAX_JOINT_3_POSITION 6.283185f
 #define MAX_JOINT_4_POSITION M_PI
+#define MAX_JOINT_5_POSITION M_PI
 //lower_limit parameters ---------------------
-#define MIN_JOINT_0_POSITION 0.0f
-#define MIN_JOINT_1_POSITION 0.0f
+#define MIN_JOINT_0_POSITION -MAX_JOINT_0_POSITION
+#define MIN_JOINT_1_POSITION -1.31446933746338f
 #define MIN_JOINT_2_POSITION 0.0f
 #define MIN_JOINT_3_POSITION 0.0f
 #define MIN_JOINT_4_POSITION 0.0f
+#define MIN_JOINT_5_POSITION 0.0f
 //PID parameters ---------------------
 //J0角度环PID参数
 #define KP_JOINT_0_ANGLE 10.0f
@@ -104,11 +106,11 @@
 #define MAX_OUT_JOINT_0_VELOCITY 0.0f
 
 //J1角度环PID参数
-#define KP_JOINT_1_ANGLE 0.0f
+#define KP_JOINT_1_ANGLE 1.0f
 #define KI_JOINT_1_ANGLE 0.0f
 #define KD_JOINT_1_ANGLE 0.0f
 #define MAX_IOUT_JOINT_1_ANGLE 0.0f
-#define MAX_OUT_JOINT_1_ANGLE 0.0f
+#define MAX_OUT_JOINT_1_ANGLE 5.0f
 //J1速度环PID参数
 #define KP_JOINT_1_VELOCITY 0.0f
 #define KI_JOINT_1_VELOCITY 0.0f

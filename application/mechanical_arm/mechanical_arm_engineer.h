@@ -82,6 +82,18 @@ typedef struct
         uint8_t duration[6];
     } transform;
 
+    struct
+    {
+        struct
+        {
+            float pos[6];
+        } max;
+        struct
+        {
+            float pos[6];
+        } min;
+    } limit;
+
     // struct
     // {
     //     struct
