@@ -21,7 +21,7 @@
 //PID parameters ---------------------
 
 /*-------------------- Mechanical arm --------------------*/
-#define ARM_DJI_CAN 2
+#define ARM_DJI_CAN 1
 #define ARM_DM_CAN 2
 //rc parameters ---------------------
 
@@ -95,6 +95,14 @@
 #define MIN_JOINT_5_POSITION  0.0f
 //clang-format on
 
+//LPF parameters ---------------------
+#define J0_LPF_ALPHA 0.0f
+#define J1_LPF_ALPHA 0.0f
+#define J2_LPF_ALPHA 0.0f
+#define J3_LPF_ALPHA 0.985f
+#define J4_LPF_ALPHA 0.0f
+#define J5_LPF_ALPHA 0.0f
+
 //PID parameters ---------------------
 //J0角度环PID参数
 #define KP_JOINT_0_ANGLE 10.0f
@@ -136,17 +144,17 @@
 #define MAX_OUT_JOINT_2_VELOCITY 0.0f
 
 //J3角度环PID参数
-#define KP_JOINT_3_ANGLE 0.0f
-#define KI_JOINT_3_ANGLE 0.0f
+#define KP_JOINT_3_ANGLE 10.0f
+#define KI_JOINT_3_ANGLE 0.1f
 #define KD_JOINT_3_ANGLE 0.0f
-#define MAX_IOUT_JOINT_3_ANGLE 0.0f
-#define MAX_OUT_JOINT_3_ANGLE 0.0f
+#define MAX_IOUT_JOINT_3_ANGLE 0.3f
+#define MAX_OUT_JOINT_3_ANGLE 10.0f
 //J3速度环PID参数
-#define KP_JOINT_3_VELOCITY 0.0f
-#define KI_JOINT_3_VELOCITY 0.0f
-#define KD_JOINT_3_VELOCITY 0.0f
-#define MAX_IOUT_JOINT_3_VELOCITY 0.0f
-#define MAX_OUT_JOINT_3_VELOCITY 0.0f
+#define KP_JOINT_3_VELOCITY 6000.0f
+#define KI_JOINT_3_VELOCITY 1.0f
+#define KD_JOINT_3_VELOCITY 10.0f
+#define MAX_IOUT_JOINT_3_VELOCITY 1000.0f
+#define MAX_OUT_JOINT_3_VELOCITY 30000.0f
 
 //J4角度环PID参数
 #define KP_JOINT_4_ANGLE 0.0f

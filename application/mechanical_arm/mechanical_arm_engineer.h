@@ -117,9 +117,7 @@ typedef struct
 
     struct
     {
-        LowPassFilter_t j3;
-        LowPassFilter_t j4;
-        LowPassFilter_t j5;
+        LowPassFilter_t j[6];
     } lpf;
 
 } MechanicalArm_s;

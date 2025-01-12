@@ -85,6 +85,9 @@
             MAX_OUT_JOINT_##index##_VELOCITY, MAX_IOUT_JOINT_##index##_VELOCITY);          \
     }
 
+#define JointLowPassFilterInit(index) \
+    LowPassFilterInit(&MECHANICAL_ARM.lpf.j[index], J##index##_LPF_ALPHA)
+
 /*------------------------------ Variable Definition ------------------------------*/
 
 MechanicalArm_s MECHANICAL_ARM;
@@ -122,6 +125,13 @@ void MechanicalArmInit(void)
     JointPidInit(3);
     JointPidInit(4);
     JointPidInit(5);
+    // #LPF init ---------------------
+    JointLowPassFilterInit(0);
+    JointLowPassFilterInit(1);
+    JointLowPassFilterInit(2);
+    JointLowPassFilterInit(3);
+    JointLowPassFilterInit(4);
+    JointLowPassFilterInit(5);
     // #limit init ---------------------
     MECHANICAL_ARM.limit.max.pos[J0] = MAX_JOINT_0_POSITION;
     MECHANICAL_ARM.limit.max.pos[J1] = MAX_JOINT_1_POSITION;
@@ -143,6 +153,7 @@ void MechanicalArmInit(void)
     MECHANICAL_ARM.ref.joint[J0].angle = 0.0f;
     MECHANICAL_ARM.ref.joint[J1].angle = MECHANICAL_ARM.limit.max.pos[J1];
     MECHANICAL_ARM.ref.joint[J2].angle = MECHANICAL_ARM.limit.min.pos[J2];
+    MECHANICAL_ARM.ref.joint[J3].angle = 0.0f;
 
     // #Initial value setting ---------------------
     MECHANICAL_ARM.mode = MECHANICAL_ARM_SAFE;
@@ -187,7 +198,7 @@ void MechanicalArmSetMode(void)
     }
 
     if (switch_is_up(MECHANICAL_ARM.rc->rc.s[MECHANICAL_ARM_MODE_CHANNEL])) {
-        MECHANICAL_ARM.mode = MECHANICAL_ARM_CUSTOM;
+        MECHANICAL_ARM.mode = MECHANICAL_ARM_DEBUG;
     } else if (switch_is_mid(MECHANICAL_ARM.rc->rc.s[MECHANICAL_ARM_MODE_CHANNEL])) {
         MECHANICAL_ARM.mode = MECHANICAL_ARM_DEBUG;
     } else if (switch_is_down(MECHANICAL_ARM.rc->rc.s[MECHANICAL_ARM_MODE_CHANNEL])) {
@@ -254,13 +265,19 @@ static void JointStateObserve(void)
                     MA.transform.duration[J3]) /
                 MA.joint_motor[J3].reduction_ratio;
 
-    if (fabs(angle_fdb - last_angle) > M_PI) {
+    float dpos = angle_fdb - last_angle;
+    if (fabs(dpos) > M_PI) {
         MA.fdb.joint[J3].round += (MA.joint_motor[J3].fdb.pos - last_angle) < 0 ? 1 : -1;
     }
 
     last_angle = angle_fdb;
 
     MA.fdb.joint[J3].angle = angle_fdb + M_PI * 2 * MA.fdb.joint[J3].round;
+    
+    float vel = MA.joint_motor[J3].fdb.vel / MA.joint_motor[J3].reduction_ratio *
+                MA.joint_motor[J3].direction;
+    
+    MA.fdb.joint[J3].velocity = LowPassFilterCalc(&MA.lpf.j[J3], vel);
 #undef dangle
 
     /*-----处理J4 J5 关节的反馈信息*/
@@ -301,13 +318,14 @@ void MechanicalArmReference(void)
                 fp32_constrain(MA.ref.joint[J1].angle, MA.limit.min.pos[J1], MA.limit.max.pos[J1]);
 
             // j2
-            // MA.ref.joint[J2].angle = GenerateSinWave(0.8, MA.limit.min.pos[J2] + 0.6f, 3);
             MA.ref.joint[J2].angle += GetDt7RcCh(DT7_CH_RV) * 0.002f;
             MA.ref.joint[J2].angle =
                 fp32_constrain(MA.ref.joint[J2].angle, MA.limit.min.pos[J2], MA.limit.max.pos[J2]);
 
             // j3
-            MA.ref.joint[J3].angle = 0;
+            MA.ref.joint[J3].angle += GetDt7RcCh(DT7_CH_RV) * 0.002f;
+            MA.ref.joint[J3].angle = GenerateSinWave(0.8, MA.limit.min.pos[J3], 3);
+
             MA.ref.joint[J4].angle = 0;
             MA.ref.joint[J5].angle = 0;
 
@@ -370,7 +388,7 @@ void MechanicalArmConsole(void)
             //     MECHANICAL_ARM.pid.j5[ANGLE_PID].out);
         } break;
         case MECHANICAL_ARM_DEBUG: {
-            //机械臂基本不会出现过圈问题，不考虑过圈时的最优旋转方向问题。
+            /*机械臂J0 J1 J2基本不会出现过圈问题，不考虑过圈时的最优旋转方向问题。*/
 
             // J0
             MA.joint_motor[J0].set.vel =
@@ -389,6 +407,14 @@ void MechanicalArmConsole(void)
                 PID_calc(&MA.pid.j2[0], MA.fdb.joint[J2].angle, MA.ref.joint[J2].angle) *
                 MA.joint_motor[J2].direction * MA.joint_motor[J2].reduction_ratio;
             MA.joint_motor[J2].set.tor = 0;
+
+            /*机械臂J3需要考虑过圈的处理（在Observer时已经记录圈数获得多圈反馈了）*/
+            // J3
+            MA.joint_motor[J3].set.vel =
+                PID_calc(&MA.pid.j3[0], MA.fdb.joint[J3].angle, MA.ref.joint[J3].angle) *
+                MA.joint_motor[J3].direction * MA.joint_motor[J3].reduction_ratio;
+            MA.joint_motor[J3].set.value =
+                PID_calc(&MA.pid.j3[1], MA.fdb.joint[J3].velocity, MA.joint_motor[J3].set.vel);
         } break;
         case MECHANICAL_ARM_FOLLOW:
         case MECHANICAL_ARM_CALIBRATE:
@@ -448,16 +474,12 @@ void MechanicalArmSendCmd(void)
     ModifyDebugDataPackage(1, MA.fdb.joint[J3].angle, "J_pos_f");
     ModifyDebugDataPackage(2, MA.ref.joint[J3].angle, "J_pos_r");
     ModifyDebugDataPackage(3, MA.fdb.joint[J3].velocity, "J_vel_f");
-    ModifyDebugDataPackage(4, MA.fdb.joint[J3].torque, "J_tor_f");
+    ModifyDebugDataPackage(4, MA.joint_motor[J3].set.vel, "J_vel_s");
     ModifyDebugDataPackage(5, MA.fdb.joint[J3].round, "round");
-    ModifyDebugDataPackage(6, MA.pid.j3[0].out, "pid out");
-    ModifyDebugDataPackage(
-        7,
-        theta_transform(
-            MA.joint_motor[J3].fdb.pos, MA.transform.dpos[J3], MA.joint_motor[J3].direction,
-            MA.transform.duration[J3]) /
-            MA.joint_motor[J3].reduction_ratio,
-        "angle_fdb");
+    ModifyDebugDataPackage(6, MA.pid.j3[0].out, "PosPidOut");
+    ModifyDebugDataPackage(7, MA.pid.j3[1].out, "VelPidOut");
+    ModifyDebugDataPackage(8, MA.joint_motor[J3].set.value, "SetVal");
+    ModifyDebugDataPackage(9, MA.joint_motor[J3].fdb.vel, "FdbVel");
 }
 
 void ArmSendCmdSafe(void)
@@ -466,6 +488,7 @@ void ArmSendCmdSafe(void)
     delay_us(DM_DELAY);
     DmMitStop(&MECHANICAL_ARM.joint_motor[J1]);
     DmMitStop(&MECHANICAL_ARM.joint_motor[J2]);
+    delay_us(DM_DELAY);
     CanCmdDjiMotor(ARM_DJI_CAN, 0x1FF, 0, 0, 0, 0);  // J3 J4 J5
 }
 
@@ -475,7 +498,8 @@ void ArmSendCmdDebug(void)
     delay_us(DM_DELAY);
     DmMitCtrlVelocity(&MECHANICAL_ARM.joint_motor[J1], J1_KD_FOLLOW);
     DmMitCtrlVelocity(&MECHANICAL_ARM.joint_motor[J2], J2_KD_FOLLOW);
-    CanCmdDjiMotor(ARM_DJI_CAN, 0x1FF, 0, 0, 0, 0);  // J3 J4 J5
+    delay_us(DM_DELAY);
+    CanCmdDjiMotor(ARM_DJI_CAN, 0x1FF, MA.joint_motor[J3].set.value, 0, 0, 0);  // J3 JN J4 J5
 }
 
 void ArmSendCmdFollow(void)
