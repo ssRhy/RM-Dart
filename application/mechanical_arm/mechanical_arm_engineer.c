@@ -18,6 +18,10 @@
     - 定义机械臂J3水平(同步带位于两侧)时的J3关节位置为0，从吸盘方向看，逆时针为正方向
     - 定义J4为末端机构右侧（上视，J3向前）电机，J5为末端机构左侧电机
 
+    - 定义虚拟J4关节用来衡量末端机构的pitch, 虚拟J5关节用来衡量末端机构的roll
+    - 定义J4正方向为：当J3归中时，从机械臂右侧看，逆时针为正方向
+    - 定义J5正方向为：当J3归中时，从机械臂前方看，逆时针为正方向
+
   ==============================================================================
   @endverbatim
   ****************************(C) COPYRIGHT 2024 Polarbear****************************
@@ -64,6 +68,9 @@
 
 #define J2_KP_FOLLOW 0
 #define J2_KD_FOLLOW 10
+
+#define INIT_2006_SET_VALUE 600
+#define INIT_2006_MIN_VEL 10
 
 #define JointMotorInit(index)                                                                    \
     MotorInit(                                                                                   \
@@ -112,6 +119,8 @@ void MechanicalArmPublish(void) {}
 void MechanicalArmInit(void)
 {
     MECHANICAL_ARM.rc = get_remote_control_point();
+
+    MECHANICAL_ARM.init_completed = false;
     // #Motor init ---------------------
     JointMotorInit(0);
     JointMotorInit(1);
@@ -180,7 +189,23 @@ void MechanicalArmInit(void)
 /* HandleException                                                */
 /******************************************************************/
 
-void MechanicalArmHandleException(void) {}
+void MechanicalArmHandleException(void)
+{
+    if (MECHANICAL_ARM.mode == MECHANICAL_ARM_INIT) {
+        // 初始化时如果电机反馈的速度小于阈值，则认为电机初始化完成
+        if (fabsf(MECHANICAL_ARM.joint_motor[J4].fdb.vel) < INIT_2006_MIN_VEL &&
+            fabsf(MECHANICAL_ARM.joint_motor[J5].fdb.vel) < INIT_2006_MIN_VEL) {
+            MECHANICAL_ARM.init_completed = true;
+            float virtual_j4_pos =
+                MECHANICAL_ARM.fdb.joint[J4].angle + MECHANICAL_ARM.fdb.joint[J5].angle;
+            float virtual_j5_pos =
+                MECHANICAL_ARM.fdb.joint[J4].angle - MECHANICAL_ARM.fdb.joint[J5].angle;
+            // 设置虚拟关节J4关节的位置限制
+            MECHANICAL_ARM.limit.max.pos[J4] = virtual_j4_pos - 0.15f;
+            MECHANICAL_ARM.limit.min.pos[J4] = virtual_j4_pos - M_PI + 0.15f;
+        }
+    }
+}
 
 /******************************************************************/
 /* SetMode                                                        */
@@ -195,7 +220,7 @@ void MechanicalArmSetMode(void)
         return;
     }
 
-    if (toe_is_error(DBUS_TOE)) {
+    if (toe_is_error(DBUS_TOE)) {  // 安全，保命！！！！！！
         MECHANICAL_ARM.mode = MECHANICAL_ARM_SAFE;
         return;
     }
@@ -206,6 +231,11 @@ void MechanicalArmSetMode(void)
         MECHANICAL_ARM.mode = MECHANICAL_ARM_DEBUG;
     } else if (switch_is_down(MECHANICAL_ARM.rc->rc.s[MECHANICAL_ARM_MODE_CHANNEL])) {
         MECHANICAL_ARM.mode = MECHANICAL_ARM_SAFE;
+    }
+
+    // 非安全模式下，初始化未完成时，进入初始化模式
+    if ((MECHANICAL_ARM.mode != MECHANICAL_ARM_SAFE) && (!MECHANICAL_ARM.init_completed)) {
+        MECHANICAL_ARM.mode = MECHANICAL_ARM_INIT;
     }
 }
 
@@ -342,40 +372,42 @@ void MechanicalArmReference(void)
             // MECHANICAL_ARM.ref.joint[J5].angle = MECHANICAL_ARM.rc->rc.ch[3] * RC_TO_ONE * M_PI;
         } break;
         case MECHANICAL_ARM_DEBUG: {
-            // j0
-            MA.ref.joint[J0].angle += GetDt7RcCh(DT7_CH_ROLLER) * 0.002f;
-            MA.ref.joint[J0].angle =
-                fp32_constrain(MA.ref.joint[J0].angle, MA.limit.min.pos[J0], MA.limit.max.pos[J0]);
+            if (switch_is_mid(MECHANICAL_ARM.rc->rc.s[MECHANICAL_ARM_MODE_CHANNEL])) {
+                // j0
+                MA.ref.joint[J0].angle += GetDt7RcCh(DT7_CH_ROLLER) * 0.002f;
+                MA.ref.joint[J0].angle = fp32_constrain(
+                    MA.ref.joint[J0].angle, MA.limit.min.pos[J0], MA.limit.max.pos[J0]);
 
-            // j1
-            MA.ref.joint[J1].angle += GetDt7RcCh(DT7_CH_RH) * 0.002f;
-            MA.ref.joint[J1].angle =
-                fp32_constrain(MA.ref.joint[J1].angle, MA.limit.min.pos[J1], MA.limit.max.pos[J1]);
+                // j1
+                MA.ref.joint[J1].angle += GetDt7RcCh(DT7_CH_RH) * 0.002f;
+                MA.ref.joint[J1].angle = fp32_constrain(
+                    MA.ref.joint[J1].angle, MA.limit.min.pos[J1], MA.limit.max.pos[J1]);
 
-            // j2
-            MA.ref.joint[J2].angle += GetDt7RcCh(DT7_CH_RV) * 0.002f;
-            MA.ref.joint[J2].angle =
-                fp32_constrain(MA.ref.joint[J2].angle, MA.limit.min.pos[J2], MA.limit.max.pos[J2]);
+                // j2
+                MA.ref.joint[J2].angle += GetDt7RcCh(DT7_CH_RV) * 0.002f;
+                MA.ref.joint[J2].angle = fp32_constrain(
+                    MA.ref.joint[J2].angle, MA.limit.min.pos[J2], MA.limit.max.pos[J2]);
 
-            // j3
-            MA.ref.joint[J3].angle += GetDt7RcCh(DT7_CH_LH) * 0.002f;
-            MA.ref.joint[J3].angle =
-                fp32_constrain(MA.ref.joint[J3].angle, MA.limit.min.pos[J3], MA.limit.max.pos[J3]);
+                // j3
+                MA.ref.joint[J3].angle += GetDt7RcCh(DT7_CH_LH) * 0.002f;
+                MA.ref.joint[J3].angle = fp32_constrain(
+                    MA.ref.joint[J3].angle, MA.limit.min.pos[J3], MA.limit.max.pos[J3]);
 
-            MA.ref.joint[J4].angle = 0;
-            MA.ref.joint[J5].angle = 0;
+                MA.ref.joint[J4].angle = 0;
+                MA.ref.joint[J5].angle = 0;
+            } else if (switch_is_up(MECHANICAL_ARM.rc->rc.s[MECHANICAL_ARM_MODE_CHANNEL])) {
+                // j4
+                MA.ref.joint[J4].angle += GetDt7RcCh(DT7_CH_RV) * 0.002f;
+                // MA.ref.joint[J4].angle = GenerateSinWave(1, 0, 3);
+                // MA.ref.joint[J4].angle =
+                //     fp32_constrain(MA.ref.joint[J4].angle, MA.limit.min.pos[J4], MA.limit.max.pos[J4]);
 
-            // j4
-            // MA.ref.joint[J4].angle += GetDt7RcCh(DT7_CH_LV) * 0.002f;
-            MA.ref.joint[J4].angle = GenerateSinWave(1, 0, 3);
-            // MA.ref.joint[J4].angle =
-            //     fp32_constrain(MA.ref.joint[J4].angle, MA.limit.min.pos[J4], MA.limit.max.pos[J4]);
-
-            // j5
-            // MA.ref.joint[J5].angle += GetDt7RcCh(DT7_CH_LV) * 0.002f;
-            MA.ref.joint[J5].angle = GenerateSinWave(1, 0, 3);
-            // MA.ref.joint[J5].angle =
-            //     fp32_constrain(MA.ref.joint[J5].angle, MA.limit.min.pos[J5], MA.limit.max.pos[J5]);
+                // j5
+                MA.ref.joint[J5].angle += GetDt7RcCh(DT7_CH_LV) * 0.002f;
+                // MA.ref.joint[J5].angle = GenerateSinWave(1, 0, 3);
+                // MA.ref.joint[J5].angle =
+                //     fp32_constrain(MA.ref.joint[J5].angle, MA.limit.min.pos[J5], MA.limit.max.pos[J5]);
+            }
 
         } break;
         case MECHANICAL_ARM_FOLLOW:
@@ -480,6 +512,10 @@ void MechanicalArmConsole(void)
                 PID_calc(&MA.pid.j5[1], MA.fdb.joint[J5].velocity, MA.joint_motor[J5].set.vel);
             // MA.joint_motor[J5].set.value = GenerateSinWave(2000, 0, 3);
         } break;
+        case MECHANICAL_ARM_INIT: {
+            MA.joint_motor[J4].set.value = INIT_2006_SET_VALUE;
+            MA.joint_motor[J5].set.value = -INIT_2006_SET_VALUE;
+        } break;
         case MECHANICAL_ARM_FOLLOW:
         case MECHANICAL_ARM_CALIBRATE:
         case MECHANICAL_ARM_SAFE:
@@ -505,6 +541,7 @@ void MechanicalArmConsole(void)
 void ArmSendCmdSafe(void);
 void ArmSendCmdDebug(void);
 void ArmSendCmdFollow(void);
+void ArmSendCmdInit(void);
 
 void MechanicalArmSendCmd(void)
 {
@@ -525,10 +562,13 @@ void MechanicalArmSendCmd(void)
         case MECHANICAL_ARM_FOLLOW: {
             ArmSendCmdFollow();
         } break;
-        case MECHANICAL_ARM_CALIBRATE:
         case MECHANICAL_ARM_DEBUG: {
             ArmSendCmdDebug();
         } break;
+        case MECHANICAL_ARM_INIT: {
+            ArmSendCmdInit();
+        } break;
+        case MECHANICAL_ARM_CALIBRATE:
         case MECHANICAL_ARM_CUSTOM:
         case MECHANICAL_ARM_SAFE:
         default: {
@@ -586,6 +626,18 @@ void ArmSendCmdFollow(void)
         MECHANICAL_ARM.joint_motor[J0].set.value,
         MECHANICAL_ARM.joint_motor[J4].set.value, 
         MECHANICAL_ARM.joint_motor[J5].set.value, 0); // J3 J4 J5
+    // clang-format on
+}
+
+void ArmSendCmdInit(void)
+{
+    // clang-format off
+    CanCmdDjiMotor(
+        ARM_DJI_CAN, 0x1FF, 
+        0, 
+        0, 
+        MA.joint_motor[J4].set.value,
+        MA.joint_motor[J5].set.value);  // J3 JN J4 J5
     // clang-format on
 }
 

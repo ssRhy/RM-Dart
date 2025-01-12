@@ -40,6 +40,7 @@ typedef enum {
     MECHANICAL_ARM_FOLLOW,
     MECHANICAL_ARM_DEBUG,
     MECHANICAL_ARM_CUSTOM,
+    MECHANICAL_ARM_INIT,
 } MechanicalArmMode_e;
 
 /**
@@ -50,6 +51,7 @@ typedef struct
     const RC_ctrl_t * rc;      // 遥控器指针
     MechanicalArmMode_e mode;  // 机械臂模式
     uint8_t error_code;        // 机械臂错误代码
+    bool init_completed;    // 机械臂初始化完成标志
 
     uint32_t last_time;  // (ms)上一次更新时间
     uint32_t duration;   // (ms)任务周期
@@ -88,10 +90,12 @@ typedef struct
         struct
         {
             float pos[6];
+            float vj4_pos;
         } max;
         struct
         {
             float pos[6];
+            float vj4_pos;
         } min;
     } limit;
 
