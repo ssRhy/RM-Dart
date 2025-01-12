@@ -70,7 +70,7 @@
 #define J2_KD_FOLLOW 10
 
 #define INIT_2006_SET_VALUE 600
-#define INIT_2006_MIN_VEL 10
+#define INIT_2006_MIN_VEL 1
 
 #define JointMotorInit(index)                                                                    \
     MotorInit(                                                                                   \
@@ -121,6 +121,7 @@ void MechanicalArmInit(void)
     MECHANICAL_ARM.rc = get_remote_control_point();
 
     MECHANICAL_ARM.init_completed = false;
+    MECHANICAL_ARM.reach_time = 0;
     // #Motor init ---------------------
     JointMotorInit(0);
     JointMotorInit(1);
@@ -195,6 +196,12 @@ void MechanicalArmHandleException(void)
         // 初始化时如果电机反馈的速度小于阈值，则认为电机初始化完成
         if (fabsf(MECHANICAL_ARM.joint_motor[J4].fdb.vel) < INIT_2006_MIN_VEL &&
             fabsf(MECHANICAL_ARM.joint_motor[J5].fdb.vel) < INIT_2006_MIN_VEL) {
+            MECHANICAL_ARM.reach_time += MECHANICAL_ARM.duration;
+        } else {
+            MECHANICAL_ARM.reach_time = 0;
+        }
+
+        if (MECHANICAL_ARM.reach_time > 200 && !MECHANICAL_ARM.init_completed) {  // 停止时间超过200ms则认为达到限位
             MECHANICAL_ARM.init_completed = true;
             float virtual_j4_pos =
                 MECHANICAL_ARM.fdb.joint[J4].angle + MECHANICAL_ARM.fdb.joint[J5].angle;

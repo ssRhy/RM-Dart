@@ -51,7 +51,8 @@ typedef struct
     const RC_ctrl_t * rc;      // 遥控器指针
     MechanicalArmMode_e mode;  // 机械臂模式
     uint8_t error_code;        // 机械臂错误代码
-    bool init_completed;    // 机械臂初始化完成标志
+    bool init_completed;       // 机械臂初始化完成标志
+    uint32_t reach_time;       // 达到目标的持续时间
 
     uint32_t last_time;  // (ms)上一次更新时间
     uint32_t duration;   // (ms)任务周期
@@ -75,7 +76,7 @@ typedef struct
             float angle;     // (rad)位置
             float velocity;  // (rad/s)速度
             float torque;    // (N*m)力矩
-            int16_t round;    // 圈数(当前位于第几圈中，初始为0)
+            int16_t round;   // 圈数(当前位于第几圈中，初始为0)
         } joint[JOINT_NUM];
     } fdb;
 
@@ -110,7 +111,7 @@ typedef struct
     // } cmd;
 
     struct
-    {// 0为角度环，1为速度环
+    {  // 0为角度环，1为速度环
         pid_type_def j0[2];
         pid_type_def j1[2];
         pid_type_def j2[2];
