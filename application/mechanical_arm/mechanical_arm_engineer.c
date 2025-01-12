@@ -323,8 +323,9 @@ void MechanicalArmReference(void)
                 fp32_constrain(MA.ref.joint[J2].angle, MA.limit.min.pos[J2], MA.limit.max.pos[J2]);
 
             // j3
-            MA.ref.joint[J3].angle += GetDt7RcCh(DT7_CH_RV) * 0.002f;
-            MA.ref.joint[J3].angle = GenerateSinWave(0.8, MA.limit.min.pos[J3], 3);
+            MA.ref.joint[J3].angle += GetDt7RcCh(DT7_CH_LH) * 0.002f;
+            MA.ref.joint[J3].angle =
+                fp32_constrain(MA.ref.joint[J3].angle, MA.limit.min.pos[J3], MA.limit.max.pos[J3]);
 
             MA.ref.joint[J4].angle = 0;
             MA.ref.joint[J5].angle = 0;
