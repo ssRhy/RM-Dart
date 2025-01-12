@@ -106,7 +106,7 @@ typedef struct
     // } cmd;
 
     struct
-    {
+    {// 0为角度环，1为速度环
         pid_type_def j0[2];
         pid_type_def j1[2];
         pid_type_def j2[2];

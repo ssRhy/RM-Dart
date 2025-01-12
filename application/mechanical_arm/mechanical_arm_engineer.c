@@ -16,6 +16,7 @@
     - 定义机械臂水平向前时的J0关节位置为0，从上往下看，逆时针为正方向
     - 定义机械臂竖直向上时的J1 J2关节位置为0，从机械臂右侧看，逆时针为正方向（注：J1 J2关节的合位置为联动位置）
     - 定义机械臂J3水平(同步带位于两侧)时的J3关节位置为0，从吸盘方向看，逆时针为正方向
+    - 定义J4为末端机构右侧（上视，J3向前）电机，J5为末端机构左侧电机
 
   ==============================================================================
   @endverbatim
@@ -154,6 +155,8 @@ void MechanicalArmInit(void)
     MECHANICAL_ARM.ref.joint[J1].angle = MECHANICAL_ARM.limit.max.pos[J1];
     MECHANICAL_ARM.ref.joint[J2].angle = MECHANICAL_ARM.limit.min.pos[J2];
     MECHANICAL_ARM.ref.joint[J3].angle = 0.0f;
+    MECHANICAL_ARM.ref.joint[J4].angle = 0.0f;
+    MECHANICAL_ARM.ref.joint[J5].angle = 0.0f;
 
     // #Initial value setting ---------------------
     MECHANICAL_ARM.mode = MECHANICAL_ARM_SAFE;
@@ -288,7 +291,7 @@ static void JointStateObserve(void)
 
     vel = MA.joint_motor[J5].fdb.vel / MA.joint_motor[J5].reduction_ratio *
           MA.joint_motor[J5].direction;
-    MA.fdb.joint[J5].velocity = MA.joint_motor[J5].fdb.vel;
+    MA.fdb.joint[J5].velocity = LowPassFilterCalc(&MA.lpf.j[J5], vel);
 
     // 处理位置反馈
     // J4
@@ -361,6 +364,18 @@ void MechanicalArmReference(void)
 
             MA.ref.joint[J4].angle = 0;
             MA.ref.joint[J5].angle = 0;
+
+            // j4
+            // MA.ref.joint[J4].angle += GetDt7RcCh(DT7_CH_LV) * 0.002f;
+            MA.ref.joint[J4].angle = GenerateSinWave(1, 0, 3);
+            // MA.ref.joint[J4].angle =
+            //     fp32_constrain(MA.ref.joint[J4].angle, MA.limit.min.pos[J4], MA.limit.max.pos[J4]);
+
+            // j5
+            // MA.ref.joint[J5].angle += GetDt7RcCh(DT7_CH_LV) * 0.002f;
+            MA.ref.joint[J5].angle = GenerateSinWave(1, 0, 3);
+            // MA.ref.joint[J5].angle =
+            //     fp32_constrain(MA.ref.joint[J5].angle, MA.limit.min.pos[J5], MA.limit.max.pos[J5]);
 
         } break;
         case MECHANICAL_ARM_FOLLOW:
@@ -441,13 +456,29 @@ void MechanicalArmConsole(void)
                 MA.joint_motor[J2].direction * MA.joint_motor[J2].reduction_ratio;
             MA.joint_motor[J2].set.tor = 0;
 
-            /*机械臂J3需要考虑过圈的处理（在Observer时已经记录圈数获得多圈反馈了）*/
+            /*机械臂J3 J4 J5需要考虑过圈的处理（在Observer时已经记录圈数获得多圈反馈了）*/
             // J3
             MA.joint_motor[J3].set.vel =
                 PID_calc(&MA.pid.j3[0], MA.fdb.joint[J3].angle, MA.ref.joint[J3].angle) *
                 MA.joint_motor[J3].direction * MA.joint_motor[J3].reduction_ratio;
             MA.joint_motor[J3].set.value =
                 PID_calc(&MA.pid.j3[1], MA.fdb.joint[J3].velocity, MA.joint_motor[J3].set.vel);
+
+            // J4
+            MA.joint_motor[J4].set.vel =
+                PID_calc(&MA.pid.j4[0], MA.fdb.joint[J4].angle, MA.ref.joint[J4].angle) *
+                MA.joint_motor[J4].direction * MA.joint_motor[J4].reduction_ratio;
+            MA.joint_motor[J4].set.value =
+                PID_calc(&MA.pid.j4[1], MA.fdb.joint[J4].velocity, MA.joint_motor[J4].set.vel);
+            // MA.joint_motor[J4].set.value = GenerateSinWave(1000, 0, 3);
+
+            // J5
+            MA.joint_motor[J5].set.vel =
+                PID_calc(&MA.pid.j5[0], MA.fdb.joint[J5].angle, MA.ref.joint[J5].angle) *
+                MA.joint_motor[J5].direction * MA.joint_motor[J5].reduction_ratio;
+            MA.joint_motor[J5].set.value =
+                PID_calc(&MA.pid.j5[1], MA.fdb.joint[J5].velocity, MA.joint_motor[J5].set.vel);
+            // MA.joint_motor[J5].set.value = GenerateSinWave(2000, 0, 3);
         } break;
         case MECHANICAL_ARM_FOLLOW:
         case MECHANICAL_ARM_CALIBRATE:
@@ -504,6 +535,7 @@ void MechanicalArmSendCmd(void)
             ArmSendCmdSafe();
         }
     }
+    ModifyDebugDataPackage(0, MA.joint_motor[J4].fdb.curr, "FdbCurr");
     ModifyDebugDataPackage(1, MA.fdb.joint[J4].angle, "J_pos_f");
     ModifyDebugDataPackage(2, MA.ref.joint[J4].angle, "J_pos_r");
     ModifyDebugDataPackage(3, MA.fdb.joint[J4].velocity, "J_vel_f");
@@ -512,7 +544,7 @@ void MechanicalArmSendCmd(void)
     ModifyDebugDataPackage(6, MA.pid.j4[0].out, "PosPidOut");
     ModifyDebugDataPackage(7, MA.pid.j4[1].out, "VelPidOut");
     ModifyDebugDataPackage(8, MA.joint_motor[J4].set.value, "SetVal");
-    ModifyDebugDataPackage(9, MA.joint_motor[J4].fdb.vel, "FdbVel");
+    ModifyDebugDataPackage(9, MA.joint_motor[J4].fdb.vel / 36, "FdbVel");
 }
 
 void ArmSendCmdSafe(void)
@@ -532,7 +564,14 @@ void ArmSendCmdDebug(void)
     DmMitCtrlVelocity(&MECHANICAL_ARM.joint_motor[J1], J1_KD_FOLLOW);
     DmMitCtrlVelocity(&MECHANICAL_ARM.joint_motor[J2], J2_KD_FOLLOW);
     delay_us(DM_DELAY);
-    CanCmdDjiMotor(ARM_DJI_CAN, 0x1FF, MA.joint_motor[J3].set.value, 0, 0, 0);  // J3 JN J4 J5
+    // clang-format off
+    CanCmdDjiMotor(
+        ARM_DJI_CAN, 0x1FF, 
+        MA.joint_motor[J3].set.value, 
+        0, 
+        MA.joint_motor[J4].set.value,
+        MA.joint_motor[J5].set.value);  // J3 JN J4 J5
+    // clang-format on
 }
 
 void ArmSendCmdFollow(void)
