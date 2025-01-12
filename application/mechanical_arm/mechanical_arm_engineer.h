@@ -73,7 +73,7 @@ typedef struct
             float angle;     // (rad)位置
             float velocity;  // (rad/s)速度
             float torque;    // (N*m)力矩
-            int8_t round;    // 圈数(当前位于第几圈中，初始为0)
+            int16_t round;    // 圈数(当前位于第几圈中，初始为0)
         } joint[JOINT_NUM];
     } fdb;
 

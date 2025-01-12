@@ -244,6 +244,8 @@ static void UpdateMotorStatus(void)
  */
 static void JointStateObserve(void)
 {
+    static float last_angle[6], angle_fdb[6] = {0, 0, 0, 0, 0, 0};
+    float vel, dpos;
 #define dangle MECHANICAL_ARM.transform.dpos
 
     /*-----处理J0 J1 J2关节的反馈信息（J4 J5作为差速机构要特殊处理）*/
@@ -259,33 +261,63 @@ static void JointStateObserve(void)
                                  MA.joint_motor[i].direction;
     }
     /*-----处理J3关节的反馈信息(涉及到多圈计数问题)*/
-    static float last_angle, angle_fdb = 0;
-    angle_fdb = theta_transform(
-                    MA.joint_motor[J3].fdb.pos, dangle[J3], MA.joint_motor[J3].direction,
-                    MA.transform.duration[J3]) /
-                MA.joint_motor[J3].reduction_ratio;
+    angle_fdb[J3] = theta_transform(
+                        MA.joint_motor[J3].fdb.pos, dangle[J3], MA.joint_motor[J3].direction,
+                        MA.transform.duration[J3]) /
+                    MA.joint_motor[J3].reduction_ratio;
 
-    float dpos = angle_fdb - last_angle;
+    dpos = angle_fdb[J3] - last_angle[J3];
     if (fabs(dpos) > M_PI) {
-        MA.fdb.joint[J3].round += (MA.joint_motor[J3].fdb.pos - last_angle) < 0 ? 1 : -1;
+        MA.fdb.joint[J3].round += (dpos) < 0 ? 1 : -1;
     }
 
-    last_angle = angle_fdb;
+    last_angle[J3] = angle_fdb[J3];
 
-    MA.fdb.joint[J3].angle = angle_fdb + M_PI * 2 * MA.fdb.joint[J3].round;
-    
-    float vel = MA.joint_motor[J3].fdb.vel / MA.joint_motor[J3].reduction_ratio *
-                MA.joint_motor[J3].direction;
-    
+    MA.fdb.joint[J3].angle = angle_fdb[J3] + M_PI * 2 * MA.fdb.joint[J3].round;
+
+    vel = MA.joint_motor[J3].fdb.vel / MA.joint_motor[J3].reduction_ratio *
+          MA.joint_motor[J3].direction;
+
     MA.fdb.joint[J3].velocity = LowPassFilterCalc(&MA.lpf.j[J3], vel);
-#undef dangle
 
     /*-----处理J4 J5 关节的反馈信息*/
-    MA.fdb.joint[J4].velocity = MA.joint_motor[J4].fdb.vel;
+    // 处理速度反馈
+    vel = MA.joint_motor[J4].fdb.vel / MA.joint_motor[J4].reduction_ratio *
+          MA.joint_motor[J4].direction;
+    MA.fdb.joint[J4].velocity = LowPassFilterCalc(&MA.lpf.j[J4], vel);
+
+    vel = MA.joint_motor[J5].fdb.vel / MA.joint_motor[J5].reduction_ratio *
+          MA.joint_motor[J5].direction;
     MA.fdb.joint[J5].velocity = MA.joint_motor[J5].fdb.vel;
 
-    MA.fdb.joint[J4].angle += MA.fdb.joint[J4].velocity * MA.duration * MS_TO_S;
-    MA.fdb.joint[J5].angle += MA.fdb.joint[J5].velocity * MA.duration * MS_TO_S;
+    // 处理位置反馈
+    // J4
+    angle_fdb[J4] = theta_transform(
+        MA.joint_motor[J4].fdb.pos, dangle[J4], MA.joint_motor[J4].direction,
+        MA.transform.duration[J4]);
+
+    dpos = angle_fdb[J4] - last_angle[J4];
+    if (fabs(dpos) > M_PI) {
+        MA.fdb.joint[J4].round += (dpos) < 0 ? 1 : -1;
+    }
+    last_angle[J4] = angle_fdb[J4];
+    MA.fdb.joint[J4].angle =
+        (angle_fdb[J4] + M_PI * 2 * MA.fdb.joint[J4].round) / MA.joint_motor[J4].reduction_ratio;
+
+    // J5
+    angle_fdb[J5] = theta_transform(
+        MA.joint_motor[J5].fdb.pos, dangle[J5], MA.joint_motor[J5].direction,
+        MA.transform.duration[J5]);
+
+    dpos = angle_fdb[J5] - last_angle[J5];
+    if (fabs(dpos) > M_PI) {
+        MA.fdb.joint[J5].round += (dpos) < 0 ? 1 : -1;
+    }
+    last_angle[J5] = angle_fdb[J5];
+    MA.fdb.joint[J5].angle =
+        (angle_fdb[J5] + M_PI * 2 * MA.fdb.joint[J5].round) / MA.joint_motor[J5].reduction_ratio;
+
+#undef dangle
 }
 
 /******************************************************************/
@@ -472,15 +504,15 @@ void MechanicalArmSendCmd(void)
             ArmSendCmdSafe();
         }
     }
-    ModifyDebugDataPackage(1, MA.fdb.joint[J3].angle, "J_pos_f");
-    ModifyDebugDataPackage(2, MA.ref.joint[J3].angle, "J_pos_r");
-    ModifyDebugDataPackage(3, MA.fdb.joint[J3].velocity, "J_vel_f");
-    ModifyDebugDataPackage(4, MA.joint_motor[J3].set.vel, "J_vel_s");
-    ModifyDebugDataPackage(5, MA.fdb.joint[J3].round, "round");
-    ModifyDebugDataPackage(6, MA.pid.j3[0].out, "PosPidOut");
-    ModifyDebugDataPackage(7, MA.pid.j3[1].out, "VelPidOut");
-    ModifyDebugDataPackage(8, MA.joint_motor[J3].set.value, "SetVal");
-    ModifyDebugDataPackage(9, MA.joint_motor[J3].fdb.vel, "FdbVel");
+    ModifyDebugDataPackage(1, MA.fdb.joint[J4].angle, "J_pos_f");
+    ModifyDebugDataPackage(2, MA.ref.joint[J4].angle, "J_pos_r");
+    ModifyDebugDataPackage(3, MA.fdb.joint[J4].velocity, "J_vel_f");
+    ModifyDebugDataPackage(4, MA.joint_motor[J4].set.vel, "J_vel_s");
+    ModifyDebugDataPackage(5, MA.fdb.joint[J4].round, "round");
+    ModifyDebugDataPackage(6, MA.pid.j4[0].out, "PosPidOut");
+    ModifyDebugDataPackage(7, MA.pid.j4[1].out, "VelPidOut");
+    ModifyDebugDataPackage(8, MA.joint_motor[J4].set.value, "SetVal");
+    ModifyDebugDataPackage(9, MA.joint_motor[J4].fdb.vel, "FdbVel");
 }
 
 void ArmSendCmdSafe(void)
