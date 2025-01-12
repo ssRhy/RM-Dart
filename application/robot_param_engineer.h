@@ -83,7 +83,7 @@
 #define MAX_JOINT_0_POSITION  M_PI * 3 / 2
 #define MAX_JOINT_1_POSITION  1.20f
 #define MAX_JOINT_2_POSITION  0.00f
-#define MAX_JOINT_3_POSITION  M_PI * 2
+#define MAX_JOINT_3_POSITION  M_PI * 4
 #define MAX_JOINT_4_POSITION  M_PI
 #define MAX_JOINT_5_POSITION  M_PI
 //lower_limit parameters ---------------------
