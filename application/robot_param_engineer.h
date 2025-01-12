@@ -157,7 +157,7 @@
 #define MAX_OUT_JOINT_3_VELOCITY 30000.0f
 
 //J4角度环PID参数
-#define KP_JOINT_4_ANGLE 1.0f
+#define KP_JOINT_4_ANGLE 3.0f
 #define KI_JOINT_4_ANGLE 0.0f
 #define KD_JOINT_4_ANGLE 0.0f
 #define MAX_IOUT_JOINT_4_ANGLE 0.0f
@@ -167,10 +167,10 @@
 #define KI_JOINT_4_VELOCITY 0.0f
 #define KD_JOINT_4_VELOCITY 10.0f
 #define MAX_IOUT_JOINT_4_VELOCITY 0.0f
-#define MAX_OUT_JOINT_4_VELOCITY 1000.0f //10000.0f
+#define MAX_OUT_JOINT_4_VELOCITY 1200.0f //10000.0f
 
 //J5角度环PID参数
-#define KP_JOINT_5_ANGLE 1.0f
+#define KP_JOINT_5_ANGLE 3.0f
 #define KI_JOINT_5_ANGLE 0.0f
 #define KD_JOINT_5_ANGLE 0.0f
 #define MAX_IOUT_JOINT_5_ANGLE 0.0f
@@ -180,7 +180,7 @@
 #define KI_JOINT_5_VELOCITY 0.0f
 #define KD_JOINT_5_VELOCITY 10.0f
 #define MAX_IOUT_JOINT_5_VELOCITY 0.0f
-#define MAX_OUT_JOINT_5_VELOCITY 1000.0f //10000.0f
+#define MAX_OUT_JOINT_5_VELOCITY 1200.0f //10000.0f
 
 // Init parameters ---------------------
 // Other parameters ---------------------

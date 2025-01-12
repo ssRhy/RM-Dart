@@ -69,7 +69,7 @@
 #define J2_KP_FOLLOW 0
 #define J2_KD_FOLLOW 10
 
-#define INIT_2006_SET_VALUE 600
+#define INIT_2006_SET_VALUE 1000
 #define INIT_2006_MIN_VEL 1
 
 #define JointMotorInit(index)                                                                    \
