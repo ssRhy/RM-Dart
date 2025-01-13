@@ -21,6 +21,7 @@
     - 定义虚拟J4关节用来衡量末端机构的pitch, 虚拟J5关节用来衡量末端机构的roll
     - 定义J4正方向为：当J3归中时，从机械臂右侧看，逆时针为正方向
     - 定义J5正方向为：当J3归中时，从机械臂前方看，逆时针为正方向
+    - vj4和j4 j5的关系：vj4 = (j4 - j5)/2
 
   ==============================================================================
   @endverbatim
@@ -201,15 +202,16 @@ void MechanicalArmHandleException(void)
             MECHANICAL_ARM.reach_time = 0;
         }
 
-        if (MECHANICAL_ARM.reach_time > 200 && !MECHANICAL_ARM.init_completed) {  // 停止时间超过200ms则认为达到限位
+        if (MECHANICAL_ARM.reach_time > 200 && !MECHANICAL_ARM.init_completed) {
+            // 停止时间超过200ms则认为达到限位
             MECHANICAL_ARM.init_completed = true;
             float virtual_j4_pos =
-                MECHANICAL_ARM.fdb.joint[J4].angle + MECHANICAL_ARM.fdb.joint[J5].angle;
+                (MECHANICAL_ARM.fdb.joint[J4].angle - MECHANICAL_ARM.fdb.joint[J5].angle) / 2;
             float virtual_j5_pos =
-                MECHANICAL_ARM.fdb.joint[J4].angle - MECHANICAL_ARM.fdb.joint[J5].angle;
+                MECHANICAL_ARM.fdb.joint[J4].angle + MECHANICAL_ARM.fdb.joint[J5].angle;
             // 设置虚拟关节J4关节的位置限制
-            MECHANICAL_ARM.limit.max.pos[J4] = virtual_j4_pos - 0.15f;
-            MECHANICAL_ARM.limit.min.pos[J4] = virtual_j4_pos - M_PI + 0.15f;
+            MECHANICAL_ARM.limit.max.vj4_pos = virtual_j4_pos - 0.15f;
+            MECHANICAL_ARM.limit.min.vj4_pos = virtual_j4_pos - M_PI + 0.15f;
         }
     }
 }
@@ -415,7 +417,15 @@ void MechanicalArmReference(void)
                 // MA.ref.joint[J5].angle =
                 //     fp32_constrain(MA.ref.joint[J5].angle, MA.limit.min.pos[J5], MA.limit.max.pos[J5]);
             }
-
+            float virtual_j4_pos = (MA.ref.joint[J4].angle - MA.ref.joint[J5].angle) / 2;
+            float delta = 0;
+            if (virtual_j4_pos > MA.limit.max.vj4_pos) {
+                delta = virtual_j4_pos - MA.limit.max.vj4_pos;
+            } else if (virtual_j4_pos < MA.limit.min.vj4_pos) {
+                delta = virtual_j4_pos - MA.limit.min.vj4_pos;
+            }
+            MA.ref.joint[J4].angle -= delta;
+            MA.ref.joint[J5].angle += delta;
         } break;
         case MECHANICAL_ARM_FOLLOW:
         case MECHANICAL_ARM_CALIBRATE:
@@ -582,14 +592,14 @@ void MechanicalArmSendCmd(void)
             ArmSendCmdSafe();
         }
     }
-    ModifyDebugDataPackage(0, MA.joint_motor[J4].fdb.curr, "FdbCurr");
-    ModifyDebugDataPackage(1, MA.fdb.joint[J4].angle, "J_pos_f");
-    ModifyDebugDataPackage(2, MA.ref.joint[J4].angle, "J_pos_r");
-    ModifyDebugDataPackage(3, MA.fdb.joint[J4].velocity, "J_vel_f");
-    ModifyDebugDataPackage(4, MA.joint_motor[J4].set.vel, "J_vel_s");
-    ModifyDebugDataPackage(5, MA.fdb.joint[J4].round, "round");
-    ModifyDebugDataPackage(6, MA.pid.j4[0].out, "PosPidOut");
-    ModifyDebugDataPackage(7, MA.pid.j4[1].out, "VelPidOut");
+    ModifyDebugDataPackage(0, MA.fdb.joint[J4].angle, "j4_pos_f");
+    ModifyDebugDataPackage(1, MA.fdb.joint[J5].angle, "j5_pos_f");
+    ModifyDebugDataPackage(2, MA.ref.joint[J4].angle, "j4_pos_r");
+    ModifyDebugDataPackage(3, MA.ref.joint[J5].angle, "j5_pos_r");
+    ModifyDebugDataPackage(4, (MA.ref.joint[J4].angle - MA.ref.joint[J5].angle) / 2, "vj4_pos_r");
+    ModifyDebugDataPackage(5, (MA.fdb.joint[J4].angle - MA.fdb.joint[J5].angle) / 2, "vj4_pos_f");
+    ModifyDebugDataPackage(6, MA.limit.max.vj4_pos, "Vj4PosMax");
+    ModifyDebugDataPackage(7, MA.limit.min.vj4_pos, "Vj4PosMin");
     ModifyDebugDataPackage(8, MA.joint_motor[J4].set.value, "SetVal");
     ModifyDebugDataPackage(9, MA.joint_motor[J4].fdb.vel / 36, "FdbVel");
 }
