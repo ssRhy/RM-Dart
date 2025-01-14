@@ -183,9 +183,10 @@ void CustomControllerConsole(void)
     uint8_t i;
     // 计算控制量
     for (i = 0; i < JOINT_NUM; i++) {
-        CUSTOM_CONTROLLER.joint_motor[i].set.value = PID_calc(
-            &CUSTOM_CONTROLLER.pid.joint[i], CUSTOM_CONTROLLER.fdb.joint[i].vel,
-            CUSTOM_CONTROLLER.ref.joint[i].vel);
+        // CUSTOM_CONTROLLER.joint_motor[i].set.value = PID_calc(
+        //     &CUSTOM_CONTROLLER.pid.joint[i], CUSTOM_CONTROLLER.fdb.joint[i].vel,
+        //     CUSTOM_CONTROLLER.ref.joint[i].vel);
+        CUSTOM_CONTROLLER.joint_motor[i].set.value = 0;
     }
 }
 
