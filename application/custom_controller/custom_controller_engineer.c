@@ -6,6 +6,7 @@
   * @history
   *  Version    Date            Author          Modification
   *  V1.0.0     Aug-22-2024     Penguin         1. done
+  *  V1.0.1     Jan-14-2025     Penguin         1. 能获取关节的位置
   *
   @verbatim
   ==============================================================================
