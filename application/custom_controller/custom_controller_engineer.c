@@ -25,6 +25,7 @@
 #include "math.h"
 #include "string.h"
 #include "usb_debug.h"
+#include "user_lib.h"
 
 /*------------------------------ Macro Definition ------------------------------*/
 
@@ -105,6 +106,8 @@ void CustomControllerInit(void)
     CUSTOM_CONTROLLER.limit.max.pos[J3] = MAX_JOINT_3_POSITION;
     CUSTOM_CONTROLLER.limit.max.pos[J4] = MAX_JOINT_4_POSITION;
     CUSTOM_CONTROLLER.limit.max.pos[J5] = MAX_JOINT_5_POSITION;
+    CUSTOM_CONTROLLER.limit.max.vj4_pos = MAX_VIRTUAL_JOINT_4_POSITION;
+    CUSTOM_CONTROLLER.limit.max.vj5_pos = MAX_VIRTUAL_JOINT_5_POSITION;
 
     CUSTOM_CONTROLLER.limit.min.pos[J0] = MIN_JOINT_0_POSITION;
     CUSTOM_CONTROLLER.limit.min.pos[J1] = MIN_JOINT_1_POSITION;
@@ -112,6 +115,9 @@ void CustomControllerInit(void)
     CUSTOM_CONTROLLER.limit.min.pos[J3] = MIN_JOINT_3_POSITION;
     CUSTOM_CONTROLLER.limit.min.pos[J4] = MIN_JOINT_4_POSITION;
     CUSTOM_CONTROLLER.limit.min.pos[J5] = MIN_JOINT_5_POSITION;
+    CUSTOM_CONTROLLER.limit.min.vj4_pos = MIN_VIRTUAL_JOINT_4_POSITION;
+    CUSTOM_CONTROLLER.limit.min.vj5_pos = MIN_VIRTUAL_JOINT_5_POSITION;
+
     // #Initial value setting ---------------------
     memset(&CUSTOM_CONTROLLER.fdb, 0, sizeof(CUSTOM_CONTROLLER.fdb));  // 反馈量置零
     memset(&CUSTOM_CONTROLLER.ref, 0, sizeof(CUSTOM_CONTROLLER.ref));  // 目标量置零
@@ -153,14 +159,13 @@ void CustomControllerSetMode(void) { CUSTOM_CONTROLLER.mode = CUSTOM_CONTROLLER_
 void CustomControllerObserver(void)
 {
     static float last_pos[6], pos_fdb[6] = {0, 0, 0, 0, 0, 0};
-    float vel, dpos;
+    float dpos;
     uint8_t i;
     // 更新电机测量数据
     for (i = 0; i < JOINT_NUM; i++) {
         GetMotorMeasure(&CUSTOM_CONTROLLER.joint_motor[i]);
     }
     // 获取观测值
-    float pos;
     for (i = 0; i < JOINT_NUM; i++) {
         CUSTOM_CONTROLLER.fdb.joint[i].vel = CUSTOM_CONTROLLER.joint_motor[i].fdb.vel;
 
@@ -197,14 +202,12 @@ void CustomControllerObserver(void)
         CUSTOM_CONTROLLER.fdb.joint[J3].pos, 
         CUSTOM_CONTROLLER.limit.min.pos[J3],
         CUSTOM_CONTROLLER.limit.max.pos[J3]);
-
-    float j4_pos =   CUSTOM_CONTROLLER.fdb.joint[J4].pos + CUSTOM_CONTROLLER.fdb.joint[J5].pos;
-    float j5_pos = -(CUSTOM_CONTROLLER.fdb.joint[J4].pos - CUSTOM_CONTROLLER.fdb.joint[J5].pos);
     
-    cc_control_data.pos[4] = fp32_constrain(
-        j4_pos, CUSTOM_CONTROLLER.limit.min.pos[J4], CUSTOM_CONTROLLER.limit.max.pos[J4]);
-    cc_control_data.pos[5] = fp32_constraint(
-        j5_pos, CUSTOM_CONTROLLER.limit.min.pos[J5], CUSTOM_CONTROLLER.limit.max.pos[J5]);
+    float vj4_pos = fp32_constrain(CUSTOM_CONTROLLER.fdb.joint[J4].pos, CUSTOM_CONTROLLER.limit.min.vj4_pos, CUSTOM_CONTROLLER.limit.max.vj4_pos);
+    float vj5_pos = fp32_constrain(CUSTOM_CONTROLLER.fdb.joint[J5].pos, CUSTOM_CONTROLLER.limit.min.vj5_pos, CUSTOM_CONTROLLER.limit.max.vj5_pos);
+    
+    cc_control_data.pos[J4] =   vj4_pos + vj5_pos;
+    cc_control_data.pos[J5] = -(vj4_pos - vj5_pos);
     // clang-format on
 }
 
