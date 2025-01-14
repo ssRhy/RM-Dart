@@ -62,6 +62,7 @@ typedef struct
             float pos;   // (rad)位置
             float dpos;  // (rad)位置差
             float vel;   // (rad/s)速度
+            int16_t round;   // 圈数(当前位于第几圈中，初始为0)
         } joint[JOINT_NUM];
     } fdb;
 
