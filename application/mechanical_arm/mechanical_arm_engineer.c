@@ -6,6 +6,7 @@
   * @history
   *  Version    Date            Author          Modification
   *  V1.0.0     Aug-20-2024     Penguin         1. done
+  *  V1.0.1     Jan-14-2025     Penguin         1. 实现机械臂的基本控制
   *
   @verbatim
   ==============================================================================
