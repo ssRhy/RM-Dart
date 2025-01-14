@@ -421,6 +421,8 @@ void GetMotorMeasure(Motor_s * p_motor)
                 GetCybergearFdbData(p_motor, &CAN2_CYBERGEAR_MEASURE[p_motor->id]);
             }
         } break;
+        case DM_4310:
+        case DM_4340:
         case DM_8009: {
             if (p_motor->can == 1) {
                 GetDmFdbData(p_motor, &CAN1_DM_MEASURE[p_motor->id - 1]);
