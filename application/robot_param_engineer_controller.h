@@ -36,7 +36,7 @@
 #define JOINT_MOTOR_5_TYPE DJI_M2006
 
 #define JOINT_MOTOR_0_DIRECTION 1
-#define JOINT_MOTOR_1_DIRECTION (-1)
+#define JOINT_MOTOR_1_DIRECTION (1)
 #define JOINT_MOTOR_2_DIRECTION (-1)
 #define JOINT_MOTOR_3_DIRECTION 1
 #define JOINT_MOTOR_4_DIRECTION 1
@@ -50,23 +50,29 @@
 #define JOINT_MOTOR_5_MODE 0
 
 #define J0_ANGLE_TRANSFORM 0.0f
-#define J1_ANGLE_TRANSFORM 0.0f
-#define J2_ANGLE_TRANSFORM 0.0f
+#define J1_ANGLE_TRANSFORM (M_PI_2)
+#define J2_ANGLE_TRANSFORM (M_PI / 3)
 #define J3_ANGLE_TRANSFORM 0.0f
 #define J4_ANGLE_TRANSFORM 0.0f
 #define J5_ANGLE_TRANSFORM 0.0f
+
+// clang-format off
 //upper_limit parameters ---------------------
-#define MAX_JOINT_0_POSITION 6.283185f  //2*M_PI
-#define MAX_JOINT_1_POSITION M_PI
-#define MAX_JOINT_2_POSITION M_PI
-#define MAX_JOINT_3_POSITION 6.283185f
-#define MAX_JOINT_4_POSITION M_PI
+#define MAX_JOINT_0_POSITION  M_PI * 2
+#define MAX_JOINT_1_POSITION  1.20f
+#define MAX_JOINT_2_POSITION  0.00f
+#define MAX_JOINT_3_POSITION  M_PI * 4
+#define MAX_JOINT_4_POSITION  0.0f
+#define MAX_JOINT_5_POSITION  0.0f
 //lower_limit parameters ---------------------
-#define MIN_JOINT_0_POSITION 0.0f
-#define MIN_JOINT_1_POSITION 0.0f
-#define MIN_JOINT_2_POSITION 0.0f
-#define MIN_JOINT_3_POSITION 0.0f
-#define MIN_JOINT_4_POSITION 0.0f
+#define MIN_JOINT_0_POSITION -MAX_JOINT_0_POSITION
+#define MIN_JOINT_1_POSITION -1.10f
+#define MIN_JOINT_2_POSITION -2.50f
+#define MIN_JOINT_3_POSITION -MAX_JOINT_3_POSITION
+#define MIN_JOINT_4_POSITION  0.0f
+#define MIN_JOINT_5_POSITION  0.0f
+//clang-format on
+
 //LPF parameters ---------------------
 #define J0_LPF_ALPHA 0.0f
 #define J1_LPF_ALPHA 0.0f

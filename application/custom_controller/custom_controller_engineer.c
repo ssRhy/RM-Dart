@@ -20,8 +20,11 @@
 #if (CUSTOM_CONTROLLER_TYPE == CUSTOM_CONTROLLER_ENGINEER)
 
 #include "CAN_communication.h"
+#include "cmsis_os.h"
 #include "custom_controller.h"
+#include "math.h"
 #include "string.h"
+#include "usb_debug.h"
 
 /*------------------------------ Macro Definition ------------------------------*/
 
@@ -95,6 +98,20 @@ void CustomControllerInit(void)
     JointLpfInit(3);
     JointLpfInit(4);
     JointLpfInit(5);
+    // #limit init ---------------------
+    CUSTOM_CONTROLLER.limit.max.pos[J0] = MAX_JOINT_0_POSITION;
+    CUSTOM_CONTROLLER.limit.max.pos[J1] = MAX_JOINT_1_POSITION;
+    CUSTOM_CONTROLLER.limit.max.pos[J2] = MAX_JOINT_2_POSITION;
+    CUSTOM_CONTROLLER.limit.max.pos[J3] = MAX_JOINT_3_POSITION;
+    CUSTOM_CONTROLLER.limit.max.pos[J4] = MAX_JOINT_4_POSITION;
+    CUSTOM_CONTROLLER.limit.max.pos[J5] = MAX_JOINT_5_POSITION;
+
+    CUSTOM_CONTROLLER.limit.min.pos[J0] = MIN_JOINT_0_POSITION;
+    CUSTOM_CONTROLLER.limit.min.pos[J1] = MIN_JOINT_1_POSITION;
+    CUSTOM_CONTROLLER.limit.min.pos[J2] = MIN_JOINT_2_POSITION;
+    CUSTOM_CONTROLLER.limit.min.pos[J3] = MIN_JOINT_3_POSITION;
+    CUSTOM_CONTROLLER.limit.min.pos[J4] = MIN_JOINT_4_POSITION;
+    CUSTOM_CONTROLLER.limit.min.pos[J5] = MIN_JOINT_5_POSITION;
     // #Initial value setting ---------------------
     memset(&CUSTOM_CONTROLLER.ref, 0, sizeof(CUSTOM_CONTROLLER.ref));  // 目标量置零
     CUSTOM_CONTROLLER.mode = CUSTOM_CONTROLLER_DRAGGING;
@@ -123,7 +140,7 @@ void CustomControllerHandleException(void) {}
 /* auxiliary function: None                                       */
 /******************************************************************/
 
-void CustomControllerSetMode(void) {}
+void CustomControllerSetMode(void) { CUSTOM_CONTROLLER.mode = CUSTOM_CONTROLLER_DRAGGING; }
 
 /******************************************************************/
 /* Observer                                                       */
@@ -143,23 +160,38 @@ void CustomControllerObserver(void)
     float pos;
     for (i = 0; i < JOINT_NUM; i++) {
         pos = theta_transform(
-            CUSTOM_CONTROLLER.joint_motor[i].fdb.pos, CUSTOM_CONTROLLER.transform.pos[i], 1, 1);
+            CUSTOM_CONTROLLER.joint_motor[i].fdb.pos, CUSTOM_CONTROLLER.transform.pos[i],
+            CUSTOM_CONTROLLER.joint_motor[i].direction, 1);
         CUSTOM_CONTROLLER.fdb.joint[i].dpos = pos - CUSTOM_CONTROLLER.fdb.joint[i].pos;
         CUSTOM_CONTROLLER.fdb.joint[i].pos = pos;
         CUSTOM_CONTROLLER.fdb.joint[i].vel = CUSTOM_CONTROLLER.joint_motor[i].fdb.vel;
     }
 
     // 更新机械臂控制数据
-    cc_control_data.pos[0] = CUSTOM_CONTROLLER.fdb.joint[0].pos;
-    cc_control_data.pos[1] = CUSTOM_CONTROLLER.fdb.joint[1].pos;
-    cc_control_data.pos[2] = CUSTOM_CONTROLLER.fdb.joint[2].pos;
-    cc_control_data.pos[3] = CUSTOM_CONTROLLER.fdb.joint[3].pos;
+    // clang-format off
+    cc_control_data.pos[0] = fp32_constrain(
+        CUSTOM_CONTROLLER.fdb.joint[J0].pos, 
+        CUSTOM_CONTROLLER.limit.min.pos[J0],
+        CUSTOM_CONTROLLER.limit.max.pos[J0]);
+    cc_control_data.pos[1] = fp32_constrain(
+        CUSTOM_CONTROLLER.fdb.joint[J1].pos, 
+        CUSTOM_CONTROLLER.limit.min.pos[J1],
+        CUSTOM_CONTROLLER.limit.max.pos[J1]);
+    cc_control_data.pos[2] = fp32_constrain(
+        CUSTOM_CONTROLLER.fdb.joint[J2].pos,
+        CUSTOM_CONTROLLER.limit.min.pos[J2],
+        CUSTOM_CONTROLLER.limit.max.pos[J2]);
+    cc_control_data.pos[3] = fp32_constrain(
+        CUSTOM_CONTROLLER.fdb.joint[J3].pos, 
+        CUSTOM_CONTROLLER.limit.min.pos[J3],
+        CUSTOM_CONTROLLER.limit.max.pos[J3]);
 
     cc_control_data.pos[4] += CUSTOM_CONTROLLER.fdb.joint[4].dpos;
     cc_control_data.pos[5] += CUSTOM_CONTROLLER.fdb.joint[4].dpos;
 
     cc_control_data.pos[4] += CUSTOM_CONTROLLER.fdb.joint[5].dpos;
     cc_control_data.pos[5] -= CUSTOM_CONTROLLER.fdb.joint[5].dpos;
+    // clang-format on
 }
 
 /******************************************************************/
@@ -211,6 +243,10 @@ void CustomControllerSendCmd(void)
         CUSTOM_CONTROLLER.joint_motor[4].set.value, 
         CUSTOM_CONTROLLER.joint_motor[5].set.value, 0);
     // clang-format on
+
+    ModifyDebugDataPackage(0, CUSTOM_CONTROLLER.fdb.joint[0].pos, "j0_pos_f");
+    ModifyDebugDataPackage(1, CUSTOM_CONTROLLER.fdb.joint[1].pos, "j1_pos_f");
+    ModifyDebugDataPackage(2, CUSTOM_CONTROLLER.fdb.joint[2].pos, "j2_pos_f");
 }
 
 #endif  // CUSTOM_CONTROLLER_TYPE
