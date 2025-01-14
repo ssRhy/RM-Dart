@@ -72,7 +72,7 @@ osThreadId shootTaskHandle;
 osThreadId mechanical_armTaskHandle;
 #endif
 
-#if (CONTROL_TYPE != CUSTOM_CONTROLLER_NONE)
+#if (CUSTOM_CONTROLLER_TYPE != CUSTOM_CONTROLLER_NONE)
 osThreadId customControllerTaskHandle;
 #endif
 
@@ -223,7 +223,7 @@ void MX_FREERTOS_Init(void) {
     mechanical_armTaskHandle = osThreadCreate(osThread(mechanical_armTask), NULL);
 #endif
 
-#if (CONTROL_TYPE != CUSTOM_CONTROLLER_NONE)
+#if (CUSTOM_CONTROLLER_TYPE != CUSTOM_CONTROLLER_NONE)
     osThreadDef(customControllerTask, custom_controller_task, osPriorityHigh, 0, 512);
     customControllerTaskHandle = osThreadCreate(osThread(customControllerTask), NULL);
 #endif
