@@ -33,6 +33,7 @@ extern inline float GetGimbalSpeed(uint8_t axis);
 extern inline float GetGimbalVelocity(uint8_t axis);
 extern inline float GetGimbalDeltaYawMid(void);
 extern inline bool GetGimbalInitJudgeReturn(void);
+extern inline float CmdGimbalJointState(uint8_t axis);
 #endif  // GIMBAL_TYPE
 #endif  // GIMBAL_H
 /*------------------------------ End of File ------------------------------*/
