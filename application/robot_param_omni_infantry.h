@@ -221,7 +221,7 @@ typedef enum {
 /*PID parameters ---------------------*/
 
 //拨弹轮电机PID速度单环
-#define TRIGGER_SPEED_PID_KP (200.0f)
+#define TRIGGER_SPEED_PID_KP (15.0f)
 #define TRIGGER_SPEED_PID_KI (0.5f)
 #define TRIGGER_SPEED_PID_KD (0.1f)
 
@@ -229,7 +229,7 @@ typedef enum {
 #define TRIGGER_SPEED_PID_MAX_IOUT (1000.0f)
 
 // 单发模式 拨弹轮电机PID角度环
-#define TRIGGER_ANGEL_PID_KP (100.0f)
+#define TRIGGER_ANGEL_PID_KP (10.0f)
 #define TRIGGER_ANGEL_PID_KI (0.5f)
 #define TRIGGER_ANGEL_PID_KD (0.0f)
 

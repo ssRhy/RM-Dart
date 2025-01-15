@@ -184,13 +184,13 @@ void ShootReference(void)
         SHOOT.ecd_count++;
     }
 
-    if (SHOOT.ecd_count >= FULL_COUNT)
+    if (SHOOT.ecd_count == FULL_COUNT)
     {
-        SHOOT.ecd_count = SHOOT.ecd_count-2*FULL_COUNT+1;
+        SHOOT.ecd_count = -(FULL_COUNT - 1);
     }
-    else if (SHOOT.ecd_count <= -FULL_COUNT)
+    else if (SHOOT.ecd_count == -FULL_COUNT)
     {
-        SHOOT.ecd_count = SHOOT.ecd_count+2*FULL_COUNT-1;
+        SHOOT.ecd_count = FULL_COUNT-1;
     }
   }
   //电机圈数重置， 因为输出轴旋转一圈， 电机轴旋转 51圈，将电机轴数据处理成输出轴数据，用于控制输出轴角度
@@ -206,13 +206,13 @@ void ShootReference(void)
         SHOOT.ecd_count++;
     }
 
-    if (SHOOT.ecd_count >= FULL_COUNT)
+    if (SHOOT.ecd_count == FULL_COUNT)
     {
-        SHOOT.ecd_count -= FULL_COUNT*2;
+        SHOOT.ecd_count = -FULL_COUNT;
     }
-    else if (SHOOT.ecd_count <= -FULL_COUNT)
+    else if (SHOOT.ecd_count == -FULL_COUNT)
     {
-        SHOOT.ecd_count += FULL_COUNT*2;
+        SHOOT.ecd_count = FULL_COUNT;
     }
   }
 
@@ -247,7 +247,7 @@ void ShootReference(void)
     case LAOD_BULLET:
     if (SHOOT.move_flag == 0)
     {
-      SHOOT.trigger_motor.set.pos = rad_format(SHOOT.trigger_angel + PI/BULLET_NUM);
+      SHOOT.trigger_motor.set.pos = rad_format(SHOOT.trigger_angel + 2*PI/BULLET_NUM);
     }
 
     if (rad_format(SHOOT.trigger_motor.set.pos - SHOOT.trigger_angel) > 0.01f)
@@ -361,14 +361,8 @@ void ShootSendCmd(void)
   CanCmdDjiMotor(FRIC_MOTOR_R_CAN, FRIC_STD_ID , SHOOT.fric_motor[1].set.curr,SHOOT.fric_motor[0].set.curr,0, 0);
   CanCmdDjiMotor(TRIGGER_MOTOR_CAN, TRIGGER_STD_ID ,0 ,0 ,SHOOT.trigger_motor.set.curr, 0);
 
-  ModifyDebugDataPackage(1,SHOOT.state,"state"); 
-  ModifyDebugDataPackage(2,SHOOT.mode,"mode");
-  // ModifyDebugDataPackage(2,SHOOT.fric_motor[0].set.vel,"fric0_set");
-  // ModifyDebugDataPackage(1,SHOOT.fric_motor[0].fdb.vel,"fric0_fdb");
-  // ModifyDebugDataPackage(4,SHOOT.fric_motor[1].set.vel,"fric1_set");
-  // ModifyDebugDataPackage(2,SHOOT.fric_motor[1].fdb.vel,"fric1_fdb");
-  // ModifyDebugDataPackage(6,SHOOT.trigger_motor.set.vel,"trigger_set");
-  // ModifyDebugDataPackage(7,SHOOT.trigger_motor.fdb.vel,"trigger_fdb");
+  ModifyDebugDataPackage(1,SHOOT.trigger_motor.set.pos,"set"); 
+  ModifyDebugDataPackage(2,SHOOT.trigger_angel,"fdb");
   
   
 }
