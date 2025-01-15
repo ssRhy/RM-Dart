@@ -110,22 +110,18 @@ void ChassisObserver(void) {
 void ChassisReference(void) {
 
     fp32 rc_x, rc_y;
-    fp32 vx_channel, vy_channel;
     rc_deadband_limit(CHASSIS.rc->rc.ch[3], rc_x, CHASSIS_RC_DEADLINE);
     rc_deadband_limit(CHASSIS.rc->rc.ch[2], rc_y, CHASSIS_RC_DEADLINE);
     //rc_deadband_limit(CHASSIS.rc->rc.ch[CHASSIS_ROLL_CHANNEL], rc_roll, CHASSIS_RC_DEADLINE);
 
-    vx_channel = rc_x * MAX_SPEED_VECTOR_VX;
-    vy_channel = rc_y * MAX_SPEED_VECTOR_VY;
+     CHASSIS.vy_rc_set=rc_y/660*2;
+     CHASSIS.vx_rc_set=rc_x/660*2;
 
     CHASSIS.dyaw = GetGimbalDeltaYawMid();
 
     //给定摇杆值(无死区)
     // CHASSIS.vx_rc_set = CHASSIS_VX_RC_SEN * CHASSIS.rc->rc.ch[3];
     // CHASSIS.vy_rc_set = CHASSIS_VY_RC_SEN * CHASSIS.rc->rc.ch[2];
-
-    CHASSIS.vx_rc_set = vx_channel;
-    CHASSIS.vy_rc_set = vy_channel; 
 
     uint8_t i;
     //具体模式设定
@@ -143,6 +139,7 @@ void ChassisReference(void) {
 	        // 控制vx vy
 	        sin_yaw = sinf(CHASSIS.dyaw);
 	        cos_yaw = cosf(CHASSIS.dyaw);
+
             CHASSIS.vy_set = cos_yaw * CHASSIS.vy_rc_set - sin_yaw * CHASSIS.vx_rc_set;
 	        CHASSIS.vx_set = sin_yaw * CHASSIS.vy_rc_set + cos_yaw * CHASSIS.vx_rc_set;
 
@@ -243,10 +240,10 @@ void ChassisConsole(void)
         return;
     }
     
-        CHASSIS.wheel_motor[0].set.vel = (sqrt(2)*( -CHASSIS.vx_set + CHASSIS.vy_set) - (0.295f) * CHASSIS.wz_set)/(M_PI*0.16f)*CHASSIS.wheel_motor[0].reduction_ratio;
-        CHASSIS.wheel_motor[1].set.vel = (sqrt(2)*( CHASSIS.vx_set + CHASSIS.vy_set ) - (0.295f) * CHASSIS.wz_set)/(M_PI*0.16f)*CHASSIS.wheel_motor[1].reduction_ratio;
-        CHASSIS.wheel_motor[2].set.vel = (sqrt(2)*( CHASSIS.vx_set - CHASSIS.vy_set ) - (0.295f) * CHASSIS.wz_set)/(M_PI*0.16f)*CHASSIS.wheel_motor[2].reduction_ratio;
-        CHASSIS.wheel_motor[3].set.vel = (sqrt(2)*( -CHASSIS.vx_set - CHASSIS.vy_set )- (0.295f) * CHASSIS.wz_set)/(M_PI*0.16f)*CHASSIS.wheel_motor[3].reduction_ratio; 
+        CHASSIS.wheel_motor[0].set.vel = (sqrt(2)*( -CHASSIS.vx_set + CHASSIS.vy_set) - (0.295f) * CHASSIS.wz_set)/(0.08f)*CHASSIS.wheel_motor[0].reduction_ratio;
+        CHASSIS.wheel_motor[1].set.vel = (sqrt(2)*( CHASSIS.vx_set + CHASSIS.vy_set ) - (0.295f) * CHASSIS.wz_set)/(0.08f)*CHASSIS.wheel_motor[1].reduction_ratio;
+        CHASSIS.wheel_motor[2].set.vel = (sqrt(2)*( CHASSIS.vx_set - CHASSIS.vy_set ) - (0.295f) * CHASSIS.wz_set)/(0.08f)*CHASSIS.wheel_motor[2].reduction_ratio;
+        CHASSIS.wheel_motor[3].set.vel = (sqrt(2)*( -CHASSIS.vx_set - CHASSIS.vy_set)- (0.295f) * CHASSIS.wz_set)/(0.08f)*CHASSIS.wheel_motor[3].reduction_ratio; 
      
 
     //pid速度计算            
@@ -271,6 +268,7 @@ void ChassisSendCmd(void)
     CanCmdDjiMotor(1, 0x200, 
     CHASSIS.wheel_motor[0].set.curr, CHASSIS.wheel_motor[1].set.curr,
     CHASSIS.wheel_motor[2].set.curr, CHASSIS.wheel_motor[3].set.curr);
+    ModifyDebugDataPackage(1,CHASSIS.vx_set,"x_set");
 }
 
 #endif //CHASSIS_MECANUM_WHEEL
