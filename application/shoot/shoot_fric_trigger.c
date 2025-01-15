@@ -298,7 +298,7 @@ void ShootReference(void)
     SHOOT.trigger_motor.set.vel = REVERSE_SPEED;
   }
   
-//摩擦轮停止时拨弹盘停止
+//摩擦轮速度过低时拨弹盘停止
   if (SHOOT.mode == LOAD_BURSTFIRE)
   {
     if (SHOOT.fric_motor[0].fdb.vel < FRIC_SPEED_LIMIT)
