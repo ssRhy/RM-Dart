@@ -48,6 +48,14 @@
 
 /*------------------------------ Macro Definition ------------------------------*/
 
+// clang-format off
+#define JOINT_TORQUE_MORE_OFFSET   ((uint8_t)1 << 0)  // 关节电机输出力矩过大偏移量
+#define WHEEL_ERROR_OFFSET   ((uint8_t)1 << 1)  // 驱动轮电机错误偏移量
+#define DBUS_ERROR_OFFSET    ((uint8_t)1 << 2)  // dbus错误偏移量
+#define IMU_ERROR_OFFSET     ((uint8_t)1 << 3)  // imu错误偏移量
+#define FLOATING_OFFSET      ((uint8_t)1 << 4)  // 悬空状态偏移量
+// clang-format on
+
 #define MS_TO_S 0.001f  // ms转s
 
 #define ANGLE_PID 0
@@ -215,6 +223,11 @@ void MechanicalArmHandleException(void)
             MECHANICAL_ARM.limit.min.vj4_pos = virtual_j4_pos - M_PI + 0.15f;
         }
     }
+
+    if (MECHANICAL_ARM.joint_motor[J1].fdb.tor > 10 ||
+        MECHANICAL_ARM.joint_motor[J2].fdb.tor > 10) {
+        MECHANICAL_ARM.error_code |= JOINT_TORQUE_MORE_OFFSET;
+    }
 }
 
 /******************************************************************/
@@ -226,17 +239,22 @@ void MechanicalArmHandleException(void)
 
 void MechanicalArmSetMode(void)
 {
-    if (MECHANICAL_ARM.mode == MECHANICAL_ARM_CALIBRATE) {
-        return;
-    }
-
     if (toe_is_error(DBUS_TOE)) {  // 安全，保命！！！！！！
         MECHANICAL_ARM.mode = MECHANICAL_ARM_SAFE;
         return;
     }
 
+    if (MECHANICAL_ARM.error_code) {
+        MECHANICAL_ARM.mode = MECHANICAL_ARM_SAFE;
+        return;
+    }
+
+    if (MECHANICAL_ARM.mode == MECHANICAL_ARM_CALIBRATE) {
+        return;
+    }
+
     if (switch_is_up(MECHANICAL_ARM.rc->rc.s[MECHANICAL_ARM_MODE_CHANNEL])) {
-        MECHANICAL_ARM.mode = MECHANICAL_ARM_DEBUG;
+        MECHANICAL_ARM.mode = MECHANICAL_ARM_FOLLOW;
     } else if (switch_is_mid(MECHANICAL_ARM.rc->rc.s[MECHANICAL_ARM_MODE_CHANNEL])) {
         MECHANICAL_ARM.mode = MECHANICAL_ARM_DEBUG;
     } else if (switch_is_down(MECHANICAL_ARM.rc->rc.s[MECHANICAL_ARM_MODE_CHANNEL])) {
@@ -264,6 +282,8 @@ void MechanicalArmObserver(void)
 {
     MA.duration = xTaskGetTickCount() - MA.last_time;
     MA.last_time = xTaskGetTickCount();
+
+    MA.custom_controller_ready = GetRefereeState();
 
     UpdateMotorStatus();
     JointStateObserve();
@@ -428,7 +448,16 @@ void MechanicalArmReference(void)
             MA.ref.joint[J4].angle -= delta;
             MA.ref.joint[J5].angle += delta;
         } break;
-        case MECHANICAL_ARM_FOLLOW:
+        case MECHANICAL_ARM_FOLLOW: {
+            if (MA.custom_controller_ready) {
+                MA.ref.joint[J0].angle = GetCustomControllerPos(J0);
+                MA.ref.joint[J1].angle = GetCustomControllerPos(J1);
+                MA.ref.joint[J2].angle = GetCustomControllerPos(J2);
+                MA.ref.joint[J3].angle = GetCustomControllerPos(J3);
+                MA.ref.joint[J4].angle = GetCustomControllerPos(J4);
+                MA.ref.joint[J5].angle = GetCustomControllerPos(J5);
+            }
+        } break;
         case MECHANICAL_ARM_CALIBRATE:
         case MECHANICAL_ARM_SAFE:
         default: {
@@ -485,6 +514,7 @@ void MechanicalArmConsole(void)
             //     &MECHANICAL_ARM.pid.j5[VELOCITY_PID], MECHANICAL_ARM.fdb.joint[J5].velocity,
             //     MECHANICAL_ARM.pid.j5[ANGLE_PID].out);
         } break;
+        case MECHANICAL_ARM_FOLLOW:
         case MECHANICAL_ARM_DEBUG: {
             /*机械臂J0 J1 J2基本不会出现过圈问题，不考虑过圈时的最优旋转方向问题。*/
 
@@ -534,7 +564,6 @@ void MechanicalArmConsole(void)
             MA.joint_motor[J4].set.value = INIT_2006_SET_VALUE;
             MA.joint_motor[J5].set.value = -INIT_2006_SET_VALUE;
         } break;
-        case MECHANICAL_ARM_FOLLOW:
         case MECHANICAL_ARM_CALIBRATE:
         case MECHANICAL_ARM_SAFE:
         default: {
@@ -601,7 +630,7 @@ void MechanicalArmSendCmd(void)
     ModifyDebugDataPackage(5, (MA.fdb.joint[J4].angle - MA.fdb.joint[J5].angle) / 2, "vj4_pos_f");
     ModifyDebugDataPackage(6, MA.limit.max.vj4_pos, "Vj4PosMax");
     ModifyDebugDataPackage(7, MA.limit.min.vj4_pos, "Vj4PosMin");
-    ModifyDebugDataPackage(8, MA.joint_motor[J4].set.value, "SetVal");
+    ModifyDebugDataPackage(8, MA.custom_controller_ready, "cc_ready");
     ModifyDebugDataPackage(9, MA.joint_motor[J4].fdb.vel / 36, "FdbVel");
 }
 
