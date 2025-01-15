@@ -99,11 +99,11 @@ inline float CmdGimbalJointState(uint8_t axis)
 {
   if ( axis == AX_PITCH )
   {
-    return gimbal_direct.imu_base.pitch;
+    return loop_fp32_constrain(gimbal_direct.feedback_pos.pitch-gimbal_direct.imu_base.pitch,-M_PI,M_PI);
   }
   else if ( axis == AX_YAW )
   {
-    return gimbal_direct.imu_base.yaw;
+    return loop_fp32_constrain(gimbal_direct.feedback_pos.yaw-gimbal_direct.imu_base.yaw,-M_PI,M_PI);
   }
   else 
   {
