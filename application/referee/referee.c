@@ -21,6 +21,12 @@
 #include "protocol.h"
 #include "stdio.h"
 #include "string.h"
+#include "stm32f4xx_hal.h"
+
+#define REFEREE_TIMEOUT 20  //裁判系统超时时间
+bool referee_is_offline = false;
+uint32_t referee_online_time = 0;
+
 
 frame_header_struct_t referee_receive_header;
 frame_header_struct_t referee_send_header;
@@ -93,62 +99,80 @@ void referee_data_solve(uint8_t * frame)
     switch (cmd_id) {
         case GAME_STATE_CMD_ID: {
             memcpy(&game_status, frame + index, sizeof(game_status_t));
+            referee_online_time = HAL_GetTick();
         } break;
         case GAME_RESULT_CMD_ID: {
             memcpy(&game_result, frame + index, sizeof(game_result_t));
+            referee_online_time = HAL_GetTick();
         } break;
         case GAME_ROBOT_HP_CMD_ID: {
             memcpy(&game_robot_HP, frame + index, sizeof(game_robot_HP_t));
+            referee_online_time = HAL_GetTick();
         } break;
 
         case FIELD_EVENTS_CMD_ID: {
             memcpy(&field_event, frame + index, sizeof(event_data_t));
+            referee_online_time = HAL_GetTick();
         } break;
         case SUPPLY_PROJECTILE_ACTION_CMD_ID: {
             memcpy(
                 &supply_projectile_action_t, frame + index, sizeof(ext_supply_projectile_action_t));
+            referee_online_time = HAL_GetTick();
         } break;
         case SUPPLY_PROJECTILE_BOOKING_CMD_ID: {
             memcpy(
                 &supply_projectile_booking_t, frame + index,
                 sizeof(ext_supply_projectile_booking_t));
+            referee_online_time = HAL_GetTick();
         } break;
         case REFEREE_WARNING_CMD_ID: {
             memcpy(&referee_warning, frame + index, sizeof(referee_warning_t));
+            referee_online_time = HAL_GetTick();
         } break;
 
         case ROBOT_STATE_CMD_ID: {
             memcpy(&robot_status, frame + index, sizeof(robot_status_t));
+            referee_online_time = HAL_GetTick();
         } break;
         case POWER_HEAT_DATA_CMD_ID: {
             memcpy(&power_heat_data, frame + index, sizeof(power_heat_data_t));
+            referee_online_time = HAL_GetTick();
         } break;
         case ROBOT_POS_CMD_ID: {
             memcpy(&game_robot_pos_t, frame + index, sizeof(robot_pos_t));
+            referee_online_time = HAL_GetTick();
         } break;
         case BUFF_MUSK_CMD_ID: {
             memcpy(&buff_musk_t, frame + index, sizeof(buff_t));
+            referee_online_time = HAL_GetTick();
         } break;
         case AERIAL_ROBOT_ENERGY_CMD_ID: {
             memcpy(&robot_energy_t, frame + index, sizeof(air_support_data_t));
+            referee_online_time = HAL_GetTick();
         } break;
         case ROBOT_HURT_CMD_ID: {
             memcpy(&robot_hurt_t, frame + index, sizeof(hurt_data_t));
+            referee_online_time = HAL_GetTick();
         } break;
         case SHOOT_DATA_CMD_ID: {
             memcpy(&shoot_data, frame + index, sizeof(shoot_data_t));
+            referee_online_time = HAL_GetTick();
         } break;
         case BULLET_REMAINING_CMD_ID: {
             memcpy(&bullet_remaining_t, frame + index, sizeof(ext_bullet_remaining_t));
+            referee_online_time = HAL_GetTick();
         } break;
         case STUDENT_INTERACTIVE_DATA_CMD_ID: {
             memcpy(&student_interactive_data_t, frame + index, sizeof(robot_interaction_data_t));
+            referee_online_time = HAL_GetTick();
         } break;
         case CUSTOM_CONTROLLER_CMD_ID: {
             memcpy(&CUSTOM_CONTROLLER_DATA, frame + index, sizeof(CustomControllerData_t));
+            referee_online_time = HAL_GetTick();
         } break;
         case ROBOT_COMMAND_CMD_ID: {
             memcpy(&robot_command_t, frame + index, sizeof(ext_robot_command_t));
+            referee_online_time = HAL_GetTick();
         } break;
         default: {
             break;
@@ -223,3 +247,25 @@ uint16_t get_shoot_heat(void)  // 双枪管哨兵
 }
 
 CustomControllerData_t * GetCustomControllerDataPoint(void) { return &CUSTOM_CONTROLLER_DATA; }
+
+/*========== API ==========*/
+
+inline bool GetRefereeState(void) { 
+    uint32_t current_time = HAL_GetTick();
+    return current_time - referee_online_time < REFEREE_TIMEOUT && current_time>REFEREE_TIMEOUT;
+}
+
+/**
+ * @brief 获取自定义控制器数据
+ * @param  index 数据索引
+ * @return float 数据
+ */
+inline float GetCustomControllerPos(uint8_t index){
+    float data = 0;
+    memcpy(&data, &CUSTOM_CONTROLLER_DATA.data[index * 4], 4);
+    return data;
+    // return *((float *)(&CUSTOM_CONTROLLER_DATA.data[index * 4]));
+}
+
+
+/*------------------------------ End of File ------------------------------*/

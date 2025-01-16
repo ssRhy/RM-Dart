@@ -62,11 +62,12 @@ typedef enum {
  */
 typedef struct
 {
-    const RC_ctrl_t * rc;      // 遥控器指针
-    MechanicalArmMode_e mode;  // 机械臂模式
-    uint8_t error_code;        // 机械臂错误代码
-    bool init_completed;       // 机械臂初始化完成标志
-    uint32_t reach_time;       // 达到目标的持续时间
+    const RC_ctrl_t * rc;          // 遥控器指针
+    MechanicalArmMode_e mode;      // 机械臂模式
+    uint8_t error_code;            // 机械臂错误代码
+    bool init_completed;           // 机械臂初始化完成标志
+    bool custom_controller_ready;  // 自定义控制器准备就绪标志
+    uint32_t reach_time;           // 达到目标的持续时间
 
     uint32_t last_time;  // (ms)上一次更新时间
     uint32_t duration;   // (ms)任务周期
@@ -106,11 +107,13 @@ typedef struct
         {
             float pos[6];
             float vj4_pos;
+            float vj5_pos;
         } max;
         struct
         {
             float pos[6];
             float vj4_pos;
+            float vj5_pos;
         } min;
     } limit;
 
