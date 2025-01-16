@@ -471,7 +471,8 @@ void MechanicalArmReference(void)
                     fp32_constrain(pos[J1], MA.limit.min.pos[J1], MA.limit.max.pos[J1]);
                 MA.ref.joint[J2].angle =
                     fp32_constrain(pos[J2], MA.limit.min.pos[J2], MA.limit.max.pos[J2]);
-                // MA.ref.joint[J3].angle = GetCustomControllerPos(J3);
+                MA.ref.joint[J3].angle =
+                    fp32_constrain(pos[J3], MA.limit.min.pos[J3], MA.limit.max.pos[J3]);
                 // MA.ref.joint[J4].angle = GetCustomControllerPos(J4);
                 // MA.ref.joint[J5].angle = GetCustomControllerPos(J5);
 
@@ -652,7 +653,7 @@ void MechanicalArmSendCmd(void)
     ModifyDebugDataPackage(6, GetCustomControllerPos(J0), "cc_j0");
     ModifyDebugDataPackage(7, GetCustomControllerPos(J1), "cc_j1");
     ModifyDebugDataPackage(8, GetCustomControllerPos(J2), "cc_j2");
-    ModifyDebugDataPackage(9, MA.fdb.joint[J5].angle, "j5_pos_f");
+    ModifyDebugDataPackage(9, GetCustomControllerPos(J3), "cc_j3");
 }
 
 void ArmSendCmdSafe(void)
