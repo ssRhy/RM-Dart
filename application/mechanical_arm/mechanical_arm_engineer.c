@@ -473,14 +473,25 @@ void MechanicalArmReference(void)
                     fp32_constrain(pos[J2], MA.limit.min.pos[J2], MA.limit.max.pos[J2]);
                 MA.ref.joint[J3].angle =
                     fp32_constrain(pos[J3], MA.limit.min.pos[J3], MA.limit.max.pos[J3]);
-                // MA.ref.joint[J4].angle = GetCustomControllerPos(J4);
-                // MA.ref.joint[J5].angle = GetCustomControllerPos(J5);
 
-                // float vj4_pos = (MA.ref.joint[J4].angle - MA.ref.joint[J5].angle) / 2;
-                // float vj5_pos = (MA.ref.joint[J4].angle + MA.ref.joint[J5].angle) / 2;
+                // 自定义控制器传过来的虚拟J4 J5位置以0为中心
+                float vj4_pos = (pos[J4] - pos[J5]) / 2;
+                float vj5_pos = (pos[J4] + pos[J5]) / 2;
 
-                // float vj4_pos_mid = (MA.limit.max.vj4_pos + MA.limit.min.vj4_pos) / 2;
-                // float vj5_pos_mid = (MA.limit.max.vj5_pos + MA.limit.min.vj5_pos) / 2;
+                // 机械臂J4关节以((MA.limit.max.vj4_pos + MA.limit.min.vj4_pos) / 2)为中心
+                // 机械臂J5关节以((MA.limit.max.vj5_pos + MA.limit.min.vj5_pos) / 2)为中心
+                float vj4_pos_mid = (MA.limit.max.vj4_pos + MA.limit.min.vj4_pos) / 2;
+                float vj5_pos_mid = (MA.limit.max.vj5_pos + MA.limit.min.vj5_pos) / 2;
+
+                vj4_pos += vj4_pos_mid;
+                vj5_pos += vj5_pos_mid;
+
+                vj4_pos = fp32_constrain(vj4_pos, MA.limit.min.vj4_pos, MA.limit.max.vj4_pos);
+                // vj5_pos = fp32_constrain(vj5_pos, MA.limit.min.vj5_pos, MA.limit.max.vj5_pos);
+
+                MA.ref.joint[J4].angle = vj4_pos + vj5_pos;
+                MA.ref.joint[J5].angle = -(vj4_pos - vj5_pos);
+
             }
         } break;
         case MECHANICAL_ARM_CALIBRATE:
@@ -644,12 +655,12 @@ void MechanicalArmSendCmd(void)
             ArmSendCmdSafe();
         }
     }
-    ModifyDebugDataPackage(0, MA.ref.joint[J0].angle, "j0_pos_r");
-    ModifyDebugDataPackage(1, MA.ref.joint[J1].angle, "j1_pos_r");
+    ModifyDebugDataPackage(0, MA.limit.max.vj4_pos, "Vj4PosMax");
+    ModifyDebugDataPackage(1, MA.limit.min.vj4_pos, "Vj4PosMin");
     ModifyDebugDataPackage(2, MA.ref.joint[J2].angle, "j2_pos_r");
     ModifyDebugDataPackage(3, MA.ref.joint[J3].angle, "j3_pos_r");
-    ModifyDebugDataPackage(4, MA.init_completed, "init_comp");
-    ModifyDebugDataPackage(5, MA.custom_controller_ready, "cc_ready");
+    ModifyDebugDataPackage(4, (MA.ref.joint[J4].angle - MA.ref.joint[J5].angle) / 2, "Vj4PosRef");
+    ModifyDebugDataPackage(5, (GetCustomControllerPos(J4) - GetCustomControllerPos(J5)) / 2, "cc_Vj4Pos");
     ModifyDebugDataPackage(6, GetCustomControllerPos(J0), "cc_j0");
     ModifyDebugDataPackage(7, GetCustomControllerPos(J1), "cc_j1");
     ModifyDebugDataPackage(8, GetCustomControllerPos(J2), "cc_j2");
