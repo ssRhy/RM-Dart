@@ -20,6 +20,7 @@
 
 #include "CAN_communication.h"
 // 导入usb通信相关的库
+#include "usb.h"
 #include "usb_debug.h"
 #include "user_lib.h"
 #include "arm_math.h"
@@ -144,6 +145,41 @@ void ShootSetMode(void)
         SHOOT.mode = LOAD_STOP;
         SHOOT.state = FRIC_NOT_READY;
     }
+
+    //防堵转
+    if (SHOOT.mode == LOAD_BURSTFIRE||SHOOT.mode == LAOD_BULLET)
+    {
+    if(SHOOT.block_time >= BLOCK_TIME)
+    {
+        SHOOT.mode = LOAD_BLOCK;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+    }
+
+    if(SHOOT.last_trigger_vel<BLOCK_TRIGGER_SPEED&&SHOOT.block_time<BLOCK_TIME)
+    {
+        SHOOT.block_time++;
+          SHOOT.reverse_time = 0;
+    }
+    else if(SHOOT.block_time== BLOCK_TIME&& SHOOT.reverse_time< REVERSE_TIME)
+    {
+        SHOOT.reverse_time++;  
+    }
+    else
+    {
+        SHOOT.block_time = 0;
+    }
+      
+    }
+
+    //过热保护
+    if (SHOOT.mode == LOAD_BURSTFIRE||SHOOT.mode == LAOD_BULLET)
+    {
+        if (SHOOT.last_fric_vel < FRIC_SPEED_LIMIT)
+        {
+          SHOOT.mode = LOAD_STOP;
+        }
+        
+    }
+    
 }
 
 /*-------------------- Observe --------------------*/
@@ -222,6 +258,12 @@ void ShootReference(void)
     //记录上一个ecd值
   SHOOT.last_ecd = SHOOT.trigger_motor.fdb.ecd;
 
+    //记录上一个拨弹盘vel,用于堵转模式判断
+  SHOOT.last_trigger_vel = SHOOT.trigger_motor.fdb.vel;
+
+    //记录上一个摩擦轮vel,用于过热保护
+  SHOOT.last_fric_vel = SHOOT.fric_motor[0].fdb.vel;
+
     switch (SHOOT.state)
     {
     case FRIC_NOT_READY:
@@ -265,54 +307,15 @@ void ShootReference(void)
     SHOOT.trigger_motor.set.vel=TRIGGER_SPEED;
     break;
 
+    case LOAD_BLOCK:
+    SHOOT.trigger_motor.set.vel = REVERSE_SPEED;
+    break;
+
     default:
       break;
     }
-
-  //防堵转
-  if (SHOOT.mode == LOAD_BURSTFIRE||SHOOT.mode == LAOD_BULLET)
-  {
-  if(SHOOT.block_time >= BLOCK_TIME)
-  {
-      SHOOT.mode = LOAD_BLOCK;
-  }
-
-  if(SHOOT.trigger_motor.fdb.vel<BLOCK_TRIGGER_SPEED&&SHOOT.block_time<BLOCK_TIME)
-  {
-        SHOOT.block_time++;
-        SHOOT.reverse_time = 0;
-  }
-  else if(SHOOT.block_time== BLOCK_TIME&& SHOOT.reverse_time< REVERSE_TIME)
-  {
-        SHOOT.reverse_time++;  
-  }
-  else
-  {
-        SHOOT.block_time = 0;
-  }
-      
-  }
-
-  if (SHOOT.mode == LOAD_BLOCK)
-  {
-    SHOOT.trigger_motor.set.vel = REVERSE_SPEED;
-  }
   
-//摩擦轮速度过低时拨弹盘停止
-  if (SHOOT.mode == LOAD_BURSTFIRE)
-  {
-    if (SHOOT.fric_motor[0].fdb.vel < FRIC_SPEED_LIMIT)
-    {
-      SHOOT.trigger_motor.set.vel = 0;
-    } 
-  }
-  if (SHOOT.mode == LAOD_BULLET)
-  {
-    if (SHOOT.fric_motor[0].fdb.vel < FRIC_SPEED_LIMIT)
-    {
-      SHOOT.trigger_motor.set.pos = SHOOT.trigger_angel;
-    } 
-  }
+
   
 }
 
@@ -361,7 +364,7 @@ void ShootSendCmd(void)
   CanCmdDjiMotor(FRIC_MOTOR_R_CAN, FRIC_STD_ID , SHOOT.fric_motor[1].set.curr,SHOOT.fric_motor[0].set.curr,0, 0);
   CanCmdDjiMotor(TRIGGER_MOTOR_CAN, TRIGGER_STD_ID ,0 ,0 ,SHOOT.trigger_motor.set.curr, 0);
 
-  ModifyDebugDataPackage(1,SHOOT.trigger_motor.set.pos,"set"); 
+  //ModifyDebugDataPackage(1,SHOOT.trigger_motor.set.pos,"set"); 
   ModifyDebugDataPackage(2,SHOOT.trigger_angel,"fdb");
   
   

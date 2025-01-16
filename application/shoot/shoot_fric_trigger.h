@@ -56,6 +56,8 @@ typedef struct
     //防堵转
   uint16_t reverse_time;
   uint16_t block_time;
+  int16_t last_trigger_vel;
+  int16_t last_fric_vel;
     //flag
   uint16_t fric_flag; //    摩擦轮状态
   uint16_t move_flag; //    拨弹盘角度状态，用于判断单发射击执行情况
