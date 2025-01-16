@@ -49,8 +49,8 @@
 /*------------------------------ Macro Definition ------------------------------*/
 
 // clang-format off
-#define JOINT_TORQUE_MORE_OFFSET   ((uint8_t)1 << 0)  // 关节电机输出力矩过大偏移量
-#define WHEEL_ERROR_OFFSET   ((uint8_t)1 << 1)  // 驱动轮电机错误偏移量
+#define JOINT_TORQUE_MORE_OFFSET              ((uint8_t)1 << 0)  // 关节电机输出力矩过大偏移量
+#define CUSTOM_CONTROLLER_DATA_ERROR_OFFSET   ((uint8_t)1 << 1)  // 自定义控制器数据异常偏移量
 #define DBUS_ERROR_OFFSET    ((uint8_t)1 << 2)  // dbus错误偏移量
 #define IMU_ERROR_OFFSET     ((uint8_t)1 << 3)  // imu错误偏移量
 #define FLOATING_OFFSET      ((uint8_t)1 << 4)  // 悬空状态偏移量
@@ -450,11 +450,27 @@ void MechanicalArmReference(void)
         } break;
         case MECHANICAL_ARM_FOLLOW: {
             if (MA.custom_controller_ready) {
-                MA.ref.joint[J0].angle = fp32_constrain(
-                    GetCustomControllerPos(J0), MA.limit.min.pos[J0], MA.limit.max.pos[J0]);
-                MA.ref.joint[J1].angle = fp32_constrain(
-                    GetCustomControllerPos(J1), MA.limit.min.pos[J1], MA.limit.max.pos[J1]);
-                // MA.ref.joint[J2].angle = GetCustomControllerPos(J2);
+                float pos[6] = {0};
+                pos[J0] = GetCustomControllerPos(J0);
+                pos[J1] = GetCustomControllerPos(J1);
+                pos[J2] = GetCustomControllerPos(J2);
+                pos[J3] = GetCustomControllerPos(J3);
+                pos[J4] = GetCustomControllerPos(J4);
+                pos[J5] = GetCustomControllerPos(J5);
+
+                if (fabsf(pos[J0] - MA.ref.joint[J0].angle) > 1.5f ||
+                    fabsf(pos[J1] - MA.ref.joint[J1].angle) > 1.5f ||
+                    fabsf(pos[J2] - MA.ref.joint[J2].angle) > 1.5f) {  // 位置突变
+                    MECHANICAL_ARM.error_code |= CUSTOM_CONTROLLER_DATA_ERROR_OFFSET;
+                    return;
+                }
+
+                MA.ref.joint[J0].angle =
+                    fp32_constrain(pos[J0], MA.limit.min.pos[J0], MA.limit.max.pos[J0]);
+                MA.ref.joint[J1].angle =
+                    fp32_constrain(pos[J1], MA.limit.min.pos[J1], MA.limit.max.pos[J1]);
+                MA.ref.joint[J2].angle =
+                    fp32_constrain(pos[J2], MA.limit.min.pos[J2], MA.limit.max.pos[J2]);
                 // MA.ref.joint[J3].angle = GetCustomControllerPos(J3);
                 // MA.ref.joint[J4].angle = GetCustomControllerPos(J4);
                 // MA.ref.joint[J5].angle = GetCustomControllerPos(J5);
@@ -613,7 +629,7 @@ void MechanicalArmSendCmd(void)
     delay_us(DM_DELAY);
 
     switch (MECHANICAL_ARM.mode) {
-        case MECHANICAL_ARM_FOLLOW: 
+        case MECHANICAL_ARM_FOLLOW:
         case MECHANICAL_ARM_DEBUG: {
             ArmSendCmdDebug();
         } break;
