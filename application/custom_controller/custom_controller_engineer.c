@@ -6,6 +6,7 @@
   * @history
   *  Version    Date            Author          Modification
   *  V1.0.0     Aug-22-2024     Penguin         1. done
+  *  V1.0.1     Jan-14-2025     Penguin         1. 能获取关节的位置
   *
   @verbatim
   ==============================================================================
@@ -20,8 +21,12 @@
 #if (CUSTOM_CONTROLLER_TYPE == CUSTOM_CONTROLLER_ENGINEER)
 
 #include "CAN_communication.h"
+#include "cmsis_os.h"
 #include "custom_controller.h"
+#include "math.h"
 #include "string.h"
+#include "usb_debug.h"
+#include "user_lib.h"
 
 /*------------------------------ Macro Definition ------------------------------*/
 
@@ -95,7 +100,27 @@ void CustomControllerInit(void)
     JointLpfInit(3);
     JointLpfInit(4);
     JointLpfInit(5);
+    // #limit init ---------------------
+    CUSTOM_CONTROLLER.limit.max.pos[J0] = MAX_JOINT_0_POSITION;
+    CUSTOM_CONTROLLER.limit.max.pos[J1] = MAX_JOINT_1_POSITION;
+    CUSTOM_CONTROLLER.limit.max.pos[J2] = MAX_JOINT_2_POSITION;
+    CUSTOM_CONTROLLER.limit.max.pos[J3] = MAX_JOINT_3_POSITION;
+    CUSTOM_CONTROLLER.limit.max.pos[J4] = MAX_JOINT_4_POSITION;
+    CUSTOM_CONTROLLER.limit.max.pos[J5] = MAX_JOINT_5_POSITION;
+    CUSTOM_CONTROLLER.limit.max.vj4_pos = MAX_VIRTUAL_JOINT_4_POSITION;
+    CUSTOM_CONTROLLER.limit.max.vj5_pos = MAX_VIRTUAL_JOINT_5_POSITION;
+
+    CUSTOM_CONTROLLER.limit.min.pos[J0] = MIN_JOINT_0_POSITION;
+    CUSTOM_CONTROLLER.limit.min.pos[J1] = MIN_JOINT_1_POSITION;
+    CUSTOM_CONTROLLER.limit.min.pos[J2] = MIN_JOINT_2_POSITION;
+    CUSTOM_CONTROLLER.limit.min.pos[J3] = MIN_JOINT_3_POSITION;
+    CUSTOM_CONTROLLER.limit.min.pos[J4] = MIN_JOINT_4_POSITION;
+    CUSTOM_CONTROLLER.limit.min.pos[J5] = MIN_JOINT_5_POSITION;
+    CUSTOM_CONTROLLER.limit.min.vj4_pos = MIN_VIRTUAL_JOINT_4_POSITION;
+    CUSTOM_CONTROLLER.limit.min.vj5_pos = MIN_VIRTUAL_JOINT_5_POSITION;
+
     // #Initial value setting ---------------------
+    memset(&CUSTOM_CONTROLLER.fdb, 0, sizeof(CUSTOM_CONTROLLER.fdb));  // 反馈量置零
     memset(&CUSTOM_CONTROLLER.ref, 0, sizeof(CUSTOM_CONTROLLER.ref));  // 目标量置零
     CUSTOM_CONTROLLER.mode = CUSTOM_CONTROLLER_DRAGGING;
     CUSTOM_CONTROLLER.error_code = 0;
@@ -123,7 +148,7 @@ void CustomControllerHandleException(void) {}
 /* auxiliary function: None                                       */
 /******************************************************************/
 
-void CustomControllerSetMode(void) {}
+void CustomControllerSetMode(void) { CUSTOM_CONTROLLER.mode = CUSTOM_CONTROLLER_DRAGGING; }
 
 /******************************************************************/
 /* Observer                                                       */
@@ -134,32 +159,57 @@ void CustomControllerSetMode(void) {}
 
 void CustomControllerObserver(void)
 {
+    static float last_pos[6], pos_fdb[6] = {0, 0, 0, 0, 0, 0};
+    float dpos;
     uint8_t i;
     // 更新电机测量数据
     for (i = 0; i < JOINT_NUM; i++) {
         GetMotorMeasure(&CUSTOM_CONTROLLER.joint_motor[i]);
     }
     // 获取观测值
-    float pos;
     for (i = 0; i < JOINT_NUM; i++) {
-        pos = theta_transform(
-            CUSTOM_CONTROLLER.joint_motor[i].fdb.pos, CUSTOM_CONTROLLER.transform.pos[i], 1, 1);
-        CUSTOM_CONTROLLER.fdb.joint[i].dpos = pos - CUSTOM_CONTROLLER.fdb.joint[i].pos;
-        CUSTOM_CONTROLLER.fdb.joint[i].pos = pos;
         CUSTOM_CONTROLLER.fdb.joint[i].vel = CUSTOM_CONTROLLER.joint_motor[i].fdb.vel;
+
+        // 处理多圈计数问题
+        pos_fdb[i] = theta_transform(
+            CUSTOM_CONTROLLER.joint_motor[i].fdb.pos, CUSTOM_CONTROLLER.transform.pos[i],
+            CUSTOM_CONTROLLER.joint_motor[i].direction, 1);
+
+        dpos = pos_fdb[i] - last_pos[i];
+        if (fabs(dpos) > M_PI) {
+            CUSTOM_CONTROLLER.fdb.joint[i].round += (dpos) < 0 ? 1 : -1;
+        }
+        last_pos[i] = pos_fdb[i];
+        CUSTOM_CONTROLLER.fdb.joint[i].pos =
+            (pos_fdb[i] + M_PI * 2 * CUSTOM_CONTROLLER.fdb.joint[i].round) /
+            CUSTOM_CONTROLLER.joint_motor[i].reduction_ratio;
     }
 
     // 更新机械臂控制数据
-    cc_control_data.pos[0] = CUSTOM_CONTROLLER.fdb.joint[0].pos;
-    cc_control_data.pos[1] = CUSTOM_CONTROLLER.fdb.joint[1].pos;
-    cc_control_data.pos[2] = CUSTOM_CONTROLLER.fdb.joint[2].pos;
-    cc_control_data.pos[3] = CUSTOM_CONTROLLER.fdb.joint[3].pos;
-
-    cc_control_data.pos[4] += CUSTOM_CONTROLLER.fdb.joint[4].dpos;
-    cc_control_data.pos[5] += CUSTOM_CONTROLLER.fdb.joint[4].dpos;
-
-    cc_control_data.pos[4] += CUSTOM_CONTROLLER.fdb.joint[5].dpos;
-    cc_control_data.pos[5] -= CUSTOM_CONTROLLER.fdb.joint[5].dpos;
+    // clang-format off
+    cc_control_data.pos[J0] = fp32_constrain(
+        CUSTOM_CONTROLLER.fdb.joint[J0].pos, 
+        CUSTOM_CONTROLLER.limit.min.pos[J0],
+        CUSTOM_CONTROLLER.limit.max.pos[J0]);
+    cc_control_data.pos[J1] = fp32_constrain(
+        CUSTOM_CONTROLLER.fdb.joint[J1].pos, 
+        CUSTOM_CONTROLLER.limit.min.pos[J1],
+        CUSTOM_CONTROLLER.limit.max.pos[J1]);
+    cc_control_data.pos[J2] = fp32_constrain(
+        CUSTOM_CONTROLLER.fdb.joint[J2].pos,
+        CUSTOM_CONTROLLER.limit.min.pos[J2],
+        CUSTOM_CONTROLLER.limit.max.pos[J2]);
+    cc_control_data.pos[J3] = fp32_constrain(
+        CUSTOM_CONTROLLER.fdb.joint[J3].pos, 
+        CUSTOM_CONTROLLER.limit.min.pos[J3],
+        CUSTOM_CONTROLLER.limit.max.pos[J3]);
+    
+    float vj4_pos = fp32_constrain(CUSTOM_CONTROLLER.fdb.joint[J4].pos, CUSTOM_CONTROLLER.limit.min.vj4_pos, CUSTOM_CONTROLLER.limit.max.vj4_pos);
+    float vj5_pos = fp32_constrain(CUSTOM_CONTROLLER.fdb.joint[J5].pos, CUSTOM_CONTROLLER.limit.min.vj5_pos, CUSTOM_CONTROLLER.limit.max.vj5_pos);
+    
+    cc_control_data.pos[J4] =   vj4_pos + vj5_pos;
+    cc_control_data.pos[J5] = -(vj4_pos - vj5_pos);
+    // clang-format on
 }
 
 /******************************************************************/
@@ -183,9 +233,10 @@ void CustomControllerConsole(void)
     uint8_t i;
     // 计算控制量
     for (i = 0; i < JOINT_NUM; i++) {
-        CUSTOM_CONTROLLER.joint_motor[i].set.value = PID_calc(
-            &CUSTOM_CONTROLLER.pid.joint[i], CUSTOM_CONTROLLER.fdb.joint[i].vel,
-            CUSTOM_CONTROLLER.ref.joint[i].vel);
+        // CUSTOM_CONTROLLER.joint_motor[i].set.value = PID_calc(
+        //     &CUSTOM_CONTROLLER.pid.joint[i], CUSTOM_CONTROLLER.fdb.joint[i].vel,
+        //     CUSTOM_CONTROLLER.ref.joint[i].vel);
+        CUSTOM_CONTROLLER.joint_motor[i].set.value = 0;
     }
 }
 
@@ -210,6 +261,10 @@ void CustomControllerSendCmd(void)
         CUSTOM_CONTROLLER.joint_motor[4].set.value, 
         CUSTOM_CONTROLLER.joint_motor[5].set.value, 0);
     // clang-format on
+
+    ModifyDebugDataPackage(0, CUSTOM_CONTROLLER.fdb.joint[0].pos, "j0_pos_f");
+    ModifyDebugDataPackage(1, CUSTOM_CONTROLLER.fdb.joint[1].pos, "j1_pos_f");
+    ModifyDebugDataPackage(2, CUSTOM_CONTROLLER.fdb.joint[2].pos, "j2_pos_f");
 }
 
 #endif  // CUSTOM_CONTROLLER_TYPE
