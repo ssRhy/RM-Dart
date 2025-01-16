@@ -224,8 +224,8 @@ void MechanicalArmHandleException(void)
         }
     }
 
-    if (MECHANICAL_ARM.joint_motor[J1].fdb.tor > 10 ||
-        MECHANICAL_ARM.joint_motor[J2].fdb.tor > 10) {
+    if (fabsf(MECHANICAL_ARM.joint_motor[J1].fdb.tor > 10) ||
+        fabsf(MECHANICAL_ARM.joint_motor[J2].fdb.tor > 10)) {
         MECHANICAL_ARM.error_code |= JOINT_TORQUE_MORE_OFFSET;
     }
 }
@@ -450,12 +450,19 @@ void MechanicalArmReference(void)
         } break;
         case MECHANICAL_ARM_FOLLOW: {
             if (MA.custom_controller_ready) {
-                MA.ref.joint[J0].angle = GetCustomControllerPos(J0);
-                MA.ref.joint[J1].angle = GetCustomControllerPos(J1);
-                MA.ref.joint[J2].angle = GetCustomControllerPos(J2);
-                MA.ref.joint[J3].angle = GetCustomControllerPos(J3);
-                MA.ref.joint[J4].angle = GetCustomControllerPos(J4);
-                MA.ref.joint[J5].angle = GetCustomControllerPos(J5);
+                MA.ref.joint[J0].angle = fp32_constrain(
+                    GetCustomControllerPos(J0), MA.limit.min.pos[J0], MA.limit.max.pos[J0]);
+                // MA.ref.joint[J1].angle = GetCustomControllerPos(J1);
+                // MA.ref.joint[J2].angle = GetCustomControllerPos(J2);
+                // MA.ref.joint[J3].angle = GetCustomControllerPos(J3);
+                // MA.ref.joint[J4].angle = GetCustomControllerPos(J4);
+                // MA.ref.joint[J5].angle = GetCustomControllerPos(J5);
+
+                // float vj4_pos = (MA.ref.joint[J4].angle - MA.ref.joint[J5].angle) / 2;
+                // float vj5_pos = (MA.ref.joint[J4].angle + MA.ref.joint[J5].angle) / 2;
+
+                // float vj4_pos_mid = (MA.limit.max.vj4_pos + MA.limit.min.vj4_pos) / 2;
+                // float vj5_pos_mid = (MA.limit.max.vj5_pos + MA.limit.min.vj5_pos) / 2;
             }
         } break;
         case MECHANICAL_ARM_CALIBRATE:
@@ -587,7 +594,6 @@ void MechanicalArmConsole(void)
 
 void ArmSendCmdSafe(void);
 void ArmSendCmdDebug(void);
-void ArmSendCmdFollow(void);
 void ArmSendCmdInit(void);
 
 void MechanicalArmSendCmd(void)
@@ -606,9 +612,7 @@ void MechanicalArmSendCmd(void)
     delay_us(DM_DELAY);
 
     switch (MECHANICAL_ARM.mode) {
-        case MECHANICAL_ARM_FOLLOW: {
-            ArmSendCmdFollow();
-        } break;
+        case MECHANICAL_ARM_FOLLOW: 
         case MECHANICAL_ARM_DEBUG: {
             ArmSendCmdDebug();
         } break;
@@ -622,16 +626,16 @@ void MechanicalArmSendCmd(void)
             ArmSendCmdSafe();
         }
     }
-    ModifyDebugDataPackage(0, MA.fdb.joint[J4].angle, "j4_pos_f");
-    ModifyDebugDataPackage(1, MA.fdb.joint[J5].angle, "j5_pos_f");
-    ModifyDebugDataPackage(2, MA.ref.joint[J4].angle, "j4_pos_r");
-    ModifyDebugDataPackage(3, MA.ref.joint[J5].angle, "j5_pos_r");
-    ModifyDebugDataPackage(4, (MA.ref.joint[J4].angle - MA.ref.joint[J5].angle) / 2, "vj4_pos_r");
-    ModifyDebugDataPackage(5, (MA.fdb.joint[J4].angle - MA.fdb.joint[J5].angle) / 2, "vj4_pos_f");
-    ModifyDebugDataPackage(6, MA.limit.max.vj4_pos, "Vj4PosMax");
-    ModifyDebugDataPackage(7, MA.limit.min.vj4_pos, "Vj4PosMin");
-    ModifyDebugDataPackage(8, MA.custom_controller_ready, "cc_ready");
-    ModifyDebugDataPackage(9, MA.joint_motor[J4].fdb.vel / 36, "FdbVel");
+    ModifyDebugDataPackage(0, MA.ref.joint[J0].angle, "j0_pos_r");
+    ModifyDebugDataPackage(1, MA.ref.joint[J1].angle, "j1_pos_r");
+    ModifyDebugDataPackage(2, MA.ref.joint[J2].angle, "j2_pos_r");
+    ModifyDebugDataPackage(3, MA.ref.joint[J3].angle, "j3_pos_r");
+    ModifyDebugDataPackage(4, MA.init_completed, "init_comp");
+    ModifyDebugDataPackage(5, MA.custom_controller_ready, "cc_ready");
+    ModifyDebugDataPackage(6, MA.ref.joint[J4].angle, "j4_pos_r");
+    ModifyDebugDataPackage(7, MA.fdb.joint[J4].angle, "j4_pos_f");
+    ModifyDebugDataPackage(8, MA.ref.joint[J5].angle, "j5_pos_r");
+    ModifyDebugDataPackage(9, MA.fdb.joint[J5].angle, "j5_pos_f");
 }
 
 void ArmSendCmdSafe(void)
@@ -658,21 +662,6 @@ void ArmSendCmdDebug(void)
         0, 
         MA.joint_motor[J4].set.value,
         MA.joint_motor[J5].set.value);  // J3 JN J4 J5
-    // clang-format on
-}
-
-void ArmSendCmdFollow(void)
-{
-    DmMitCtrl(&MECHANICAL_ARM.joint_motor[J0], J0_KP_FOLLOW, J0_KD_FOLLOW);
-    delay_us(DM_DELAY);
-    DmMitCtrl(&MECHANICAL_ARM.joint_motor[J1], J1_KP_FOLLOW, J1_KD_FOLLOW);
-    DmMitCtrl(&MECHANICAL_ARM.joint_motor[J2], J2_KP_FOLLOW, J2_KD_FOLLOW);
-    // clang-format off
-    CanCmdDjiMotor(
-        ARM_DJI_CAN, 0x1FF, 
-        MECHANICAL_ARM.joint_motor[J0].set.value,
-        MECHANICAL_ARM.joint_motor[J4].set.value, 
-        MECHANICAL_ARM.joint_motor[J5].set.value, 0); // J3 J4 J5
     // clang-format on
 }
 

@@ -107,11 +107,13 @@ typedef struct
         {
             float pos[6];
             float vj4_pos;
+            float vj5_pos;
         } max;
         struct
         {
             float pos[6];
             float vj4_pos;
+            float vj5_pos;
         } min;
     } limit;
 
