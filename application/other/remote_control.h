@@ -128,6 +128,7 @@ extern void sbus_to_usart1(uint8_t * sbus);
 /* API                                                            */
 /******************************************************************/
 // inline ModelStatus_e GetRcStatus();
+
 extern inline float GetDt7RcCh(uint8_t ch);
 extern inline char GetDt7RcSw(uint8_t sw);
 extern inline float GetDt7MouseSpeed(uint8_t axis);

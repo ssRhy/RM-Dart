@@ -10,6 +10,7 @@
 #include "usb_debug.h"
 #include "user_lib.h"
 #include "gimbal.h"
+#include "CAN_communication.h"
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
 uint32_t develop_high_water;
@@ -21,6 +22,9 @@ const CaliBuzzerState_e * p_CALI_BUZZER_STATE;
 const ChassisSpeedVector_t * p_CHASSIS_FDB_SPEED;
 const RobotCmdData_t * p_ROBOT_CMD_DATA;
 const bool * p_USB_OFFLINE;
+
+SupCapMeasure_s SUP_CAP_MEASURE;
+SupCap_s SUP_CAP;
 
 void develop_task(void const * pvParameters)
 {
@@ -34,9 +38,10 @@ void develop_task(void const * pvParameters)
     p_ROBOT_CMD_DATA = Subscribe(ROBOT_CMD_DATA_NAME);
     p_USB_OFFLINE = Subscribe(USB_OFFLINE_NAME);
 
+
     while (1) {
         
-//        float a = GetGimbalDeltaYawMid();
+          float a = GetGimbalDeltaYawMid();
           vTaskDelay(1);
 
 #if INCLUDE_uxTaskGetStackHighWaterMark

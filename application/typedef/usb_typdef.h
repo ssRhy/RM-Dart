@@ -15,11 +15,16 @@
 
 #define DEBUG_DATA_SEND_ID        ((uint8_t)0x01)
 #define IMU_DATA_SEND_ID          ((uint8_t)0x02)
-#define ROBOT_INFO_DATA_SEND_ID   ((uint8_t)0x03)
-#define PID_DEBUG_DATA_SEND_ID    ((uint8_t)0x04)
-#define ALL_ROBOT_HP_SEND_ID      ((uint8_t)0x05)
-#define GAME_STATUS_SEND_ID       ((uint8_t)0x06)
-#define ROBOT_MOTION_DATA_SEND_ID ((uint8_t)0x07)
+#define ROBOT_STATE_INFO_DATA_SEND_ID   ((uint8_t)0x03)
+#define EVENT_DATA_SEND_ID        ((uint8_t)0x04)
+#define PID_DEBUG_DATA_SEND_ID    ((uint8_t)0x05)
+#define ALL_ROBOT_HP_SEND_ID      ((uint8_t)0x06)
+#define GAME_STATUS_SEND_ID       ((uint8_t)0x07) 
+#define ROBOT_MOTION_DATA_SEND_ID ((uint8_t)0x08)
+#define GROUND_ROBOT_POSITION_SEND_ID ((uint8_t)0x09)
+#define RFID_STATUS_SEND_ID       ((uint8_t)0x0A)
+#define ROBOT_STATUS_SEND_ID      ((uint8_t)0x0B)
+#define JOINT_STATE_SEND_ID       ((uint8_t)0x0C)
 
 #define ROBOT_CMD_DATA_RECEIVE_ID  ((uint8_t)0x01)
 #define PID_DEBUG_DATA_RECEIVE_ID  ((uint8_t)0x02)
@@ -99,23 +104,49 @@ typedef struct
             uint8_t custom_controller : 1;
             uint8_t reserve : 3;
         } __packed__ state;
-        /// @brief 机器人裁判系统信息 7 bytes
-        struct
-        {
-            uint8_t id;
-            uint8_t color;  // 0-red 1-blue 2-unknown
-            bool attacked;
-            uint16_t hp;
-            uint16_t heat;
-        } __packed__ referee;
+        // /// @brief 机器人裁判系统信息 7 bytes
+        // struct
+        // {
+        //     uint8_t id;
+        //     uint8_t color;  // 0-red 1-blue 2-unknown
+        //     bool attacked;
+        //     uint16_t hp;
+        //     uint16_t heat;
+        // } __packed__ referee;
     } __packed__ data;
     uint16_t crc;
-} __packed__ SendDataRobotInfo_s;
+} __packed__ SendDataRobotStateInfo_s;
+
+// 事件数据包
+
+typedef struct
+{
+    FrameHeader_t frame_header;  // 数据段id = 0x04
+    uint32_t time_stamp;
+
+    struct
+    {
+        uint8_t supply_station_front;
+        uint8_t supply_station_internal;
+        uint8_t supply_zone;
+        uint8_t center_gain_zone;
+
+        uint8_t small_energy;
+        uint8_t big_energy;
+
+        uint8_t circular_highland;
+        uint8_t trapezoidal_highland_3;
+        uint8_t trapezoidal_highland_4;
+
+        uint8_t base_virtual_shield_remaining;
+    } __packed__ data;
+    uint16_t crc;
+} __packed__ SendDataEvent_s;
 
 // PID调参数据包
 typedef struct
 {
-    FrameHeader_t frame_header;  // 数据段id = 0x04
+    FrameHeader_t frame_header;  // 数据段id = 0x05
     uint32_t time_stamp;
     struct
     {
@@ -129,7 +160,7 @@ typedef struct
 // 全场机器人hp信息数据包
 typedef struct
 {
-    FrameHeader_t frame_header;  // 数据段id = 0x05
+    FrameHeader_t frame_header;  // 数据段id = 0x06
     uint32_t time_stamp;
     struct
     {
@@ -156,7 +187,7 @@ typedef struct
 // 比赛信息数据包
 typedef struct
 {
-    FrameHeader_t frame_header;  // 数据段id = 0x06
+    FrameHeader_t frame_header;  // 数据段id = 0x07
     uint32_t time_stamp;
     struct
     {
@@ -166,10 +197,36 @@ typedef struct
     uint16_t crc;
 } __packed__ SendDataGameStatus_s;
 
+// 地面机器人位置数据包
+typedef struct
+{
+    FrameHeader_t frame_header;  // 数据段id = 0x08
+    uint32_t time_stamp;
+    
+    struct
+    {
+        float hero_x;
+        float hero_y;
+
+        float engineer_x;
+        float engineer_y;
+
+        float standard_3_x;
+        float standard_3_y;
+
+        float standard_4_x;
+        float standard_4_y;
+
+        float standard_5_x;
+        float standard_5_y;
+    } __packed__ data;
+    uint16_t crc;
+} __packed__ SendDataGroundRobotPosition_s;
+
 // 机器人运动数据包
 typedef struct
 {
-    FrameHeader_t frame_header;  // 数据段id = 0x07
+    FrameHeader_t frame_header;  // 数据段id = 0x09
     uint32_t time_stamp;
     struct
     {
@@ -183,6 +240,81 @@ typedef struct
     uint16_t crc;
 } __packed__ SendDataRobotMotion_s;
 
+// RFID状态数据包
+typedef struct
+{
+    FrameHeader_t frame_header;  // 数据段id = 0x0A
+    uint32_t time_stamp;
+
+    struct
+    {
+        bool base_gain_point;                       
+        bool circular_highland_gain_point;          
+        bool enemy_circular_highland_gain_point;
+        bool friendly_r3_b3_gain_point;            
+        bool enemy_r3_b3_gain_point;                
+        bool friendly_r4_b4_gain_point;              
+        bool enemy_r4_b4_gain_point;                 
+        bool energy_mechanism_gain_point;           
+        bool friendly_fly_ramp_front_gain_point;    
+        bool friendly_fly_ramp_back_gain_point;     
+        bool enemy_fly_ramp_front_gain_point;       
+        bool enemy_fly_ramp_back_gain_point;         
+        bool friendly_outpost_gain_point;            
+        bool friendly_healing_point;                 
+        bool friendly_sentry_patrol_area;            
+        bool enemy_sentry_patrol_area;               
+        bool friendly_big_resource_island;           
+        bool enemy_big_resource_island;              
+        bool friendly_exchange_area;                 
+        bool center_gain_point;        
+    } __packed__ data;
+    uint16_t crc;            
+} __packed__ SendDataRfidStatus_s;
+
+// 机器人状态数据包
+typedef struct
+{
+    FrameHeader_t frame_header;  // 数据段id = 0x0B
+    uint32_t time_stamp;
+
+    struct
+    {
+        uint8_t robot_id;
+        uint8_t robot_level;
+        uint16_t current_up;
+        uint16_t maximum_hp;
+        uint16_t shooter_barrel_cooling_value;
+        uint16_t shooter_barrel_heat_limit;
+
+        uint16_t shooter_17mm_1_barrel_heat;
+
+        float robot_pos_x;
+        float robot_pos_y;
+        float robot_pos_angle;
+
+        uint8_t armor_id;
+        uint8_t hp_deduction_reason;
+
+        uint16_t projectile_allowance_17mm_1;
+        uint16_t remaining_gold_coin;      
+    } __packed__ data;
+    uint16_t crc;
+} __packed__ SendDataRobotStatus_s;
+
+// 云台状态数据包
+typedef struct
+{
+    FrameHeader_t frame_header;  // 数据段id = 0x0C
+    uint32_t time_stamp;
+    struct
+    {
+        float pitch;
+        float yaw;
+
+    } __packed__ data;
+    uint16_t crc;
+} __packed__ SendDataJointState_s;
 /*-------------------- Receive --------------------*/
 typedef struct RobotCmdData
 {

@@ -7,6 +7,7 @@
 [![Author](https://img.shields.io/badge/Author-小企鹅-orange.svg)](https://gitee.com/Ljw0401)
 [![Maintainer](https://img.shields.io/badge/Maintainer-YZX-orange.svg)](https://gitee.com/yuan-zaixiu)
 [![Collaborator](https://img.shields.io/badge/Collaborator-WHR-orange.svg)](https://gitee.com/Harry_Wong)
+[![Collaborator](https://img.shields.io/badge/Collaborator-furrry-orange.svg)](https://gitee.com/furrry)
 
 ![language](https://img.shields.io/badge/language-C-blue.svg)
 ![license](https://img.shields.io/badge/license-MIT-green.svg)
@@ -37,28 +38,43 @@
 
 ### 主要模块
 
+- **Robot cmd**\
+  机器人控制模块：
+  - [x] 大疆电机
+  - [x] 达妙电机
+  - [x] 瓴控电机
+  - [x] 小米电机
+  - [ ] 超级电容控制板
+  - [x] 板间通信(CAN)
 - **Chassis**\
   底盘模块：
-  - [ ] 麦轮底盘
-  - [ ] 全向轮底盘
+  - [x] 麦轮底盘
+  - [x] 全向轮底盘
   - [ ] 舵轮底盘
   - [x] 平衡底盘
-
 - **Gimbal**\
   云台模块：
-  - [ ] yaw-pitch 直连云台
+  - [x] yaw-pitch 直连云台
   - [ ] yaw直连-pitch丝杆 云台
   - [ ] yaw-pitch 丝杆云台
-  
 - **Shoot**\
   发射机构模块：
   - [ ] 摩擦轮+拨弹盘
   - [ ] 摩擦轮+弹鼓+推杆
-
-<!-- - **Mechanical arm**\
-  支持以下机械臂类型：
-  
-  详细信息请参考 [ARM_README](./application/arm/ARM_README.md) -->
+- **Mechanical arm**\
+  机械臂模块：
+  - [ ] 六自由度直驱机械臂（末端差速）
+- **Communication**\
+  通信模块：
+  - [x] 板间通信(4pin uart2)
+  - [x] 上下位机通信
+- **Music**\
+  音乐模块：
+  - [x] 开机声
+  - [x] 《卡农》
+  - [x] 《天空之城》
+  - [x] 《unity》
+  - [x] 《你》
 
 ## 开发工具
 
@@ -80,7 +96,7 @@
 
 > ***贡献代码时请参照 [注意事项](./doc/注意事项.md/#贡献代码) 中的贡献代码部分。***
 >
-> 编写代码时可以参考[代码编写指南](./doc/代码编写指南.md)
+> 编写代码时参考[API](./doc/API.md)
 
 ## 开发日志
 
@@ -104,3 +120,8 @@
 本文的详细补充内容写在 [附录](./doc/appendix.md) 中。
 
 如发现本项目中的问题，请添加至[问题列表](./doc/questions.md)并与相关负责人联系，如果有解决方案可以提交pull request。
+
+## 通讯信息
+
+- 作者 Penguin （总负责） 微信：18968748997 QQ：1357482552
+- 合作者 whr （负责：直连云台）

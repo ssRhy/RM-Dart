@@ -27,6 +27,7 @@ bit 8-11: data_type
 #include "CAN_cmd_damiao.h"
 #include "CAN_cmd_dji.h"
 #include "CAN_cmd_lingkong.h"
+#include "CAN_cmd_SupCap.h"
 #include "CAN_receive.h"
 
 

@@ -17,6 +17,11 @@
 
 #include "gimbal.h"
 
+#include "attribute_typedef.h"
+
+__weak inline float GetGimbalDeltaYawMid(void) { return 0.0f; }
+__weak inline float CmdGimbalJointState(uint8_t axis) {return 0.0f;}
+
 #if GIMBAL_TYPE != GIMBAL_NONE
 
 #include <stdlib.h>
@@ -28,12 +33,12 @@
 //     .GetDuration = GetDuration,
 //     .GetYawMid = GetYawMid,
 // };
-GimbalApi_t gimbal = {
-    .SetCali = NULL,
-    .CmdCali = NULL,
-    .GetStatus = NULL,
-    .GetDuration = NULL,
-    .GetYawMid = NULL,
-};
+// GimbalApi_t gimbal = {
+//     .SetCali = NULL,
+//     .CmdCali = NULL,
+//     .GetStatus = NULL,
+//     .GetDuration = NULL,
+//     .GetYawMid = NULL,
+// };
 #endif  // GIMBAL_TYPE
 /*------------------------------ End of File ------------------------------*/

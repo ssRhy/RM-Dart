@@ -3588,6 +3588,16 @@
               <FileType>1</FileType>
               <FilePath>..\application\robot_cmd\CAN_communication.c</FilePath>
             </File>
+            <File>
+              <FileName>SupCap.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\robot_cmd\SupCap.c</FilePath>
+            </File>
+            <File>
+              <FileName>CAN_cmd_SupCap.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\robot_cmd\CAN_cmd_SupCap.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

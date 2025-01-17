@@ -125,7 +125,9 @@
         "calibrate_task.h": "c",
         "bsp_rc.h": "c",
         "macro_typedef.h": "c",
-        "ahrs_middleware.h": "c"
+        "ahrs_middleware.h": "c",
+        "can_cmd_supcap.h": "c",
+        "supcap.h": "c"
     },
     "C_Cpp.codeAnalysis.clangTidy.enabled": true,
     "[cpp]": {
