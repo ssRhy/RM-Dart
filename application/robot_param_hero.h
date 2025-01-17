@@ -26,8 +26,8 @@
 
 //电机ID
 #define TRIGGER_MOTOR_ID 7
-#define FRIC_MOTOR_R_ID 1
-#define FRIC_MOTOR_L_ID 2
+#define FRIC_MOTOR_R_ID 2
+#define FRIC_MOTOR_L_ID 1
 
 //电机can口
 #define TRIGGER_MOTOR_CAN 2
