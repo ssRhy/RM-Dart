@@ -41,7 +41,8 @@ void develop_task(void const * pvParameters)
 
     while (1) {
         
-        vTaskDelay(1);
+          float a = GetGimbalDeltaYawMid();
+          vTaskDelay(1);
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
         develop_high_water = uxTaskGetStackHighWaterMark(NULL);

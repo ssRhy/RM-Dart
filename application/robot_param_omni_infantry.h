@@ -4,6 +4,7 @@
   * @history
   *  Version    Date            Author          Modification
   *  V1.1.0     2024-11-3     Harry_Wong        1. 完成云台所有基本控制
+  *  V1.1.1     2025-1-15     CJH               1. 完成射击基本功能
   */
 
 #ifndef INCLUDED_ROBOT_PARAM_H
@@ -11,8 +12,8 @@
 #include "robot_typedef.h"
 
 #define CHASSIS_TYPE CHASSIS_NONE  // 选择底盘类型
-#define GIMBAL_TYPE GIMBAL_YAW_PITCH_DIRECT    // 选择云台类型
-#define SHOOT_TYPE SHOOT_NONE            // 选择发射机构类型
+#define GIMBAL_TYPE GIMBAL_NONE    // 选择云台类型
+#define SHOOT_TYPE SHOOT_FRIC_TRIGGER            // 选择发射机构类型
 #define CONTROL_TYPE CHASSIS_AND_GIMBAL  // 选择控制类型
 #define MECHANICAL_ARM_TYPE MECHANICAL_ARM_NONE  //选择机械臂类型
 
@@ -166,12 +167,81 @@ typedef enum {
 #define KD_GIMBAL_PITCH_VELOCITY (100.0f)
 #define MAX_IOUT_GIMBAL_PITCH_VELOCITY (10000.0f)
 #define MAX_OUT_GIMBAL_PITCH_VELOCITY (30000.0f)
+
 /*-------------------- Shoot --------------------*/
 //physical parameters ---------------------
 #define FRIC_RADIUS 0.03f  // (m)摩擦轮半径
 #define BULLET_NUM 8       // 定义拨弹盘容纳弹丸个数
 #define GUN_NUM 1          // 定义枪管个数（一个枪管2个摩擦轮）
 
-//PID parameters ---------------------
+/*MOTOR paramters --------------------*/
+
+//电机种类
+#define TRIGGER_MOTOR_TYPE ((MotorType_e)DJI_M2006)
+#define FRIC_MOTOR_TYPE ((MotorType_e)DJI_M3508)
+
+//电机ID
+#define TRIGGER_MOTOR_ID 7
+#define FRIC_MOTOR_R_ID 6
+#define FRIC_MOTOR_L_ID 5
+
+//电机can口
+#define TRIGGER_MOTOR_CAN 2
+#define FRIC_MOTOR_R_CAN 1
+#define FRIC_MOTOR_L_CAN 1
+
+//电机std_id
+#define TRIGGER_STD_ID 0x1FF
+#define FRIC_STD_ID 0x1FF
+
+//单环拨弹速度
+#define TRIGGER_SPEED               (500.0f)
+//摩擦轮速度
+#define FRIC_SPEED                  (70.0f) 
+#define FRIC_SPEED_LIMIT            (60.0f) 
+
+//电机反馈码盘值范围
+#define HALF_ECD_RANGE              4096
+#define ECD_RANGE                   8191
+
+//电机rpm 变化成 旋转速度的比例
+#define MOTOR_RPM_TO_SPEED          0.00290888208665721596153948461415f
+#define MOTOR_ECD_TO_ANGLE          0.000021305288720633905968306772076277f
+#define FULL_COUNT                  18
+
+/*BLOCK&REVERSE parameters------------*/
+
+//初版   看门狗防堵转
+#define BLOCK_TRIGGER_SPEED         1.0f
+#define BLOCK_TIME                  500
+#define REVERSE_TIME                250
+#define REVERSE_SPEED_LIMIT         13.0f
+#define REVERSE_SPEED               (-5.0f)  // (rad/s)
+
+/*PID parameters ---------------------*/
+
+//拨弹轮电机PID速度单环
+#define TRIGGER_SPEED_PID_KP (15.0f)
+#define TRIGGER_SPEED_PID_KI (0.5f)
+#define TRIGGER_SPEED_PID_KD (0.1f)
+
+#define TRIGGER_SPEED_PID_MAX_OUT (10000.0f)
+#define TRIGGER_SPEED_PID_MAX_IOUT (1000.0f)
+
+// 单发模式 拨弹轮电机PID角度环
+#define TRIGGER_ANGEL_PID_KP (20.0f)
+#define TRIGGER_ANGEL_PID_KI (0.5f)
+#define TRIGGER_ANGEL_PID_KD (0.0f)
+
+#define TRIGGER_ANGEL_PID_MAX_OUT (700.0f)
+#define TRIGGER_ANGEL_PID_MAX_IOUT (1000.0f)
+
+//摩擦轮电机PID
+#define FRIC_SPEED_PID_KP (500.0f)
+#define FIRC_SPEED_PID_KI (0.1f)
+#define FRIC_SPEED_PID_KD (0.03f)
+
+#define FRIC_PID_MAX_OUT (16000.0f)
+#define FRIC_PID_MAX_IOUT (10.0f)
 
 #endif /* INCLUDED_ROBOT_PARAM_H */
