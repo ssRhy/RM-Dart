@@ -127,7 +127,9 @@
         "macro_typedef.h": "c",
         "ahrs_middleware.h": "c",
         "can_cmd_supcap.h": "c",
-        "supcap.h": "c"
+        "supcap.h": "c",
+        "robot_param_mecannum.h": "c",
+        "usb.h": "c"
     },
     "C_Cpp.codeAnalysis.clangTidy.enabled": true,
     "[cpp]": {

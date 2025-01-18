@@ -20,7 +20,7 @@
 
 #include "CAN_communication.h"
 // 导入usb通信相关的库
-#include "usb.h"
+#include "supervisory_computer_cmd.h"
 #include "usb_debug.h"
 #include "user_lib.h"
 #include "arm_math.h"
