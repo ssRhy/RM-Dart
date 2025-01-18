@@ -25,6 +25,7 @@
 #ifndef CAN_RECEIVE_H
 #define CAN_RECEIVE_H
 
+#include "SupCap.h"
 #include "motor.h"
 #include "stm32f4xx_hal.h"
 
@@ -74,5 +75,9 @@ extern CybergearModeState_e GetCybergearModeState(Motor_s * p_motor);
 extern void GetMotorMeasure(Motor_s * p_motor);
 
 extern uint16_t GetOtherBoardDataUint16(uint8_t data_id, uint8_t data_offset);
+
+extern void GetSupCapFdbData(SupCapMeasure_s * p_sup_cap);
+
+extern void GetSupCapMeasure(SupCap_s * p_sup_cap);
 
 #endif

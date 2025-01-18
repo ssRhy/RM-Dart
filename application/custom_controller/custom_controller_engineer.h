@@ -6,6 +6,7 @@
   * @history
   *  Version    Date            Author          Modification
   *  V1.0.0     Aug-22-2024     Penguin         1. done
+  *  V1.0.1     Jan-14-2025     Penguin         1. 能获取关节的位置
   *
   @verbatim
   ==============================================================================
@@ -62,6 +63,7 @@ typedef struct
             float pos;   // (rad)位置
             float dpos;  // (rad)位置差
             float vel;   // (rad/s)速度
+            int16_t round;   // 圈数(当前位于第几圈中，初始为0)
         } joint[JOINT_NUM];
     } fdb;
 
@@ -69,6 +71,22 @@ typedef struct
     {
         float pos[JOINT_NUM];
     } transform;
+
+    struct
+    {
+        struct
+        {
+            float pos[6];
+            float vj4_pos;
+            float vj5_pos;
+        } max;
+        struct
+        {
+            float pos[6];
+            float vj4_pos;
+            float vj5_pos;
+        } min;
+    } limit;
 
     struct
     {

@@ -7,7 +7,7 @@
   *  Version    Date            Author          Modification
   *  V1.0.0     Apr-1-2024      Penguin         1. done
   *  V1.0.1     Apr-16-2024     Penguin         1. 完成基本框架
-  *
+  *  V1.1.0     2025-1-15       CJH             1. 实现基本功能
   @verbatim
   ==============================================================================
 
@@ -25,28 +25,54 @@
 #include "remote_control.h"
 #include "shoot.h"
 
+
+
+typedef enum {
+    LOAD_STOP,      // 停止拨盘
+    LAOD_BULLET,    // 单发模式
+    LOAD_BURSTFIRE,  // 连发模式,对速度闭环
+    LOAD_BLOCK       // 堵转，模式
+} LoadMode_e;
+
+typedef enum {
+    FRIC_NOT_READY,      // 未准备发射
+    FRIC_READY,          // 准备发射
+} FricState_e;
+
 typedef struct
 {
-    const RC_ctrl_t * rc;  // 射击使用的遥控器指针
-    LoadMode_e mode;       // 射击模式
-    FricState_e state;     // 摩擦轮状态
+  const RC_ctrl_t * rc;  // 射击使用的遥控器指针
+  LoadMode_e mode;       // 射击模式
+  FricState_e state;     // 摩擦轮状态
 
-    Motor_s fric_motor[4];  // 摩擦轮电机
-    Motor_s trigger_motor;  // 拨弹盘电机
-
-    /*目标量*/
-    float shoot_frequency;  // (Hz)射频
-    float shoot_speed;      // (m/s)射速
-    float dangle;           // (rad)拨弹盘单次转动角度
+  Motor_s fric_motor[2];  // 摩擦轮电机
+  Motor_s trigger_motor;  // 拨弹盘电机
 
     //pid
-    pid_type_def trigger_pid;
-    pid_type_def fric_pid[4];
+  pid_type_def trigger_angel_pid;
+  pid_type_def trigger_speed_pid;
+  pid_type_def fric_pid[2];
+
+    //防堵转
+  uint16_t reverse_time;
+  uint16_t block_time;
+  int16_t last_trigger_vel;
+  int16_t last_fric_vel;
+    //flag
+  uint16_t fric_flag; //    摩擦轮状态
+  uint16_t move_flag; //    拨弹盘角度状态，用于判断单发射击执行情况
+  uint16_t shoot_flag;//    鼠标右键状态，用于判断弹发射击启动
+   //console
+  int16_t last_ecd; //     上一个ecd
+  int16_t ecd_count;//     ecd计数
+  int16_t trigger_angel;// 减速箱输出轴位置
+  int16_t trigger_speed;// 减速箱输出轴速度
+  int16_t fric_speed;   // 减速箱输出轴速度
 } Shoot_s;
 
-extern void InitShoot(void);
+extern void ShootInit(void);
 
-extern void SetShootMode(void);
+extern void ShootSetMode(void);
 
 extern void ShootObserver(void);
 
@@ -54,7 +80,8 @@ extern void ShootReference(void);
 
 extern void ShootConsole(void);
 
-extern void SendShootCmd(void);
+extern void ShootSendCmd(void);
 
 #endif  // SHOOT_FRIC_H
 #endif  // SHOOT_TYPE == SHOOT_FRIC
+

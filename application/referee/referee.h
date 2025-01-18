@@ -17,6 +17,7 @@
 #define REFEREE_H
 #include "main.h"
 #include "protocol.h"
+#include "stdbool.h"
 
 // clang-format off
 typedef enum
@@ -283,4 +284,10 @@ extern void get_shoot_heat0_limit_and_heat0(uint16_t * heat0_limit, uint16_t * h
 extern void get_shoot_heat1_limit_and_heat1(uint16_t * heat1_limit, uint16_t * heat1);
 
 extern CustomControllerData_t * GetCustomControllerDataPoint(void);
+
+/*========== API ==========*/
+
+extern inline bool GetRefereeState(void);
+extern inline float GetCustomControllerPos(uint8_t index);
+
 #endif

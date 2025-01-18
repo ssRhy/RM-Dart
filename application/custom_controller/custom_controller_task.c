@@ -68,7 +68,7 @@ void custom_controller_task(void const * pvParameters)
 
         // 发送数据至操作者电脑
         if (xTaskGetTickCount() - lastTick > CUSTOM_CONTROLLER_SEND_TIME) {
-            SendDataToPC((uint8_t *)&cc_control_data);
+            SendDataToPC((uint8_t *)cc_control_data.pos);
         }
 
         // 系统延时

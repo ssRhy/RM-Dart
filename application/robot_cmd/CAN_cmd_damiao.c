@@ -164,7 +164,7 @@ static void MitCtrl(
     uint16_t pos_tmp, vel_tmp, kp_tmp, kd_tmp, tor_tmp;
 
     CAN_CTRL_DATA.hcan = hcan;
-    
+
     CAN_CTRL_DATA.tx_header.StdId = motor_id + DM_MODE_MIT;
 
     pos_tmp = float_to_uint(pos, DM_P_MIN, DM_P_MAX, 16);
@@ -257,7 +257,7 @@ static void SpeedCtrl(hcan_t * hcan, uint16_t motor_id, float vel)
  */
 static hcan_t * GetHcanPoint(Motor_s * motor)
 {
-    if (motor->type != DM_8009) return NULL;
+    if (!(motor->type == DM_8009 || motor->type == DM_4310|| motor->type == DM_4340)) return NULL;
 
     if (motor->can == 1)
         return &hcan1;
