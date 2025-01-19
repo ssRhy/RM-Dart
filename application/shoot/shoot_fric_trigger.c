@@ -86,11 +86,11 @@ void ShootSetMode(void)
 
     else if (switch_is_mid(SHOOT.rc->rc.s[SHOOT_MODE_CHANNEL]))
     {
-        if(SHOOT.rc->key.v & KEY_PRESSED_OFFSET_Q)//Q启动摩擦轮
+        if(SHOOT.rc->key.v & KEY_PRESSED_OFFSET_Q || GetScCmdFricOn())//Q启动摩擦轮
         {
           SHOOT.fric_flag = 1;
         }
-        else if(SHOOT.rc->key.v & KEY_PRESSED_OFFSET_E)//E关闭摩擦轮
+        else if(SHOOT.rc->key.v & KEY_PRESSED_OFFSET_E || !GetScCmdFricOn())//E关闭摩擦轮
         {
           SHOOT.fric_flag = 0;
         }
@@ -115,7 +115,7 @@ void ShootSetMode(void)
             SHOOT.mode = LAOD_BULLET;
             SHOOT.shoot_flag = 0;
         }
-        else if (SHOOT.rc->mouse.press_r)
+        else if (SHOOT.rc->mouse.press_r || GetScCmdFire())
         {
           SHOOT.mode = LOAD_BURSTFIRE;
         }
@@ -173,7 +173,7 @@ void ShootSetMode(void)
     //过热保护
     if (SHOOT.mode == LOAD_BURSTFIRE||SHOOT.mode == LAOD_BULLET)
     {
-        if (SHOOT.last_fric_vel < FRIC_SPEED_LIMIT)
+        if (abs(SHOOT.last_fric_vel) < FRIC_SPEED_LIMIT)
         {
           SHOOT.mode = LOAD_STOP;
         }
@@ -272,8 +272,8 @@ void ShootReference(void)
     break;
 
     case FRIC_READY:
-    SHOOT.fric_motor[0].set.vel=FRIC_SPEED;
-    SHOOT.fric_motor[1].set.vel=-(FRIC_SPEED);
+    SHOOT.fric_motor[0].set.vel=FRIC_R_SPEED;
+    SHOOT.fric_motor[1].set.vel=FRIC_L_SPEED;
     break;
     
     default:
@@ -364,8 +364,6 @@ void ShootSendCmd(void)
   CanCmdDjiMotor(FRIC_MOTOR_R_CAN, FRIC_STD_ID , SHOOT.fric_motor[1].set.curr,SHOOT.fric_motor[0].set.curr,0, 0);
   CanCmdDjiMotor(TRIGGER_MOTOR_CAN, TRIGGER_STD_ID ,0 ,0 ,SHOOT.trigger_motor.set.curr, 0);
 
-  //ModifyDebugDataPackage(1,SHOOT.trigger_motor.set.pos,"set"); 
-  ModifyDebugDataPackage(2,SHOOT.trigger_angel,"fdb");
   
   
 }
