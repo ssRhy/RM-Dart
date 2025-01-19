@@ -19,9 +19,10 @@
 #include "shoot_fric_trigger.h"
 
 #include "CAN_communication.h"
+#include "math.h"
 // 导入usb通信相关的库
-#include "usb.h"
 #include "usb_debug.h"
+#include "supervisory_computer_cmd.h"
 #include "user_lib.h"
 #include "arm_math.h"
 
@@ -173,7 +174,7 @@ void ShootSetMode(void)
     //过热保护
     if (SHOOT.mode == LOAD_BURSTFIRE||SHOOT.mode == LAOD_BULLET)
     {
-        if (abs(SHOOT.last_fric_vel) < FRIC_SPEED_LIMIT)
+        if (fabs(SHOOT.last_fric_vel) < FRIC_SPEED_LIMIT)
         {
           SHOOT.mode = LOAD_STOP;
         }
