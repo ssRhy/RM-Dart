@@ -41,7 +41,8 @@ typedef enum {
     CHASSIS_FREE,  // 底盘不跟随云台
     CHASSIS_SPIN,  // 底盘小陀螺模式
     CHASSIS_AUTO,  // 底盘自动模式
-    CHASSIS_OPEN   // 遥控器的值乘以比例成电流值开环控制
+    CHASSIS_OPEN,  // 遥控器的值乘以比例成电流值开环控制
+    CHASSIS_NAVIGATION, //底盘导航模式
 } ChassisMode_e;
 
 
