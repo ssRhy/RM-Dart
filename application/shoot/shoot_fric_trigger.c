@@ -81,8 +81,8 @@ void ShootSetMode(void)
   /*键鼠遥控器控制方式初版----------------------------*/
       if (switch_is_up(SHOOT.rc->rc.s[SHOOT_MODE_CHANNEL]))//上档防止误触
     {
-        SHOOT.mode = LOAD_STOP;
         SHOOT.state = FRIC_NOT_READY;
+        SHOOT.mode = LOAD_STOP;
     } 
 
     else if (switch_is_mid(SHOOT.rc->rc.s[SHOOT_MODE_CHANNEL]))
@@ -135,8 +135,21 @@ void ShootSetMode(void)
 
     else if (switch_is_down(SHOOT.rc->rc.s[SHOOT_MODE_CHANNEL]))
     {
+      //清弹
+        //SHOOT.state = FRIC_READY;
+        //SHOOT.mode = LOAD_BURSTFIRE;
+
+      //上位机测试
         SHOOT.state = FRIC_READY;
-        SHOOT.mode = LOAD_BURSTFIRE;
+
+        if (GetScCmdFire())
+        {
+          SHOOT.mode = LOAD_BURSTFIRE;
+        }
+        else
+        {
+          SHOOT.mode = LOAD_STOP;
+        }
     }
 
 
