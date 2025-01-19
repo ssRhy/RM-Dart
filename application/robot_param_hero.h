@@ -41,9 +41,9 @@
 //单环拨弹速度
 #define TRIGGER_SPEED (500.0f)
 //摩擦轮速度
-#define FRIC_R_SPEED (-500.0f)
-#define FRIC_L_SPEED (500.0f)
-#define FRIC_SPEED_LIMIT (450.0f)
+#define FRIC_R_SPEED (-666.0f)
+#define FRIC_L_SPEED (666.0f)
+#define FRIC_SPEED_LIMIT (640.0f)
 
 //电机反馈码盘值范围
 #define HALF_ECD_RANGE 4096
