@@ -197,8 +197,9 @@ typedef enum {
 //单环拨弹速度
 #define TRIGGER_SPEED               (500.0f)
 //摩擦轮速度
-#define FRIC_SPEED                  (70.0f) 
-#define FRIC_SPEED_LIMIT            (60.0f) 
+#define FRIC_R_SPEED                  (666.0f) 
+#define FRIC_L_SPEED                  (-666.0f) 
+#define FRIC_SPEED_LIMIT            (640.0f) 
 
 //电机反馈码盘值范围
 #define HALF_ECD_RANGE              4096
@@ -212,16 +213,15 @@ typedef enum {
 /*BLOCK&REVERSE parameters------------*/
 
 //初版   看门狗防堵转
-#define BLOCK_TRIGGER_SPEED         1.0f
-#define BLOCK_TIME                  500
-#define REVERSE_TIME                250
-#define REVERSE_SPEED_LIMIT         13.0f
-#define REVERSE_SPEED               (-5.0f)  // (rad/s)
+#define BLOCK_TRIGGER_SPEED         5.0f
+#define BLOCK_TIME                  700
+#define REVERSE_TIME                1250
+#define REVERSE_SPEED               (-20.0f)  
 
 /*PID parameters ---------------------*/
 
 //拨弹轮电机PID速度单环
-#define TRIGGER_SPEED_PID_KP (15.0f)
+#define TRIGGER_SPEED_PID_KP (25.0f)
 #define TRIGGER_SPEED_PID_KI (0.5f)
 #define TRIGGER_SPEED_PID_KD (0.1f)
 
@@ -233,7 +233,7 @@ typedef enum {
 #define TRIGGER_ANGEL_PID_KI (0.5f)
 #define TRIGGER_ANGEL_PID_KD (0.0f)
 
-#define TRIGGER_ANGEL_PID_MAX_OUT (700.0f)
+#define TRIGGER_ANGEL_PID_MAX_OUT (1000.0f)
 #define TRIGGER_ANGEL_PID_MAX_IOUT (1000.0f)
 
 //摩擦轮电机PID
@@ -242,6 +242,6 @@ typedef enum {
 #define FRIC_SPEED_PID_KD (0.03f)
 
 #define FRIC_PID_MAX_OUT (16000.0f)
-#define FRIC_PID_MAX_IOUT (10.0f)
+#define FRIC_PID_MAX_IOUT (1000.0f)
 
 #endif /* INCLUDED_ROBOT_PARAM_H */
