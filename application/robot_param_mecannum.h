@@ -66,18 +66,18 @@
 #define MAX_OUT_MECANNUM_VEL (30000.0f)
 
 //云台跟随角度环PID参数
-#define KP_CHASSIS_GIMBAL_FOLLOW_ANGLE 200.0f
-#define KI_CHASSIS_GIMBAL_FOLLOW_ANGLE 0.3f
-#define KD_CHASSIS_GIMBAL_FOLLOW_ANGLE 0.0f
-#define MAX_IOUT_CHASSIS_GIMBAL_FOLLOW_ANGLE 10000.0f
-#define MAX_OUT_CHASSIS_GIMBAL_FOLLOW_ANGLE 300000.0f
+#define KP_CHASSIS_FOLLOW_GIMBAL (200.0f)
+#define KI_CHASSIS_FOLLOW_GIMBAL (0.3f)
+#define KD_CHASSIS_FOLLOW_GIMBAL (0.0f)
+#define MAX_IOUT_CHASSIS_FOLLOW_GIMBAL (10000.0f)
+#define MAX_OUT_CHASSIS_FOLLOW_GIMBAL (2.0f)
 
 //RC parametes ---------------------
 //遥控器相关参数
 #define CHASSIS_RC_DEADLINE (5.0f)   // 摇杆死区
 #define CHASSIS_RC_MAX_RANGE (660.0f) //遥控器最大量程
 #define CHASSIS_RC_MAX_SPEED (2.0f) //最大速度(m/s)
-#define CHASSIS_RC_MAX_VELOCITY (1.0f) //最大角速度(rad/s)
+#define CHASSIS_RC_MAX_VELOCITY (2.0f) //最大角速度(rad/s) 仅用于无云台模式
 
 /*-------------------- Gimbal --------------------*/
 //gimbal_init-------------------------------

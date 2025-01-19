@@ -49,6 +49,9 @@ void ChassisInit(void)
         PID_init(&chassis_pid.wheel_velocity[i],PID_POSITION,wheel_vel,MAX_OUT_MECANNUM_VEL,MAX_IOUT_MECANNUM_VEL);
     }
     
+    const static fp32 gimbal_follow[3]={KP_CHASSIS_FOLLOW_GIMBAL,KI_CHASSIS_FOLLOW_GIMBAL,KD_CHASSIS_FOLLOW_GIMBAL};
+    PID_init(&chassis_pid.follow,PID_POSITION,gimbal_follow,MAX_OUT_CHASSIS_FOLLOW_GIMBAL,MAX_IOUT_CHASSIS_FOLLOW_GIMBAL);
+
     //step3 初始化电机
     MotorInit(&chassis.wheel[0],WHEEL_1_ID,WHEEL_1_CAN,WHEEL_1_MOTOR_TYPE,WHEEL_1_DIRECTION,WHEEL_1_RATIO,WHEEL_1_MODE);
     MotorInit(&chassis.wheel[1],WHEEL_2_ID,WHEEL_2_CAN,WHEEL_2_MOTOR_TYPE,WHEEL_2_DIRECTION,WHEEL_2_RATIO,WHEEL_2_MODE);
@@ -69,7 +72,7 @@ void ChassisInit(void)
  */
 void ChassisSetMode(void)
 {
-    if ((toe_is_error(DBUS_TOE)) || switch_is_down(chassis.rc->rc.s[0]))
+    if ((toe_is_error(DBUS_TOE)) || switch_is_down(chassis.rc->rc.s[0]) )
     {
         chassis.mode = CHASSIS_LOCK;
     }
@@ -79,7 +82,7 @@ void ChassisSetMode(void)
     }
     else if (switch_is_up(chassis.rc->rc.s[0]))
     {
-        chassis.mode = CHASSIS_SINGLE;
+        chassis.mode = CHASSIS_FOLLOW;
     }
 }
 
@@ -97,6 +100,9 @@ void ChassisObserver(void)
     {
         GetMotorMeasure(&chassis.wheel[i]);
     }
+
+
+    chassis.yaw_delta = GetGimbalDeltaYawMid();
 }
 
 /*-------------------- Reference --------------------*/
@@ -120,6 +126,12 @@ void ChassisReference(void)
         chassis.reference.vy=fp32_deadline(-chassis.rc->rc.ch[2],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
         chassis.reference.wz=fp32_deadline(-chassis.rc->rc.ch[0],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_VELOCITY;
     }
+    else if (chassis.mode == CHASSIS_FOLLOW)
+    {
+        chassis.reference.vx=fp32_deadline(chassis.rc->rc.ch[3],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
+        chassis.reference.vy=fp32_deadline(-chassis.rc->rc.ch[2],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
+        chassis.reference.wz=PID_calc(&chassis_pid.follow,chassis.yaw_delta,0);
+    }
 }
 
 /*-------------------- Console --------------------*/
@@ -131,22 +143,14 @@ void ChassisReference(void)
  */
 void ChassisConsole(void)
 {
-    chassis.wheel[0].set.vel = ( chassis.reference.vx - chassis.reference.vy - WHEEL_CENTER_DISTANCE*chassis.reference.wz )/WHEEL_RADIUS*chassis.wheel[0].reduction_ratio*chassis.wheel[0].direction;
-    chassis.wheel[1].set.vel = ( chassis.reference.vx + chassis.reference.vy - WHEEL_CENTER_DISTANCE*chassis.reference.wz )/WHEEL_RADIUS*chassis.wheel[1].reduction_ratio*chassis.wheel[1].direction;
-    chassis.wheel[2].set.vel = ( chassis.reference.vx - chassis.reference.vy + WHEEL_CENTER_DISTANCE*chassis.reference.wz )/WHEEL_RADIUS*chassis.wheel[2].reduction_ratio*chassis.wheel[2].direction;
-    chassis.wheel[3].set.vel = ( chassis.reference.vx + chassis.reference.vy + WHEEL_CENTER_DISTANCE*chassis.reference.wz )/WHEEL_RADIUS*chassis.wheel[3].reduction_ratio*chassis.wheel[3].direction;
+    chassis.wheel[0].set.vel = ( sqrt(2)*(chassis.reference.vx - chassis.reference.vy) - WHEEL_CENTER_DISTANCE*chassis.reference.wz )/WHEEL_RADIUS*chassis.wheel[0].reduction_ratio*chassis.wheel[0].direction;
+    chassis.wheel[1].set.vel = ( sqrt(2)*(chassis.reference.vx + chassis.reference.vy) - WHEEL_CENTER_DISTANCE*chassis.reference.wz )/WHEEL_RADIUS*chassis.wheel[1].reduction_ratio*chassis.wheel[1].direction;
+    chassis.wheel[2].set.vel = ( sqrt(2)*(chassis.reference.vx - chassis.reference.vy) + WHEEL_CENTER_DISTANCE*chassis.reference.wz )/WHEEL_RADIUS*chassis.wheel[2].reduction_ratio*chassis.wheel[2].direction;
+    chassis.wheel[3].set.vel = ( sqrt(2)*(chassis.reference.vx + chassis.reference.vy) + WHEEL_CENTER_DISTANCE*chassis.reference.wz )/WHEEL_RADIUS*chassis.wheel[3].reduction_ratio*chassis.wheel[3].direction;
 
     for (int i=0;i<4;++i)
     {
         chassis.wheel[i].set.curr = PID_calc(&chassis_pid.wheel_velocity[i], chassis.wheel[i].fdb.vel, chassis.wheel[i].set.vel);
-    }
-
-    if (chassis.mode == CHASSIS_LOCK)
-    {
-        for (int i=0;i<4;++i)
-        {
-            chassis.wheel[i].set.curr = 0;
-        }
     }
 }
 

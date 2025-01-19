@@ -30,10 +30,12 @@
 #include "CAN_cmd_dji.h"
 
 
+
 /*-------------------- Structural definition --------------------*/
 typedef enum {
     CHASSIS_LOCK,      //底盘锁定，所有轮子速度设定为0
     CHASSIS_SINGLE,    //只有底盘的模式
+    CHASSIS_FOLLOW,    //云台跟随模式
 } ChassisMode_e;
 
 /**
@@ -41,8 +43,9 @@ typedef enum {
  */
  typedef struct
 {
-    pid_type_def wheel_velocity[4];
-    
+    pid_type_def wheel_velocity[4];//麦轮速度解算PID
+
+    pid_type_def follow; //云台跟随PID
 } PID_t;   
 
 /**
@@ -70,7 +73,8 @@ typedef struct
 
     /*-------------------- Values --------------------*/
     Values_t reference; 
-    
+
+    fp32 yaw_delta;
 } Chassis_s;
 
 
