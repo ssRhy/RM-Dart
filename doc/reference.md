@@ -42,6 +42,9 @@
 - [上交平衡步兵模型。理论，仿真，源码详细讲解。助您快速上手。](https://www.bilibili.com/video/BV1cw4m1i7fj/?spm_id_from=333.337.search-card.all.click&vd_source=59764b46a0e4b4b4e2a08a3c20f8be23)
     > `@TI的小破站` 做的平步详解，可以看看。
 
+- [【RM2024-轮腿平衡电控代码、建模开源及机械&电控经验分享】香港大学 HerKules战队](https://bbs.robomaster.com/article/54291?source=4)
+    > 港大的调试经验，可以参考参考，并且还有多种电机的对比，建议看看。
+
 ## 自定义控制器
 
 - [【RM2023-自定义控制器图传链路通信开源】上海大学-SRM战队](https://bbs.robomaster.com/forum.php?mod=viewthread&tid=22907&fromuid=70626
