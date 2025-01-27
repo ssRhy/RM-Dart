@@ -15,6 +15,7 @@
 #include "music_unity.h"
 #include "music_you.h"
 #include "music_see_you_again.h"
+#include "music_hao_yun_lai.h"
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
 uint32_t music_high_water;
@@ -79,7 +80,8 @@ static void MusicInit(void)
     // MusicUnityInit();
     // MusicCanonInit();
     // MusicCastleInTheSkyInit();
-    MusicSeeYouAgainInit();
+    // MusicSeeYouAgainInit();
+    MusicHaoYunLaiInit();
 }
 
 static void MusicPlay(void)
@@ -96,7 +98,7 @@ static void MusicPlay(void)
     } else {
         // MusicRefereeDisconnectPlay();
         // MusicErrorPlay();
-        MusicSeeYouAgainPlay();
+        MusicHaoYunLaiPlay();
 
         switch (*cali_buzzer_state) {
             case CALI_BUZZER_OFF: {
