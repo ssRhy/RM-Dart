@@ -4,6 +4,8 @@
 #include "music.h"
 #include "stm32f4xx_hal.h"
 
+//http://www.jianpu.cn/pu/86/86325.htm
+
 // clang-format off
 #define Z_no 0
 #define A_do 440
