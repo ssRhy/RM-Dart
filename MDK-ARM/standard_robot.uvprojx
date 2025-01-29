@@ -3523,6 +3523,11 @@
               <FileType>1</FileType>
               <FilePath>..\application\music\music_gong_xi_fa_cai.c</FilePath>
             </File>
+            <File>
+              <FileName>music_deja_vu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\music\music_deja_vu.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

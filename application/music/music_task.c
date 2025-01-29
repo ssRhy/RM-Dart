@@ -18,6 +18,7 @@
 #include "music_hao_yun_lai.h"
 #include "music_meow.h"
 #include "music_gong_xi_fa_cai.h"
+#include "music_deja_vu.h"
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
 uint32_t music_high_water;
@@ -85,7 +86,8 @@ static void MusicInit(void)
     // MusicSeeYouAgainInit();
     // MusicHaoYunLaiInit();
     // MusicMeowInit();
-    MusicGongXiFaCaiInit();
+    // MusicGongXiFaCaiInit();
+    MusicDejaVuInit();
 }
 
 static void MusicPlay(void)
@@ -104,7 +106,8 @@ static void MusicPlay(void)
         // MusicErrorPlay();
         // MusicHaoYunLaiPlay();
         // MusicMeowPlay();
-        MusicGongXiFaCaiPlay();
+        // MusicGongXiFaCaiPlay();
+        MusicDejaVuPlay();
 
         switch (*cali_buzzer_state) {
             case CALI_BUZZER_OFF: {
