@@ -3503,6 +3503,31 @@
               <FileType>1</FileType>
               <FilePath>..\application\music\music_error.c</FilePath>
             </File>
+            <File>
+              <FileName>music_see_you_again.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\music\music_see_you_again.c</FilePath>
+            </File>
+            <File>
+              <FileName>music_hao_yun_lai.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\music\music_hao_yun_lai.c</FilePath>
+            </File>
+            <File>
+              <FileName>music_meow.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\music\music_meow.c</FilePath>
+            </File>
+            <File>
+              <FileName>music_gong_xi_fa_cai.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\music\music_gong_xi_fa_cai.c</FilePath>
+            </File>
+            <File>
+              <FileName>music_deja_vu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\music\music_deja_vu.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
