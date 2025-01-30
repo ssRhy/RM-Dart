@@ -87,7 +87,7 @@ static void MusicInit(void)
     // MusicHaoYunLaiInit();
     // MusicMeowInit();
     // MusicGongXiFaCaiInit();
-    MusicDejaVuInit();
+    // MusicDejaVuInit();
 }
 
 static void MusicPlay(void)
@@ -107,7 +107,7 @@ static void MusicPlay(void)
         // MusicHaoYunLaiPlay();
         // MusicMeowPlay();
         // MusicGongXiFaCaiPlay();
-        MusicDejaVuPlay();
+        // MusicDejaVuPlay();
 
         switch (*cali_buzzer_state) {
             case CALI_BUZZER_OFF: {
