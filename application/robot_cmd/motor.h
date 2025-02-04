@@ -47,6 +47,9 @@
 #define DJI_GM6020_MAX_VOLTAGE 30000
 
 // 电机模式
+#define DJI_CURRENT_MODE ((uint16_t)0xAA)  // 电流控制模式
+#define DJI_VOLTAGE_MODE ((uint16_t)0xBB)  // 电压控制模式
+
 #define DJI_3508_MODE_CURRENT_1 ((uint16_t)0x200)  // 3508电流控制模式
 #define DJI_2006_MODE_CURRENT_1 ((uint16_t)0x200)  // 2006电流控制模式
 
