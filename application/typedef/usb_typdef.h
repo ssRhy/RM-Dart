@@ -25,6 +25,7 @@
 #define RFID_STATUS_SEND_ID       ((uint8_t)0x0A)
 #define ROBOT_STATUS_SEND_ID      ((uint8_t)0x0B)
 #define JOINT_STATE_SEND_ID       ((uint8_t)0x0C)
+#define BUFF_SEND_ID              ((uint8_t)0x0D)
 
 #define ROBOT_CMD_DATA_RECEIVE_ID  ((uint8_t)0x01)
 #define PID_DEBUG_DATA_RECEIVE_ID  ((uint8_t)0x02)
@@ -126,19 +127,17 @@ typedef struct
 
     struct
     {
-        uint8_t supply_station_front;
-        uint8_t supply_station_internal;
+        uint8_t non_overlapping_supply_zone;
+        uint8_t overlapping_supply_zone;
         uint8_t supply_zone;
-        uint8_t center_gain_zone;
 
         uint8_t small_energy;
         uint8_t big_energy;
 
-        uint8_t circular_highland;
-        uint8_t trapezoidal_highland_3;
-        uint8_t trapezoidal_highland_4;
+        uint8_t central_highland;
+        uint8_t trapezoidal_highland;
 
-        uint8_t base_virtual_shield_remaining;
+        uint8_t center_gain_zone;
     } __packed__ data;
     uint16_t crc;
 } __packed__ SendDataEvent_s;
@@ -168,7 +167,6 @@ typedef struct
         uint16_t red_2_robot_hp;
         uint16_t red_3_robot_hp;
         uint16_t red_4_robot_hp;
-        uint16_t red_5_robot_hp;
         uint16_t red_7_robot_hp;
         uint16_t red_outpost_hp;
         uint16_t red_base_hp;
@@ -176,7 +174,6 @@ typedef struct
         uint16_t blue_2_robot_hp;
         uint16_t blue_3_robot_hp;
         uint16_t blue_4_robot_hp;
-        uint16_t blue_5_robot_hp;
         uint16_t blue_7_robot_hp;
         uint16_t blue_outpost_hp;
         uint16_t blue_base_hp;
@@ -248,26 +245,30 @@ typedef struct
 
     struct
     {
-        bool base_gain_point;                       
-        bool circular_highland_gain_point;          
-        bool enemy_circular_highland_gain_point;
-        bool friendly_r3_b3_gain_point;            
-        bool enemy_r3_b3_gain_point;                
-        bool friendly_r4_b4_gain_point;              
-        bool enemy_r4_b4_gain_point;                 
-        bool energy_mechanism_gain_point;           
-        bool friendly_fly_ramp_front_gain_point;    
-        bool friendly_fly_ramp_back_gain_point;     
-        bool enemy_fly_ramp_front_gain_point;       
-        bool enemy_fly_ramp_back_gain_point;         
-        bool friendly_outpost_gain_point;            
-        bool friendly_healing_point;                 
-        bool friendly_sentry_patrol_area;            
-        bool enemy_sentry_patrol_area;               
-        bool friendly_big_resource_island;           
-        bool enemy_big_resource_island;              
-        bool friendly_exchange_area;                 
-        bool center_gain_point;        
+        bool base_gain_point;
+        bool central_highland_gain_point;
+        bool enemy_central_highland_gain_point;
+        bool friendly_trapezoidal_highland_gain_point;
+        bool enemy_trapezoidal_highland_gain_point;
+        bool friendly_fly_ramp_front_gain_point;
+        bool friendly_fly_ramp_back_gain_point;
+        bool enemy_fly_ramp_front_gain_point;
+        bool enemy_fly_ramp_back_gain_point;
+        bool friendly_central_highland_lower_gain_point;
+        bool friendly_central_highland_upper_gain_point;
+        bool enemy_central_highland_lower_gain_point;
+        bool enemy_central_highland_upper_gain_point;
+        bool friendly_highway_lower_gain_point;
+        bool friendly_highway_upper_gain_point;
+        bool enemy_highway_lower_gain_point;
+        bool enemy_highway_upper_gain_point;
+        bool friendly_fortress_gain_point;
+        bool friendly_outpost_gain_point;
+        bool friendly_supply_zone_non_exchange;
+        bool friendly_supply_zone_exchange;
+        bool friendly_big_resource_island;
+        bool enemy_big_resource_island;
+        bool center_gain_point;      
     } __packed__ data;
     uint16_t crc;            
 } __packed__ SendDataRfidStatus_s;
@@ -296,7 +297,7 @@ typedef struct
         uint8_t armor_id;
         uint8_t hp_deduction_reason;
 
-        uint16_t projectile_allowance_17mm_1;
+        uint16_t projectile_allowance_17mm;
         uint16_t remaining_gold_coin;      
     } __packed__ data;
     uint16_t crc;
@@ -315,6 +316,25 @@ typedef struct
     } __packed__ data;
     uint16_t crc;
 } __packed__ SendDataJointState_s;
+
+// 机器人增益和底盘能量数据包
+typedef struct 
+{
+    FrameHeader_t frame_header;
+    uint32_t time_stamp;
+
+    struct
+    {
+        uint8_t recovery_buff;
+        uint8_t cooling_buff;
+        uint8_t defence_buff;
+        uint8_t vulnerability_buff;
+        uint16_t attack_buff;
+        uint8_t remaining_energy;
+    } __packed__ data;
+
+    uint16_t crc;
+} __packed__ SendDataBuff_s;
 /*-------------------- Receive --------------------*/
 typedef struct RobotCmdData
 {
