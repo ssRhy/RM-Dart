@@ -127,17 +127,19 @@ typedef struct
 
     struct
     {
-        uint8_t non_overlapping_supply_zone;
-        uint8_t overlapping_supply_zone;
-        uint8_t supply_zone;
+        uint8_t non_overlapping_supply_zone : 1;
+        uint8_t overlapping_supply_zone : 1;
+        uint8_t supply_zone : 1;
 
-        uint8_t small_energy;
-        uint8_t big_energy;
+        uint8_t small_energy : 1;
+        uint8_t big_energy : 1;
 
-        uint8_t central_highland;
-        uint8_t trapezoidal_highland;
+        uint8_t central_highland : 2;
+        uint8_t reserved1 : 1;
+        uint8_t trapezoidal_highland : 2;
 
-        uint8_t center_gain_zone;
+        uint8_t center_gain_zone : 2;
+        uint8_t reserved2 : 4;
     } __packed__ data;
     uint16_t crc;
 } __packed__ SendDataEvent_s;
@@ -245,30 +247,31 @@ typedef struct
 
     struct
     {
-        bool base_gain_point;
-        bool central_highland_gain_point;
-        bool enemy_central_highland_gain_point;
-        bool friendly_trapezoidal_highland_gain_point;
-        bool enemy_trapezoidal_highland_gain_point;
-        bool friendly_fly_ramp_front_gain_point;
-        bool friendly_fly_ramp_back_gain_point;
-        bool enemy_fly_ramp_front_gain_point;
-        bool enemy_fly_ramp_back_gain_point;
-        bool friendly_central_highland_lower_gain_point;
-        bool friendly_central_highland_upper_gain_point;
-        bool enemy_central_highland_lower_gain_point;
-        bool enemy_central_highland_upper_gain_point;
-        bool friendly_highway_lower_gain_point;
-        bool friendly_highway_upper_gain_point;
-        bool enemy_highway_lower_gain_point;
-        bool enemy_highway_upper_gain_point;
-        bool friendly_fortress_gain_point;
-        bool friendly_outpost_gain_point;
-        bool friendly_supply_zone_non_exchange;
-        bool friendly_supply_zone_exchange;
-        bool friendly_big_resource_island;
-        bool enemy_big_resource_island;
-        bool center_gain_point;      
+        uint32_t base_gain_point : 1;
+        uint32_t central_highland_gain_point : 1;
+        uint32_t enemy_central_highland_gain_point : 1;
+        uint32_t friendly_trapezoidal_highland_gain_point : 1;
+        uint32_t enemy_trapezoidal_highland_gain_point : 1;
+        uint32_t friendly_fly_ramp_front_gain_point : 1;
+        uint32_t friendly_fly_ramp_back_gain_point : 1;
+        uint32_t enemy_fly_ramp_front_gain_point : 1;
+        uint32_t enemy_fly_ramp_back_gain_point : 1;
+        uint32_t friendly_central_highland_lower_gain_point : 1;
+        uint32_t friendly_central_highland_upper_gain_point : 1;
+        uint32_t enemy_central_highland_lower_gain_point : 1;
+        uint32_t enemy_central_highland_upper_gain_point : 1;
+        uint32_t friendly_highway_lower_gain_point : 1;
+        uint32_t friendly_highway_upper_gain_point : 1;
+        uint32_t enemy_highway_lower_gain_point : 1;
+        uint32_t enemy_highway_upper_gain_point : 1;
+        uint32_t friendly_fortress_gain_point : 1;
+        uint32_t friendly_outpost_gain_point : 1;
+        uint32_t friendly_supply_zone_non_exchange : 1;
+        uint32_t friendly_supply_zone_exchange : 1;
+        uint32_t friendly_big_resource_island : 1;
+        uint32_t enemy_big_resource_island : 1;
+        uint32_t center_gain_point : 1;  
+        uint32_t reserved : 8;    
     } __packed__ data;
     uint16_t crc;            
 } __packed__ SendDataRfidStatus_s;
@@ -294,8 +297,8 @@ typedef struct
         float robot_pos_y;
         float robot_pos_angle;
 
-        uint8_t armor_id;
-        uint8_t hp_deduction_reason;
+        uint8_t armor_id : 4;
+        uint8_t hp_deduction_reason : 4;
 
         uint16_t projectile_allowance_17mm;
         uint16_t remaining_gold_coin;      
