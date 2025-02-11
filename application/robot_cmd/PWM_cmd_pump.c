@@ -16,9 +16,8 @@
 
 #include "PWM_cmd_pump.h"
 
-#include "bsp_servo_pwm.h"
+#include "bsp_pwm.h"
 #include "main.h"
-#include "remote_control.h"
 
 #define PUMP_MIN_PWM 0
 #define PUMP_MAX_PWM 30000

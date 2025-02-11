@@ -97,7 +97,7 @@ osThreadId usb_task_handle;
 
 osThreadId battery_voltage_handle;
 
-osThreadId servo_task_handle;
+
 
 
 /* USER CODE END PTD */

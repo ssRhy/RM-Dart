@@ -3279,11 +3279,6 @@
               <FilePath>..\application\assist\detect_task.c</FilePath>
             </File>
             <File>
-              <FileName>servo_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\application\assist\servo_task.c</FilePath>
-            </File>
-            <File>
               <FileName>develop_task.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\application\assist\develop_task.c</FilePath>
@@ -3626,22 +3621,12 @@
             <File>
               <FileName>PWM_cmd_pump.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\PWM_cmd_pump.c</FilePath>
-            </File>
-            <File>
-              <FileName>PWM_cmd_pump.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\PWM_cmd_pump.h</FilePath>
+              <FilePath>..\application\robot_cmd\PWM_cmd_pump.c</FilePath>
             </File>
             <File>
               <FileName>PWM_cmd_servo.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\PWM_cmd_servo.c</FilePath>
-            </File>
-            <File>
-              <FileName>PWM_cmd_servo.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\PWM_cmd_servo.h</FilePath>
+              <FilePath>..\application\robot_cmd\PWM_cmd_servo.c</FilePath>
             </File>
           </Files>
         </Group>

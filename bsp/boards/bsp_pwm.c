@@ -1,4 +1,4 @@
-#include "bsp_servo_pwm.h"
+#include "bsp_pwm.h"
 #include "main.h"
 
 extern TIM_HandleTypeDef htim1;
