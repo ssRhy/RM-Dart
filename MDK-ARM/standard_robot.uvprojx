@@ -15,8 +15,8 @@
         <TargetCommonOption>
           <Device>STM32F407IGHx</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32F4xx_DFP.2.17.1</PackID>
-          <PackURL>https://www.keil.com/pack/</PackURL>
+          <PackID>Keil.STM32F4xx_DFP.2.12.0</PackID>
+          <PackURL>http://www.keil.com/pack</PackURL>
           <Cpu>IRAM(0x20000000-0x2001FFFF) IRAM2(0x10000000-0x1000FFFF) IROM(0x8000000-0x80FFFFF) CLOCK(25000000) FPU2 CPUTYPE("Cortex-M4")</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
           <StartupFile></StartupFile>
@@ -3159,14 +3159,14 @@
               <FilePath>..\bsp\boards\bsp_usart.c</FilePath>
             </File>
             <File>
-              <FileName>bsp_servo_pwm.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\bsp\boards\bsp_servo_pwm.c</FilePath>
-            </File>
-            <File>
               <FileName>bsp_uart.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\bsp\boards\bsp_uart.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_pwm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\bsp\boards\bsp_pwm.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -3277,11 +3277,6 @@
               <FileName>detect_task.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\application\assist\detect_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>servo_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\application\assist\servo_task.c</FilePath>
             </File>
             <File>
               <FileName>develop_task.c</FileName>
@@ -3622,6 +3617,16 @@
               <FileName>CAN_cmd_SupCap.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\application\robot_cmd\CAN_cmd_SupCap.c</FilePath>
+            </File>
+            <File>
+              <FileName>PWM_cmd_pump.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\robot_cmd\PWM_cmd_pump.c</FilePath>
+            </File>
+            <File>
+              <FileName>PWM_cmd_servo.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\robot_cmd\PWM_cmd_servo.c</FilePath>
             </File>
           </Files>
         </Group>

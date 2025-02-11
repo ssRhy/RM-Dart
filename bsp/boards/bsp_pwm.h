@@ -3,5 +3,6 @@
 #include "struct_typedef.h"
 
 extern void servo_pwm_set(uint16_t pwm, uint8_t i);
+extern void pump_pwm_set(uint16_t pwm, uint8_t i);
 
 #endif

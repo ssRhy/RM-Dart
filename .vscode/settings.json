@@ -128,7 +128,8 @@
         "ahrs_middleware.h": "c",
         "can_cmd_supcap.h": "c",
         "supcap.h": "c",
-        "usb.h": "c"
+        "usb.h": "c",
+        "bsp_servo_pwm.h": "c"
     },
     "C_Cpp.codeAnalysis.clangTidy.enabled": true,
     "[cpp]": {
