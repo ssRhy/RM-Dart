@@ -21,7 +21,7 @@
 
 #define SERVO_MIN_PWM 500
 #define SERVO_MAX_PWM 2500
-/*-------------------- Private functions --------------------*/
+/*-------------------- Public functions --------------------*/
 
 /**
    * @brief          通过PWM发送PWM信号控制舵机

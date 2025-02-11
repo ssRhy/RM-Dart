@@ -21,7 +21,7 @@
 
 #define PUMP_MIN_PWM 0
 #define PUMP_MAX_PWM 30000
-/*-------------------- Private functions --------------------*/
+/*-------------------- Public functions --------------------*/
 
 /**
  * @brief          通过PWM发送PWM信号控制气泵
