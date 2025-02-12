@@ -26,6 +26,7 @@
 //rc parameters ---------------------
 
 #define MECHANICAL_ARM_MODE_CHANNEL DT7_SW_LEFT  // 机械臂模式切换通道
+#define PUMP_CHANNEL DT7_SW_RIGHT  // 气泵切换通道
 
 //motor parameters ---------------------
 

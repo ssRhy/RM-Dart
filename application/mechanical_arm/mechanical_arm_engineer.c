@@ -24,6 +24,15 @@
     - 定义J5正方向为：当J3归中时，从机械臂前方看，逆时针为正方向
     - vj4和j4 j5的关系：vj4 = (j4 - j5)/2
 
+机械臂控制
+    左拨杆 
+          上：跟随模式
+          中：调试模式
+          下：安全模式
+    右拨杆
+          上：气泵开
+          中：气泵关
+          下：气泵关
   ==============================================================================
   @endverbatim
   ****************************(C) COPYRIGHT 2024 Polarbear****************************
@@ -35,6 +44,7 @@
 #include <stdbool.h>
 
 #include "CAN_communication.h"
+#include "PWM_cmd_pump.h"
 #include "bsp_delay.h"
 #include "cmsis_os.h"
 #include "custom_controller_connect.h"
@@ -81,6 +91,11 @@
 
 #define INIT_2006_SET_VALUE 1000
 #define INIT_2006_MIN_VEL 1
+
+// 气泵相关
+#define PUMP_ON_PWM 30000
+#define PUMP_OFF_PWM 0
+#define PUMP_PWM_CHANNEL 1
 
 #define JointMotorInit(index)                                                                    \
     MotorInit(                                                                                   \
@@ -181,6 +196,9 @@ void MechanicalArmInit(void)
     // #Initial value setting ---------------------
     MECHANICAL_ARM.mode = MECHANICAL_ARM_SAFE;
     MECHANICAL_ARM.error_code = 0;
+
+    MECHANICAL_ARM.cmd.pump_on = false;
+
     MECHANICAL_ARM.transform.dpos[J0] = J0_ANGLE_TRANSFORM;
     MECHANICAL_ARM.transform.dpos[J1] = J1_ANGLE_TRANSFORM;
     MECHANICAL_ARM.transform.dpos[J2] = J2_ANGLE_TRANSFORM;
@@ -491,7 +509,6 @@ void MechanicalArmReference(void)
 
                 MA.ref.joint[J4].angle = vj4_pos + vj5_pos;
                 MA.ref.joint[J5].angle = -(vj4_pos - vj5_pos);
-
             }
         } break;
         case MECHANICAL_ARM_CALIBRATE:
@@ -595,6 +612,13 @@ void MechanicalArmConsole(void)
             MA.joint_motor[J5].set.value =
                 PID_calc(&MA.pid.j5[1], MA.fdb.joint[J5].velocity, MA.joint_motor[J5].set.vel);
             // MA.joint_motor[J5].set.value = GenerateSinWave(2000, 0, 3);
+
+            // 气泵
+            if (switch_is_up(GetDt7RcSw(PUMP_CHANNEL))) {
+                MA.cmd.pump_on = true;
+            } else {
+                MA.cmd.pump_on = false;
+            }
         } break;
         case MECHANICAL_ARM_INIT: {
             MA.joint_motor[J4].set.value = INIT_2006_SET_VALUE;
@@ -660,7 +684,8 @@ void MechanicalArmSendCmd(void)
     ModifyDebugDataPackage(2, MA.ref.joint[J2].angle, "j2_pos_r");
     ModifyDebugDataPackage(3, MA.ref.joint[J3].angle, "j3_pos_r");
     ModifyDebugDataPackage(4, (MA.ref.joint[J4].angle - MA.ref.joint[J5].angle) / 2, "Vj4PosRef");
-    ModifyDebugDataPackage(5, (GetCustomControllerPos(J4) - GetCustomControllerPos(J5)) / 2, "cc_Vj4Pos");
+    ModifyDebugDataPackage(
+        5, (GetCustomControllerPos(J4) - GetCustomControllerPos(J5)) / 2, "cc_Vj4Pos");
     ModifyDebugDataPackage(6, GetCustomControllerPos(J0), "cc_j0");
     ModifyDebugDataPackage(7, GetCustomControllerPos(J1), "cc_j1");
     ModifyDebugDataPackage(8, GetCustomControllerPos(J2), "cc_j2");
@@ -669,16 +694,21 @@ void MechanicalArmSendCmd(void)
 
 void ArmSendCmdSafe(void)
 {
+    // 电机控制
     DmMitStop(&MECHANICAL_ARM.joint_motor[J0]);
     delay_us(DM_DELAY);
     DmMitStop(&MECHANICAL_ARM.joint_motor[J1]);
     DmMitStop(&MECHANICAL_ARM.joint_motor[J2]);
     delay_us(DM_DELAY);
     CanCmdDjiMotor(ARM_DJI_CAN, 0x1FF, 0, 0, 0, 0);  // J3 J4 J5
+
+    // 气泵控制
+    PwmCmdPump(PUMP_PWM_CHANNEL, PUMP_OFF_PWM);
 }
 
 void ArmSendCmdDebug(void)
 {
+    // 电机控制
     DmMitCtrlVelocity(&MECHANICAL_ARM.joint_motor[J0], J0_KD_FOLLOW);
     delay_us(DM_DELAY);
     DmMitCtrlVelocity(&MECHANICAL_ARM.joint_motor[J1], J1_KD_FOLLOW);
@@ -692,10 +722,18 @@ void ArmSendCmdDebug(void)
         MA.joint_motor[J4].set.value,
         MA.joint_motor[J5].set.value);  // J3 JN J4 J5
     // clang-format on
+
+    // 气泵控制
+    if (MECHANICAL_ARM.cmd.pump_on) {
+        PwmCmdPump(PUMP_PWM_CHANNEL, PUMP_ON_PWM);
+    } else {
+        PwmCmdPump(PUMP_PWM_CHANNEL, PUMP_OFF_PWM);
+    }
 }
 
 void ArmSendCmdInit(void)
 {
+    // 电机控制
     // clang-format off
     CanCmdDjiMotor(
         ARM_DJI_CAN, 0x1FF, 
@@ -704,6 +742,8 @@ void ArmSendCmdInit(void)
         MA.joint_motor[J4].set.value,
         MA.joint_motor[J5].set.value);  // J3 JN J4 J5
     // clang-format on
+    // 气泵控制
+    PwmCmdPump(PUMP_PWM_CHANNEL, PUMP_OFF_PWM);
 }
 
 #endif
