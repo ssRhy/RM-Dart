@@ -5,6 +5,7 @@
   * @history
   *  Version    Date            Author          Modification
   *  V2.0.0     Mar-27-2024     Penguin         1. 完成。
+  *  V2.0.1     Feb-12-2025     Penguin         1. 完成DjiMultipleControl函数。
   *
   @verbatim
   ==============================================================================
@@ -65,63 +66,6 @@ static void MultipleMotorControl(
     CAN_SendTxMessage(&CAN_CTRL_DATA);
 }
 
-/**
- * @brief          通过CAN发送控制电流控制DJI电机(支持GM3508 GM2006 GM6020)
- * @param[in]      can 发送数据使用的can口
- * @param[in]      std_id 发送数据使用的std_id
- * @param[in]      curr_1 电机控制电流
- * @param[in]      curr_2 电机控制电流
- * @param[in]      curr_3 电机控制电流
- * @param[in]      curr_4 电机控制电流
- * @return         none
- */
-// static void MultipleCurrentControl(
-//     hcan_t * hcan, uint16_t std_id, int16_t curr_1, int16_t curr_2, int16_t curr_3, int16_t curr_4)
-// {
-//     CAN_CTRL_DATA.hcan = hcan;
-
-//     CAN_CTRL_DATA.tx_header.StdId = std_id;
-
-//     CAN_CTRL_DATA.tx_data[0] = (curr_1 >> 8);
-//     CAN_CTRL_DATA.tx_data[1] = curr_1;
-//     CAN_CTRL_DATA.tx_data[2] = (curr_2 >> 8);
-//     CAN_CTRL_DATA.tx_data[3] = curr_2;
-//     CAN_CTRL_DATA.tx_data[4] = (curr_3 >> 8);
-//     CAN_CTRL_DATA.tx_data[5] = curr_3;
-//     CAN_CTRL_DATA.tx_data[6] = (curr_4 >> 8);
-//     CAN_CTRL_DATA.tx_data[7] = curr_4;
-
-//     CAN_SendTxMessage(&CAN_CTRL_DATA);
-// }
-
-/**
- * @brief          通过CAN发送控制电压控制DJI电机(支持GM6020)
- * @param[in]      can 发送数据使用的can口
- * @param[in]      std_id 发送数据使用的std_id
- * @param[in]      volt_1 电机控制电压
- * @param[in]      volt_2 电机控制电压
- * @param[in]      volt_3 电机控制电压
- * @param[in]      volt_4 电机控制电压
- * @return         none
- */
-// static void MultipleVoltageControl(
-//     hcan_t * hcan, uint16_t std_id, int16_t volt_1, int16_t volt_2, int16_t volt_3, int16_t volt_4)
-// {
-//     CAN_CTRL_DATA.hcan = hcan;
-
-//     CAN_CTRL_DATA.tx_header.StdId = std_id;
-
-//     CAN_CTRL_DATA.tx_data[0] = (volt_1 >> 8);
-//     CAN_CTRL_DATA.tx_data[1] = volt_1;
-//     CAN_CTRL_DATA.tx_data[2] = (volt_2 >> 8);
-//     CAN_CTRL_DATA.tx_data[3] = volt_2;
-//     CAN_CTRL_DATA.tx_data[4] = (volt_3 >> 8);
-//     CAN_CTRL_DATA.tx_data[5] = volt_3;
-//     CAN_CTRL_DATA.tx_data[6] = (volt_4 >> 8);
-//     CAN_CTRL_DATA.tx_data[7] = volt_4;
-
-//     CAN_SendTxMessage(&CAN_CTRL_DATA);
-// }
 /*-------------------- User function --------------------*/
 
 /**
@@ -162,10 +106,19 @@ void CanCmdDjiMotor(
 }
 
 /**
- * @brief 测试阶段，谨慎使用！！！ dji多电机控制
+ * （测试阶段）dji多电机控制
+ * 
+ * 将数组中各个电机的set.value根据电机id进行自动分配，然后统一发送。
+ * 
+ * 注意选择电机运行模式，为 DJI_CURRENT_MODE 或 DJI_VOLTAGE_MODE，如检测到电机模式错误则跳过该电机
+ * 
+ * TODO: 1.添加重复使用的检测
+ * 
  * @param[in]      can 发送数据使用的can口(1/2)
  * @param[in]      motor_num 电机数量
  * @param[in]      p_motor_array 电机数组指针
+ * @return         none
+ * @warning        注意限制电机设定值的范围
  */
 void DjiMultipleControl(uint8_t can, uint8_t motor_num, Motor_s * motor_array)
 {
