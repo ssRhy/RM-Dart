@@ -711,13 +711,14 @@ void ChassisReference(void)
 
     // 腿部控制
     static float angle = M_PI_2;
-    static float length = 0.15f;
+    static float length = 0.12f;
     switch (CHASSIS.mode) {
         case CHASSIS_STAND_UP: {
             length = 0.12f;
             angle = M_PI_2;
         } break;
         case CHASSIS_DEBUG: {
+            length = 0.12f;
             CHASSIS.ref.leg_state[0].theta = rc_angle * RC_TO_ONE * 0.3f;
             CHASSIS.ref.leg_state[1].theta = rc_angle * RC_TO_ONE * 0.3f;
         }
@@ -725,13 +726,16 @@ void ChassisReference(void)
         case CHASSIS_POS_DEBUG: {
             angle = M_PI_2 + rc_angle * RC_TO_ONE * 0.3f;
             length = 0.22f + rc_length * RC_TO_ONE * 0.1f;
+
+            CHASSIS.ref.leg_state[0].theta = rc_angle * RC_TO_ONE * 0.3f;
+            CHASSIS.ref.leg_state[1].theta = rc_angle * RC_TO_ONE * 0.3f;
         } break;
         case CHASSIS_FREE: {
         } break;
         case CHASSIS_FOLLOW_GIMBAL_YAW:
         default: {
             angle = M_PI_2;
-            length = 0.15f;
+            length = 0.12f;
         }
     }
     length = fp32_constrain(length, MIN_LEG_LENGTH, MAX_LEG_LENGTH);
