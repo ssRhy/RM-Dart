@@ -25,7 +25,7 @@
 
 /**
  * @brief          通过PWM发送PWM信号控制气泵
- * @param[in]      pump_id 气泵ID
+ * @param[in]      pump_id 气泵ID，从PWM口开始为1
  * @param[in]      pwm pwm信号占空比
  * @retval         none
  */
