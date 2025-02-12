@@ -89,8 +89,8 @@
 #define J2_KP_FOLLOW 0
 #define J2_KD_FOLLOW 10
 
-#define INIT_2006_SET_VALUE 1000
-#define INIT_2006_MIN_VEL 1
+#define INIT_2006_SET_VALUE (-1000)  // 2006电机在进行初始化时的电流设置值
+#define INIT_2006_MIN_VEL 1          // 2006电机初始化完成的速度阈值
 
 // 气泵相关
 #define PUMP_ON_PWM 30000
@@ -237,8 +237,8 @@ void MechanicalArmHandleException(void)
             float virtual_j5_pos =
                 MECHANICAL_ARM.fdb.joint[J4].angle + MECHANICAL_ARM.fdb.joint[J5].angle;
             // 设置虚拟关节J4关节的位置限制
-            MECHANICAL_ARM.limit.max.vj4_pos = virtual_j4_pos - 0.15f;
-            MECHANICAL_ARM.limit.min.vj4_pos = virtual_j4_pos - M_PI + 0.15f;
+            MECHANICAL_ARM.limit.max.vj4_pos = virtual_j4_pos - 0.15f + M_PI;
+            MECHANICAL_ARM.limit.min.vj4_pos = virtual_j4_pos + 0.15f;
         }
     }
 
