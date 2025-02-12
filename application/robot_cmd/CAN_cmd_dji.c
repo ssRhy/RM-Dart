@@ -18,6 +18,10 @@
 
 #include "bsp_delay.h"
 
+/*------------------------------ Macro Definition ------------------------------*/
+
+#define DJI_SEND_INTERVAL 10  // (us)DJI发送间隔
+
 /*-------------------- Global var --------------------*/
 
 static CanCtrlData_s CAN_CTRL_DATA = {
@@ -71,24 +75,24 @@ static void MultipleMotorControl(
  * @param[in]      curr_4 电机控制电流
  * @return         none
  */
-static void MultipleCurrentControl(
-    hcan_t * hcan, uint16_t std_id, int16_t curr_1, int16_t curr_2, int16_t curr_3, int16_t curr_4)
-{
-    CAN_CTRL_DATA.hcan = hcan;
+// static void MultipleCurrentControl(
+//     hcan_t * hcan, uint16_t std_id, int16_t curr_1, int16_t curr_2, int16_t curr_3, int16_t curr_4)
+// {
+//     CAN_CTRL_DATA.hcan = hcan;
 
-    CAN_CTRL_DATA.tx_header.StdId = std_id;
+//     CAN_CTRL_DATA.tx_header.StdId = std_id;
 
-    CAN_CTRL_DATA.tx_data[0] = (curr_1 >> 8);
-    CAN_CTRL_DATA.tx_data[1] = curr_1;
-    CAN_CTRL_DATA.tx_data[2] = (curr_2 >> 8);
-    CAN_CTRL_DATA.tx_data[3] = curr_2;
-    CAN_CTRL_DATA.tx_data[4] = (curr_3 >> 8);
-    CAN_CTRL_DATA.tx_data[5] = curr_3;
-    CAN_CTRL_DATA.tx_data[6] = (curr_4 >> 8);
-    CAN_CTRL_DATA.tx_data[7] = curr_4;
+//     CAN_CTRL_DATA.tx_data[0] = (curr_1 >> 8);
+//     CAN_CTRL_DATA.tx_data[1] = curr_1;
+//     CAN_CTRL_DATA.tx_data[2] = (curr_2 >> 8);
+//     CAN_CTRL_DATA.tx_data[3] = curr_2;
+//     CAN_CTRL_DATA.tx_data[4] = (curr_3 >> 8);
+//     CAN_CTRL_DATA.tx_data[5] = curr_3;
+//     CAN_CTRL_DATA.tx_data[6] = (curr_4 >> 8);
+//     CAN_CTRL_DATA.tx_data[7] = curr_4;
 
-    CAN_SendTxMessage(&CAN_CTRL_DATA);
-}
+//     CAN_SendTxMessage(&CAN_CTRL_DATA);
+// }
 
 /**
  * @brief          通过CAN发送控制电压控制DJI电机(支持GM6020)
@@ -100,24 +104,24 @@ static void MultipleCurrentControl(
  * @param[in]      volt_4 电机控制电压
  * @return         none
  */
-static void MultipleVoltageControl(
-    hcan_t * hcan, uint16_t std_id, int16_t volt_1, int16_t volt_2, int16_t volt_3, int16_t volt_4)
-{
-    CAN_CTRL_DATA.hcan = hcan;
+// static void MultipleVoltageControl(
+//     hcan_t * hcan, uint16_t std_id, int16_t volt_1, int16_t volt_2, int16_t volt_3, int16_t volt_4)
+// {
+//     CAN_CTRL_DATA.hcan = hcan;
 
-    CAN_CTRL_DATA.tx_header.StdId = std_id;
+//     CAN_CTRL_DATA.tx_header.StdId = std_id;
 
-    CAN_CTRL_DATA.tx_data[0] = (volt_1 >> 8);
-    CAN_CTRL_DATA.tx_data[1] = volt_1;
-    CAN_CTRL_DATA.tx_data[2] = (volt_2 >> 8);
-    CAN_CTRL_DATA.tx_data[3] = volt_2;
-    CAN_CTRL_DATA.tx_data[4] = (volt_3 >> 8);
-    CAN_CTRL_DATA.tx_data[5] = volt_3;
-    CAN_CTRL_DATA.tx_data[6] = (volt_4 >> 8);
-    CAN_CTRL_DATA.tx_data[7] = volt_4;
+//     CAN_CTRL_DATA.tx_data[0] = (volt_1 >> 8);
+//     CAN_CTRL_DATA.tx_data[1] = volt_1;
+//     CAN_CTRL_DATA.tx_data[2] = (volt_2 >> 8);
+//     CAN_CTRL_DATA.tx_data[3] = volt_2;
+//     CAN_CTRL_DATA.tx_data[4] = (volt_3 >> 8);
+//     CAN_CTRL_DATA.tx_data[5] = volt_3;
+//     CAN_CTRL_DATA.tx_data[6] = (volt_4 >> 8);
+//     CAN_CTRL_DATA.tx_data[7] = volt_4;
 
-    CAN_SendTxMessage(&CAN_CTRL_DATA);
-}
+//     CAN_SendTxMessage(&CAN_CTRL_DATA);
+// }
 /*-------------------- User function --------------------*/
 
 /**
@@ -211,24 +215,26 @@ void DjiMultipleControl(uint8_t can, uint8_t motor_num, Motor_s * motor_array)
             default:
                 break;
         }
+    }
 
-        if (using_flag[0]) {  // 0x200
-            MultipleMotorControl(
-                hcan, 0x200, cmd_value[0][0], cmd_value[0][1], cmd_value[0][2], cmd_value[0][3]);
-            delay_us(10);
-        }
+    if (using_flag[0]) {  // 0x200
+        MultipleMotorControl(
+            hcan, 0x200, cmd_value[0][0], cmd_value[0][1], cmd_value[0][2], cmd_value[0][3]);
+        delay_us(DJI_SEND_INTERVAL);
+    }
 
-        if (using_flag[1]) {  // 0x1FF
-            MultipleMotorControl(
-                hcan, 0x1FF, cmd_value[1][0], cmd_value[1][1], cmd_value[1][2], cmd_value[1][3]);
-            delay_us(10);
-        }
+    if (using_flag[1]) {  // 0x1FF
+        MultipleMotorControl(
+            hcan, 0x1FF, cmd_value[1][0], cmd_value[1][1], cmd_value[1][2], cmd_value[1][3]);
+        delay_us(DJI_SEND_INTERVAL);
+    }
 
-        if (using_flag[2]) {  // 0x2FF
-            MultipleMotorControl(
-                hcan, 0x2FF, cmd_value[2][0], cmd_value[2][1], cmd_value[2][2], cmd_value[2][3]);
-        }
+    if (using_flag[2]) {  // 0x2FF
+        MultipleMotorControl(
+            hcan, 0x2FF, cmd_value[2][0], cmd_value[2][1], cmd_value[2][2], cmd_value[2][3]);
     }
 }
+
+#undef DJI_SEND_INTERVAL
 
 /************************ END OF FILE ************************/
