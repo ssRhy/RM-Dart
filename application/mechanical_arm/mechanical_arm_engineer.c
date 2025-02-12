@@ -224,8 +224,8 @@ void MechanicalArmHandleException(void)
         }
     }
 
-    if (fabsf(MECHANICAL_ARM.joint_motor[J1].fdb.tor > 10) ||
-        fabsf(MECHANICAL_ARM.joint_motor[J2].fdb.tor > 10)) {
+    if (fabsf(MECHANICAL_ARM.joint_motor[J1].fdb.tor) > 10 ||
+        fabsf(MECHANICAL_ARM.joint_motor[J2].fdb.tor) > 10) {
         MECHANICAL_ARM.error_code |= JOINT_TORQUE_MORE_OFFSET;
     }
 }
