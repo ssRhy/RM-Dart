@@ -624,9 +624,9 @@ static void BodyMotionObserve(void)
     CHASSIS.fdb.body.x_acc_obv = OBSERVER.body.v_kf.xhat_data[1];
 
     // 更新行驶距离
-    if (fabs(CHASSIS.ref.speed_vector.vx) < WHEEL_DEADZONE && fabs(CHASSIS.fdb.body.x_dot) < 0.8f) {
+    if (fabs(CHASSIS.ref.speed_vector.vx) < WHEEL_DEADZONE && fabs(CHASSIS.fdb.body.x_dot_obv) < 0.8f) {
         // 当目标速度为0，且速度小于阈值时，计算反馈距离
-        CHASSIS.fdb.body.x += CHASSIS.fdb.body.x_dot * CHASSIS.duration * MS_TO_S;
+        CHASSIS.fdb.body.x += CHASSIS.fdb.body.x_dot_obv * CHASSIS.duration * MS_TO_S;
     } else {
         //CHASSIS.fdb.body.x = 0;
     }
