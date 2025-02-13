@@ -107,9 +107,9 @@
 
 #define MAX_LEG_LENGTH       (0.35f)
 #define MAX_LEG_ANGLE        (M_PI_2 + MAX_DELTA_ROD_ANGLE)
-#define MAX_SPEED            (2.5f)
-#define MAX_SPEED_VECTOR_VX  (2.5f)
-#define MAX_SPEED_VECTOR_VY  (2.5f)
+#define MAX_SPEED            (5.0f)
+#define MAX_SPEED_VECTOR_VX  (5.0f)
+#define MAX_SPEED_VECTOR_VY  (5.0f)
 #define MAX_SPEED_VECTOR_WZ  (6.0f)
 
 #define MAX_JOINT_TORQUE   (7.0f)  // (Nm)关节最大扭矩
@@ -166,7 +166,7 @@
 #define KI_CHASSIS_YAW_VELOCITY        (0.5f)
 #define KD_CHASSIS_YAW_VELOCITY        (0.0f)
 #define MAX_IOUT_CHASSIS_YAW_VELOCITY  (0.5f)
-#define MAX_OUT_CHASSIS_YAW_VELOCITY   (1.0f)
+#define MAX_OUT_CHASSIS_YAW_VELOCITY   (2.0f)
 
 // vel_add PID参数
 #define KP_CHASSIS_VEL_ADD        (0.1f) //0.1
