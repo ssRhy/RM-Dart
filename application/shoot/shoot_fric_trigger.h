@@ -61,7 +61,7 @@ typedef struct
     //flag
   uint16_t fric_flag; //    摩擦轮状态
   uint16_t move_flag; //    拨弹盘角度状态，用于判断单发射击执行情况
-  uint16_t shoot_flag;//    鼠标右键状态，用于判断弹发射击启动
+  uint16_t shoot_flag;//    鼠标左键状态，用于判断弹发射击启动
    //console
   int16_t last_ecd; //     上一个ecd
   int16_t ecd_count;//     ecd计数

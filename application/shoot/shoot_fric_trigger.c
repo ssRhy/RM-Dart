@@ -375,11 +375,10 @@ void ShootConsole(void)
  */
 void ShootSendCmd(void) 
 {
-  CanCmdDjiMotor(FRIC_MOTOR_R_CAN, FRIC_STD_ID , SHOOT.fric_motor[1].set.curr,SHOOT.fric_motor[0].set.curr,0, 0);
-  CanCmdDjiMotor(TRIGGER_MOTOR_CAN, TRIGGER_STD_ID ,0 ,0 ,SHOOT.trigger_motor.set.curr, 0);
+  CanCmdDjiMotor(FRIC_MOTOR_R_CAN, FRIC_STD_ID , SHOOT.fric_motor[1].set.curr,SHOOT.fric_motor[0].set.curr,0, SHOOT.trigger_motor.set.curr);
 
-  
-  
+  ModifyDebugDataPackage(1,SHOOT.fric_motor[0].set.vel,"set"); 
+  ModifyDebugDataPackage(2,SHOOT.fric_motor[0].fdb.vel,"fb"); 
 }
 
 #endif  // SHOOT_TYPE == SHOOT_FRIC
