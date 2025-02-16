@@ -30,10 +30,17 @@
 #define SBUS_RX_BUF_NUM 36u
 
 #define RC_FRAME_LENGTH 18u
+#define AT9S_PRO_RC_FRAME_LENGTH 25u
 
+// DT7遥控器通道值范围
 #define RC_CH_VALUE_MIN         ((uint16_t)364)
 #define RC_CH_VALUE_OFFSET      ((uint16_t)1024)
 #define RC_CH_VALUE_MAX         ((uint16_t)1684)
+
+// AT9S PRO 遥控器通道值范围
+#define AT9S_PRO_RC_CH_VALUE_MIN         ((uint16_t)200)
+#define AT9S_PRO_RC_CH_VALUE_OFFSET      ((uint16_t)1000)
+#define AT9S_PRO_RC_CH_VALUE_MAX         ((uint16_t)1800)
 
 #define RC_TO_ONE 0.0015151515151515f  // (1/660)遥控器通道值归一化系数
 
@@ -113,12 +120,18 @@ typedef struct __RC_ctrl
         } __packed__ key;
 
 } __packed__ RC_ctrl_t;
+
+typedef struct
+{
+        uint16_t ch[16];
+} __packed__ Sbus_t;
 // clang-format on
 
 /* ----------------------- Internal Data ----------------------------------- */
 
 extern void remote_control_init(void);
 extern const RC_ctrl_t * get_remote_control_point(void);
+extern const Sbus_t *get_sbus_point(void);
 extern uint8_t RC_data_is_error(void);
 extern void slove_RC_lost(void);
 extern void slove_data_error(void);
