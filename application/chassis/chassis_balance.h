@@ -234,6 +234,8 @@ typedef struct
     const Imu_t * imu;     // imu数据
     ChassisMode_e mode;    // 底盘模式
     uint8_t error_code;    // 底盘错误代码
+    int8_t step;           // 底盘运行步骤号
+    uint32_t step_time;    // (ms)底盘步骤运行时间
 
     /*-------------------- Motors --------------------*/
     // 平衡底盘有2个驱动轮电机和4个关节电机

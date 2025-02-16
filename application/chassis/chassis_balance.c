@@ -67,6 +67,26 @@
 #define TOUCH_TOGGLE_THRESHOLD (100)
 // Parameters off ---------------------
 
+// Step definitions on ---------------------
+// clang-format off
+#define NORMAL_STEP        0  // 正常状态
+#define JUMP_STEP_SQUST    1  // 跳跃状态——蹲下
+#define JUMP_STEP_JUMP     2  // 跳跃状态——跳跃
+#define JUMP_STEP_RECOVERY 3  // 跳跃状态——收腿
+// clang-format on
+// Step definitions on ---------------------
+
+// Step time definitions on ---------------------
+// clang-format off
+#define MAX_STEP_TIME           5000  // 最大步骤时间
+
+#define NORMAL_STEP_TIME        0  // 正常状态
+#define JUMP_STEP_TIME_SQUST    50  // 跳跃状态——蹲下
+#define JUMP_STEP_TIME_JUMP     50  // 跳跃状态——跳跃
+#define JUMP_STEP_TIME_RECOVERY 200  // 跳跃状态——收腿
+// clang-format on
+// Step time definitions on ---------------------
+
 #define rc_deadband_limit(input, output, dealine)          \
     {                                                      \
         if ((input) > (dealine) || (input) < -(dealine)) { \
@@ -75,7 +95,6 @@
             (output) = 0;                                  \
         }                                                  \
     }
-
 
 static Calibrate_s CALIBRATE = {
     .cali_cnt = 0,
@@ -93,6 +112,8 @@ Chassis_s CHASSIS = {
     .yaw_mid = 0,
     .dyaw = 0.0f,
 };
+
+int8_t TRANSITION_MATRIX[10] = {0};
 
 /*-------------------- Publish --------------------*/
 
@@ -114,6 +135,11 @@ void ChassisInit(void)
 {
     CHASSIS.rc = get_remote_control_point();  // 获取遥控器指针
     CHASSIS.imu = Subscribe(IMU_NAME);        // 获取IMU数据指针
+    /*-------------------- 初始化状态转移矩阵 --------------------*/
+    TRANSITION_MATRIX[NORMAL_STEP] = NORMAL_STEP;
+    TRANSITION_MATRIX[JUMP_STEP_SQUST] = JUMP_STEP_JUMP;
+    TRANSITION_MATRIX[JUMP_STEP_JUMP] = JUMP_STEP_RECOVERY;
+    TRANSITION_MATRIX[JUMP_STEP_RECOVERY] = NORMAL_STEP;
     /*-------------------- 初始化底盘电机 --------------------*/
     MotorInit(&CHASSIS.joint_motor[0], 1, JOINT_CAN, DM_8009, J0_DIRECTION, 1, DM_MODE_MIT);
     MotorInit(&CHASSIS.joint_motor[1], 2, JOINT_CAN, DM_8009, J1_DIRECTION, 1, DM_MODE_MIT);
@@ -356,6 +382,7 @@ static void UpdateBodyStatus(void);
 static void UpdateLegStatus(void);
 static void UpdateMotorStatus(void);
 static void UpdateCalibrateStatus(void);
+static void UpdateStepStatus(void);
 
 static void BodyMotionObserve(void);
 
@@ -373,6 +400,7 @@ void ChassisObserver(void)
     UpdateLegStatus();
     UpdateBodyStatus();
     UpdateCalibrateStatus();
+    UpdateStepStatus();
 
     BodyMotionObserve();
 
@@ -604,6 +632,44 @@ static void UpdateCalibrateStatus(void)
     }
 }
 
+#define StateTransfer()    \
+    CHASSIS.step_time = 0; \
+    CHASSIS.step = TRANSITION_MATRIX[CHASSIS.step];
+
+static void UpdateStepStatus(void)
+{
+    CHASSIS.step_time += CHASSIS.duration;
+
+    if (CHASSIS.mode == CHASSIS_CUSTOM) {
+        if (GetDt7RcCh(DT7_CH_RH) < -0.9f) {  // 遥控器左侧水平摇杆打到左边切换至跳跃状态
+            CHASSIS.step_time = 0;
+            CHASSIS.step = JUMP_STEP_SQUST;
+        } else if (CHASSIS.step == JUMP_STEP_SQUST) {  // 跳跃——蹲下蓄力状态
+            if (CHASSIS.fdb.leg[0].rod.L0 < MIN_LEG_LENGTH + 0.02f &&
+                CHASSIS.fdb.leg[1].rod.L0 < MIN_LEG_LENGTH + 0.02f) {
+                StateTransfer();
+            }
+        } else if (CHASSIS.step == JUMP_STEP_JUMP) {  // 跳跃——起跳状态
+            if (CHASSIS.fdb.leg[0].rod.L0 > MAX_LEG_LENGTH - 0.03f &&
+                CHASSIS.fdb.leg[1].rod.L0 > MAX_LEG_LENGTH - 0.03f) {
+                StateTransfer();
+            }
+        } else if (CHASSIS.step == JUMP_STEP_RECOVERY) {  // 跳跃——收腿状态
+            if (CHASSIS.step_time > 1000) {               // 1000ms后切换状态
+                StateTransfer();
+            }
+        } else if (CHASSIS.step != NORMAL_STEP && CHASSIS.step_time > MAX_STEP_TIME) {
+            // 状态持续时间超过 MAX_STEP_TIME ，自动切换到NORMAL状态
+            CHASSIS.step_time = 0;
+            CHASSIS.step = NORMAL_STEP;
+        }
+    } else {
+        CHASSIS.step_time = 0;
+        CHASSIS.step = NORMAL_STEP;
+    }
+}
+#undef StateTransfer
+
 /**
  * @brief  机体运动状态观测器
  * @param  none
@@ -624,9 +690,10 @@ static void BodyMotionObserve(void)
     CHASSIS.fdb.body.x_acc_obv = OBSERVER.body.v_kf.xhat_data[1];
 
     // 更新行驶距离
-    if (fabs(CHASSIS.ref.speed_vector.vx) < WHEEL_DEADZONE && fabs(CHASSIS.fdb.body.x_dot) < 0.8f) {
+    if (fabs(CHASSIS.ref.speed_vector.vx) < WHEEL_DEADZONE &&
+        fabs(CHASSIS.fdb.body.x_dot_obv) < 0.8f) {
         // 当目标速度为0，且速度小于阈值时，计算反馈距离
-        CHASSIS.fdb.body.x += CHASSIS.fdb.body.x_dot * CHASSIS.duration * MS_TO_S;
+        CHASSIS.fdb.body.x += CHASSIS.fdb.body.x_dot_obv * CHASSIS.duration * MS_TO_S;
     } else {
         //CHASSIS.fdb.body.x = 0;
     }
@@ -711,13 +778,14 @@ void ChassisReference(void)
 
     // 腿部控制
     static float angle = M_PI_2;
-    static float length = 0.15f;
+    static float length = 0.12f;
     switch (CHASSIS.mode) {
         case CHASSIS_STAND_UP: {
             length = 0.12f;
             angle = M_PI_2;
         } break;
         case CHASSIS_DEBUG: {
+            length = 0.12f;
             CHASSIS.ref.leg_state[0].theta = rc_angle * RC_TO_ONE * 0.3f;
             CHASSIS.ref.leg_state[1].theta = rc_angle * RC_TO_ONE * 0.3f;
         }
@@ -725,13 +793,21 @@ void ChassisReference(void)
         case CHASSIS_POS_DEBUG: {
             angle = M_PI_2 + rc_angle * RC_TO_ONE * 0.3f;
             length = 0.22f + rc_length * RC_TO_ONE * 0.1f;
+
+            if (CHASSIS.step == JUMP_STEP_SQUST) {
+                length = MIN_LEG_LENGTH;
+            } else if (CHASSIS.step == JUMP_STEP_JUMP) {
+                length = MAX_LEG_LENGTH;
+            } else if (CHASSIS.step == JUMP_STEP_RECOVERY) {
+                length = MIN_LEG_LENGTH + 0.05f;
+            }
         } break;
         case CHASSIS_FREE: {
         } break;
         case CHASSIS_FOLLOW_GIMBAL_YAW:
         default: {
             angle = M_PI_2;
-            length = 0.15f;
+            length = 0.12f;
         }
     }
     length = fp32_constrain(length, MIN_LEG_LENGTH, MAX_LEG_LENGTH);
@@ -844,6 +920,9 @@ static void LocomotionController(void)
 #if LIFTED_UP
     is_take_off = true;
 #endif
+    // if (CHASSIS.step == JUMP_STEP_RECOVERY) {
+    //     is_take_off = true;
+    // }
 
     for (uint8_t i = 0; i < 2; i++) {
         GetK(CHASSIS.fdb.leg[i].rod.L0, k, is_take_off);
@@ -889,16 +968,23 @@ static void LegTorqueController(void)
     // 腿长控制
     float F_ff, F_compensate;
 
-    float roll_vel_limit_f = fp32_constrain(CHASSIS.fdb.body.roll_dot * ROLL_VEL_LIMIT_FACTOR, -0.2, 0.2);
+    float roll_vel_limit_f =
+        fp32_constrain(CHASSIS.fdb.body.roll_dot * ROLL_VEL_LIMIT_FACTOR, -0.2, 0.2);
 
     for (uint8_t i = 0; i < 2; i++) {
-        // 计算前馈力
-        F_ff = LegFeedForward(CHASSIS.fdb.leg_state[i].theta) * FF_RATIO;
-        // PID补偿
-        F_compensate = PID_calc(
-            &CHASSIS.pid.leg_length_length[i], CHASSIS.fdb.leg[i].rod.L0, CHASSIS.ref.rod_L0[i]);
-        // 计算总力
-        CHASSIS.cmd.leg[i].rod.F = F_ff + F_compensate;
+        if (CHASSIS.step == JUMP_STEP_JUMP) {
+            // 直接给一个超大力F起飞
+            CHASSIS.cmd.leg[i].rod.F = 40;
+        } else {
+            // 计算前馈力
+            F_ff = LegFeedForward(CHASSIS.fdb.leg_state[i].theta) * FF_RATIO;
+            // PID补偿
+            F_compensate = PID_calc(
+                &CHASSIS.pid.leg_length_length[i], CHASSIS.fdb.leg[i].rod.L0,
+                CHASSIS.ref.rod_L0[i]);
+            // 计算总力
+            CHASSIS.cmd.leg[i].rod.F = F_ff + F_compensate;
+        }
         // CHASSIS.cmd.leg[i].rod.F = F_ff + F_compensate - F_ff;
     }
 
@@ -993,8 +1079,13 @@ static void ConsoleNormal(void)
     CHASSIS.joint_motor[3].set.tor = CHASSIS.cmd.leg[1].joint.T[1] * (J3_DIRECTION);
 
     for (uint8_t i = 0; i < 4; i++) {
-        CHASSIS.joint_motor[i].set.tor =
-            fp32_constrain(CHASSIS.joint_motor[i].set.tor, MIN_JOINT_TORQUE, MAX_JOINT_TORQUE);
+        if (CHASSIS.step == JUMP_STEP_JUMP) {
+            CHASSIS.joint_motor[i].set.tor = fp32_constrain(
+                CHASSIS.joint_motor[i].set.tor, MIN_JOINT_TORQUE_JUMP, MAX_JOINT_TORQUE_JUMP);
+        } else {
+            CHASSIS.joint_motor[i].set.tor =
+                fp32_constrain(CHASSIS.joint_motor[i].set.tor, MIN_JOINT_TORQUE, MAX_JOINT_TORQUE);
+        }
     }
 
     // 给驱动轮电机赋值

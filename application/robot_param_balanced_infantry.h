@@ -83,7 +83,7 @@
 //upper_limit parameters ---------------------
 
 #define MAX_DELTA_ROD_ANGLE (0.25f) // (rad)腿摆角最大变化量
-#define MAX_TORQUE_PROTECT  (10.0f)  // (Nm)最大扭矩保护
+#define MAX_TORQUE_PROTECT  (25.0f)  // (Nm)最大扭矩保护
 
 #define MAX_DELTA_VEL_FDB_TO_REF (0.8f) // (m/s)速度反馈到参考速度的最大变化量
 
@@ -107,16 +107,17 @@
 
 #define MAX_LEG_LENGTH       (0.35f)
 #define MAX_LEG_ANGLE        (M_PI_2 + MAX_DELTA_ROD_ANGLE)
-#define MAX_SPEED            (2.5f)
-#define MAX_SPEED_VECTOR_VX  (2.5f)
-#define MAX_SPEED_VECTOR_VY  (2.5f)
+#define MAX_SPEED            (3.5f)
+#define MAX_SPEED_VECTOR_VX  (3.5f)
+#define MAX_SPEED_VECTOR_VY  (3.5f)
 #define MAX_SPEED_VECTOR_WZ  (6.0f)
 
-#define MAX_JOINT_TORQUE   (7.0f)  // (Nm)关节最大扭矩
-#define MAX_VEL_ADD        (1.0f)  // (m/s)速度增量上限
-#define MAX_PITCH_VEL      (0.1f)  // (rad/s)pitch轴速度上限
+#define MAX_JOINT_TORQUE      (7.0f)   // (Nm)关节最大扭矩
+#define MAX_JOINT_TORQUE_JUMP (20.0f)  // (Nm)跳跃时的关节最大扭矩
+#define MAX_VEL_ADD           (1.0f)   // (m/s)速度增量上限
+#define MAX_PITCH_VEL         (0.1f)   // (rad/s)pitch轴速度上限
 
-#define MAX_TOUCH_INTERVAL (200)   // (ms)最大离地时间，超过这个时间认为离地
+#define MAX_TOUCH_INTERVAL    (200)    // (ms)最大离地时间，超过这个时间认为离地
 
 //lower_limit parameters ---------------------
 
@@ -149,9 +150,10 @@
 #define MIN_SPEED_VECTOR_VY  (-MAX_SPEED_VECTOR_VY)
 #define MIN_SPEED_VECTOR_WZ  (-MAX_SPEED_VECTOR_WZ)
 
-#define MIN_JOINT_TORQUE   (-MAX_JOINT_TORQUE)  // 
-#define MIN_VEL_ADD        (-MAX_VEL_ADD)    // (m/s)速度增量下限
-#define MIN_PITCH_VEL      (-MAX_PITCH_VEL)  // (rad/s)pitch轴速度下限
+#define MIN_JOINT_TORQUE      (-MAX_JOINT_TORQUE)  // 
+#define MIN_JOINT_TORQUE_JUMP (-MAX_JOINT_TORQUE_JUMP)  // 
+#define MIN_VEL_ADD           (-MAX_VEL_ADD)    // (m/s)速度增量下限
+#define MIN_PITCH_VEL         (-MAX_PITCH_VEL)  // (rad/s)pitch轴速度下限
 
 //PID parameters ---------------------
 //yaw轴跟踪角度环PID参数
@@ -166,7 +168,7 @@
 #define KI_CHASSIS_YAW_VELOCITY        (0.5f)
 #define KD_CHASSIS_YAW_VELOCITY        (0.0f)
 #define MAX_IOUT_CHASSIS_YAW_VELOCITY  (0.5f)
-#define MAX_OUT_CHASSIS_YAW_VELOCITY   (1.0f)
+#define MAX_OUT_CHASSIS_YAW_VELOCITY   (2.0f)
 
 // vel_add PID参数
 #define KP_CHASSIS_VEL_ADD        (0.1f) //0.1
@@ -193,7 +195,7 @@
 // #define MAX_OUT_CHASSIS_ROLL_VELOCITY   (0.1f)
 
 // 腿长跟踪长度环PID参数
-#define KP_CHASSIS_LEG_LENGTH_LENGTH        (200.0f)
+#define KP_CHASSIS_LEG_LENGTH_LENGTH        (150.0f)
 #define KI_CHASSIS_LEG_LENGTH_LENGTH        (0.0f)
 #define KD_CHASSIS_LEG_LENGTH_LENGTH        (1500.0f)
 #define MAX_IOUT_CHASSIS_LEG_LENGTH_LENGTH  (0.0f)
