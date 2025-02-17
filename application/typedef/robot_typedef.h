@@ -54,6 +54,11 @@
 #define CC_RECEIVER 0  // 接收器
 #define CC_SENDER   1  // 发送器
 
+// 遥控器类型
+#define RC_DT7      0  // DT7遥控器
+#define RC_AT9S_PRO 1  // AT9S PRO遥控器
+#define RC_HT8A     2  // HT8A遥控器
+
 // 可用电机类型
 typedef enum __MotorType {
     DJI_M2006 = 0,
