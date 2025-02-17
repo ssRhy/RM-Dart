@@ -247,6 +247,16 @@ void USART3_IRQHandler(void)
                 detect_hook(DBUS_TOE);
                 sbus_to_usart1(sbus_rx_buf[1]);
             }
+            else if (this_time_rx_len == SBUS_RC_FRAME_LENGTH)
+            {
+#if (__RC_TYPE == RC_AT9S_PRO)
+                At9sProSbusToRc(sbus_rx_buf[1], &rc_ctrl);
+#elif (__RC_TYPE == RC_HT8A)
+                Ht8aSbusToRc(sbus_rx_buf[1], &rc_ctrl);
+#endif
+                //记录数据接收时间
+                detect_hook(DBUS_TOE);
+            }
         }
     }
 
