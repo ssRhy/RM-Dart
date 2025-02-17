@@ -30,7 +30,7 @@
 #define SBUS_RX_BUF_NUM 36u
 
 #define RC_FRAME_LENGTH 18u
-#define AT9S_PRO_RC_FRAME_LENGTH 25u
+#define SBUS_RC_FRAME_LENGTH 25u
 
 // DT7遥控器通道值范围
 #define RC_CH_VALUE_MIN         ((uint16_t)364)
@@ -41,6 +41,20 @@
 #define AT9S_PRO_RC_CH_VALUE_MIN         ((uint16_t)200)
 #define AT9S_PRO_RC_CH_VALUE_OFFSET      ((uint16_t)1000)
 #define AT9S_PRO_RC_CH_VALUE_MAX         ((uint16_t)1800)
+
+// HT8A 遥控器通道值范围
+#define HT8A_RC_CH013_VALUE_MIN         ((uint16_t)432)
+#define HT8A_RC_CH013_VALUE_OFFSET      ((uint16_t)992)
+#define HT8A_RC_CH013_VALUE_MAX         ((uint16_t)1552)
+
+#define HT8A_RC_CH247_VALUE_MIN         ((uint16_t)192)
+#define HT8A_RC_CH247_VALUE_OFFSET      ((uint16_t)992)
+#define HT8A_RC_CH247_VALUE_MAX         ((uint16_t)1792)
+
+#define HT8A_RC_CH47_VALUE_MIN         ((uint16_t)192)
+#define HT8A_RC_CH47_VALUE_OFFSET      ((uint16_t)992)
+#define HT8A_RC_CH47_VALUE_MAX         ((uint16_t)1792)
+
 
 #define RC_TO_ONE 0.0015151515151515f  // (1/660)遥控器通道值归一化系数
 
