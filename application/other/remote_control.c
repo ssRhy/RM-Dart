@@ -327,14 +327,14 @@ static void At9sProSbusToRc(volatile const uint8_t *sbus_buf, RC_ctrl_t *rc_ctrl
     sbus.ch[15]=((sbus_buf[22]<<3)  + (sbus_buf[21]>>5)) & 0x07ff;
 
     // 将SBUS通道数据转换为DT7遥控器数据，方便兼容使用
-    rc_ctrl->rc.ch[0] = (sbus.ch[0] - AT9S_PRO_RC_CH_VALUE_OFFSET) / 800.0f * 660;
-    rc_ctrl->rc.ch[1] = (sbus.ch[1] - AT9S_PRO_RC_CH_VALUE_OFFSET) / 800.0f * 660;
-    rc_ctrl->rc.ch[2] = (sbus.ch[2] - AT9S_PRO_RC_CH_VALUE_OFFSET) / 800.0f * 660;
-    rc_ctrl->rc.ch[3] = (sbus.ch[3] - AT9S_PRO_RC_CH_VALUE_OFFSET) / 800.0f * 660;
+    rc_ctrl->rc.ch[0] =  (sbus.ch[0] - AT9S_PRO_RC_CH_VALUE_OFFSET) / 800.0f * 660;
+    rc_ctrl->rc.ch[1] = -(sbus.ch[1] - AT9S_PRO_RC_CH_VALUE_OFFSET) / 800.0f * 660;
+    rc_ctrl->rc.ch[2] =  (sbus.ch[3] - AT9S_PRO_RC_CH_VALUE_OFFSET) / 800.0f * 660;
+    rc_ctrl->rc.ch[3] =  (sbus.ch[2] - AT9S_PRO_RC_CH_VALUE_OFFSET) / 800.0f * 660;
 
     static char sw_mapping[3] = {RC_SW_DOWN, RC_SW_MID, RC_SW_UP};
-    rc_ctrl->rc.s[0] = sw_mapping[(sbus.ch[4] - AT9S_PRO_RC_CH_VALUE_OFFSET) / 800 + 1];
-    rc_ctrl->rc.s[1] = sw_mapping[(sbus.ch[5] - AT9S_PRO_RC_CH_VALUE_OFFSET) / 800 + 1];
+    rc_ctrl->rc.s[0] = sw_mapping[(sbus.ch[5] - AT9S_PRO_RC_CH_VALUE_OFFSET) / 800 + 1];
+    rc_ctrl->rc.s[1] = sw_mapping[(sbus.ch[4] - AT9S_PRO_RC_CH_VALUE_OFFSET) / 800 + 1];
 
     rc_ctrl->mouse.x = 0;
     rc_ctrl->mouse.y = 0;
