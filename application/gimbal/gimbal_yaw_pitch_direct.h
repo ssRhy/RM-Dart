@@ -82,7 +82,6 @@ typedef struct
     Values_t feedback_pos,feedback_vel;     // 状态值(目前专供给IMU数据)
     Values_t upper_limit;  // 上限值
     Values_t lower_limit;  // 下限值
-    Values_t imu_base; //云台的陀螺仪基准位置
 
     PID_t pid;  // PID控制器
 
@@ -90,7 +89,7 @@ typedef struct
 
     uint32_t init_start_time,init_timer;
 
-    bool init_continue,init_base; //是否继续进行校准模式 / 是否需要更新云台基准位置
+    bool init_continue; //是否继续进行校准模式
 } Gimbal_s;
 
 extern void GimbalInit(void);
