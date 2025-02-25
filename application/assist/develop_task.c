@@ -6,27 +6,22 @@
 #include "stm32f4xx_hal.h"
 #include "tim.h"
 #include "signal_generator.h"
-#include "PWM_cmd_pump.h"
+#include "remote_control.h"
+#include "usb_debug.h"
+
+const Sbus_t* SBUS;
+const RC_ctrl_t* RC_CTRL;
 
 void develop_task(void const * pvParameters)
 {
     // 空闲一段时间
     vTaskDelay(500);
 
+    SBUS = get_sbus_point();
+    RC_CTRL = get_remote_control_point();
 
     while (1) {
-    //    HAL_TIM_Base_Start(&htim1);
-    //    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
-       int n=GenerateStepWave(30000,0,3);
-       PwmCmdPump(3, n);
-       
-
-    //    __HAL_TIM_DISABLE(&htim1);//时钟禁用
-    //    __HAL_TIM_DISABLE(&htim8);
-
-
+        
         vTaskDelay(1);
-
-
-}
+    }
 }
