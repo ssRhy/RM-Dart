@@ -10,13 +10,17 @@
   *   V1.1.2    2024-11-25    Harry_Wong        1.云台模式设置逻辑重构，准备函数给底盘表明是否处于初始化模式
   *   V1.1.3    2024-12-16    Harry_Wong        1.云台的imu获取方式被更改为函数传递，防止Subcribe（）函数停用造成影响 
                                                 2.云台在遥控器断联情况下直接发送0电流，防止赛场上出现意外情况影响稳定性
+  *   V1.2.0    2025-2-25     Harry_Wong        1.向上位机发送数据进行了优化，采用了电机角度差值控制：（电机实际角度 - 电机中值角度）* 电机旋转方向 （距离中间的偏移角度）
+                                                2.添加了Gimbal_direct_ecd_to_imu（）函数 接受上位机返回的目标角度，并且跟发送角度做差得到角度期望偏移值并映射成为云台imu的期望角度值
+                                                3. Reference（） AUTO_AIM 模式下的reference计算方法进行了更改：将返回值进行Gimbal_direct_ecd_to_imu（）运算得到结果作为云台的目标角度
+                                                4. 删除了 imu_base 变量 ，现在云台已经不需要在第一次校准的时候记录imu初始值了
+                                                5.Console() INIT 模式下的PID计算优化：所有云台的旋转计算参考值已经更改为imu相关数据，尽可能的减轻调教负担
   @verbatim
   ==============================================================================
-
   ==============================================================================
   @endverbatim
   ****************************(C) COPYRIGHT 2024 Polarbear****************************
-*/
+**/
 
 #include "gimbal_yaw_pitch_direct.h"
 #if (GIMBAL_TYPE == GIMBAL_YAW_PITCH_DIRECT)
@@ -62,6 +66,33 @@ bool Gimbal_direct_init_judge (void)
 }
 
 
+/*----------------Gimbal_direct_ecd_to_imu--------------------*/
+/**
+ * @brief          ecd角度值转换成imu角度值
+ * @param[in]      axis 用于知道读取哪一个轴的角度转换
+ * @param[in]      value 用于准换的值
+ * @retval         float imu映射角度值
+ */
+
+ float Gimbal_direct_ecd_to_imu(uint8_t axis,float value)
+ {
+  if (axis == AX_PITCH)
+  {
+    return value - CmdGimbalJointState(AX_PITCH) + gimbal_direct.feedback_pos.pitch;
+  }
+
+  else if (axis == AX_YAW)
+  {
+    return value - CmdGimbalJointState(AX_YAW) + gimbal_direct.feedback_pos.yaw;
+  }
+
+  else 
+  {
+    return 0.0f;
+  }
+ }
+
+
 /*-------------------------The end of internal functions--------------------------------------*/
 
 /* ---------------- GetGimbalDeltaYawMid -------------------- */
@@ -99,11 +130,11 @@ inline float CmdGimbalJointState(uint8_t axis)
 {
   if ( axis == AX_PITCH )
   {
-    return loop_fp32_constrain(gimbal_direct.feedback_pos.pitch-gimbal_direct.imu_base.pitch,-M_PI,M_PI);
+    return loop_fp32_constrain(gimbal_direct.pitch.direction * (gimbal_direct.pitch.fdb.pos - GIMBAL_DIRECT_PITCH_MID),-M_PI,M_PI);
   }
   else if ( axis == AX_YAW )
   {
-    return loop_fp32_constrain(gimbal_direct.feedback_pos.yaw-gimbal_direct.imu_base.yaw,-M_PI,M_PI);
+    return loop_fp32_constrain(gimbal_direct.yaw.direction * (gimbal_direct.yaw.fdb.pos - GIMBAL_DIRECT_YAW_MID),-M_PI,M_PI); 
   }
   else 
   {
@@ -162,11 +193,6 @@ void GimbalInit(void)
    gimbal_direct.mode=GIMBAL_ZERO_FORCE;
    gimbal_direct.last_mode = GIMBAL_ZERO_FORCE;
    gimbal_direct.mode_before_rc_err = GIMBAL_ZERO_FORCE;
-
-   //step7 云台基准值初始化
-   gimbal_direct.init_base = false;
-   gimbal_direct.imu_base.pitch=0.0f;
-   gimbal_direct.imu_base.yaw=0.0f;
 }
 /*-------------------- Set mode --------------------*/
 
@@ -274,21 +300,14 @@ void GimbalReference(void)
 {
   if (gimbal_direct.mode == GIMBAL_INIT)
   {
-    gimbal_direct.reference.pitch=GIMBAL_DIRECT_PITCH_MID-0.2f;
-    gimbal_direct.reference.yaw=GIMBAL_DIRECT_YAW_MID;
+    gimbal_direct.reference.pitch=  gimbal_direct.pitch.direction * (GIMBAL_DIRECT_PITCH_MID - gimbal_direct.pitch.fdb.pos) + gimbal_direct.feedback_pos.pitch;
+    gimbal_direct.reference.yaw=    gimbal_direct.yaw.direction * (GIMBAL_DIRECT_YAW_MID - gimbal_direct.yaw.fdb.pos) + gimbal_direct.feedback_pos.yaw;
   }
 
   else if (gimbal_direct.mode == GIMBAL_GAP)
   {
     gimbal_direct.reference.pitch=gimbal_direct.feedback_pos.pitch;
     gimbal_direct.reference.yaw=gimbal_direct.feedback_pos.yaw;
-
-    if (gimbal_direct.init_base == false)
-    {
-      gimbal_direct.imu_base.pitch=gimbal_direct.feedback_pos.pitch;
-      gimbal_direct.imu_base.yaw=gimbal_direct.feedback_pos.yaw;
-      gimbal_direct.init_base=true;
-    }
   }
 
   else if (gimbal_direct.mode==GIMBAL_IMU)
@@ -304,19 +323,18 @@ void GimbalReference(void)
       // warning :不建议键鼠跟遥控器同时使用！
       //读取鼠标的移动（还未测试过鼠标）
       //暂时先屏蔽一下鼠标功能
-      //gimbal_direct.reference.pitch=fp32_constrain(gimbal_direct.reference.pitch+gimbal_direct.rc->mouse.y*MOUSE_SENSITIVITY,GIMBAL_LOWER_LIMIT_PITCH,GIMBAL_UPPER_LIMIT_PITCH);      //gimbal_direct.reference.yaw  =loop_fp32_constrain(gimbal_direct.reference.yaw+gimbal_direct.rc->mouse.x*MOUSE_SENSITIVITY,-M_PI,M_PI);
-      // clang-format off
+      //gimbal_direct.reference.pitch=fp32_constrain(gimbal_direct.reference.pitch+gimbal_direct.rc->mouse.y*MOUSE_SENSITIVITY,GIMBAL_LOWER_LIMIT_PITCH,GIMBAL_UPPER_LIMIT_PITCH);      
+      //gimbal_direct.reference.yaw  =loop_fp32_constrain(gimbal_direct.reference.yaw+gimbal_direct.rc->mouse.x*MOUSE_SENSITIVITY,-M_PI,M_PI);
       //读取摇杆的数据
       gimbal_direct.reference.pitch= fp32_constrain(gimbal_direct.reference.pitch-fp32_deadline(gimbal_direct.rc->rc.ch[1], REMOTE_CONTROLLER_MIN_DEADLINE,REMOTE_CONTROLLER_MAX_DEADLINE)/REMOTE_CONTROLLER_SENSITIVITY,GIMBAL_LOWER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu,GIMBAL_UPPER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu);
       gimbal_direct.reference.yaw = loop_fp32_constrain(gimbal_direct.reference.yaw-fp32_deadline(gimbal_direct.rc->rc.ch[0], REMOTE_CONTROLLER_MIN_DEADLINE,REMOTE_CONTROLLER_MAX_DEADLINE)/REMOTE_CONTROLLER_SENSITIVITY,-M_PI,M_PI);
-      // clang-format on
     }
   }
 
   else if (gimbal_direct.mode == GIMBAL_AUTO_AIM)
   {
-    gimbal_direct.reference.pitch = fp32_constrain(gimbal_direct.imu_base.pitch + GetScCmdGimbalAngle(AX_PITCH) , GIMBAL_LOWER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu  , GIMBAL_UPPER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu );
-    gimbal_direct.reference.yaw   = loop_fp32_constrain(gimbal_direct.imu_base.yaw + GetScCmdGimbalAngle(AX_YAW) , -M_PI , M_PI );
+    gimbal_direct.reference.pitch = fp32_constrain(Gimbal_direct_ecd_to_imu(AX_PITCH,GetScCmdGimbalAngle(AX_PITCH)), GIMBAL_LOWER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu  , GIMBAL_UPPER_LIMIT_PITCH+gimbal_direct.angle_zero_for_imu );
+    gimbal_direct.reference.yaw   = loop_fp32_constrain(Gimbal_direct_ecd_to_imu(AX_YAW,GetScCmdGimbalAngle(AX_YAW)), -M_PI , M_PI );
   }
 }
 
@@ -334,7 +352,7 @@ void GimbalConsole(void)
     gimbal_direct.pitch.set.curr=0;
     gimbal_direct.yaw.set.curr=0;
   }
-  else if (gimbal_direct.mode == GIMBAL_IMU || gimbal_direct.mode== GIMBAL_GAP || gimbal_direct.mode == GIMBAL_AUTO_AIM)
+  else if (gimbal_direct.mode == GIMBAL_IMU || gimbal_direct.mode== GIMBAL_GAP || gimbal_direct.mode == GIMBAL_AUTO_AIM || GIMBAL_INIT)
   {
     gimbal_direct.pitch.set.vel=PID_calc(&gimbal_direct_pid.pitch_angle,gimbal_direct.feedback_pos.pitch,gimbal_direct.reference.pitch);
     gimbal_direct.pitch.set.curr=gimbal_direct.pitch.direction * PID_calc(&gimbal_direct_pid.pitch_velocity,gimbal_direct.feedback_vel.pitch,gimbal_direct.pitch.set.vel);
@@ -343,16 +361,6 @@ void GimbalConsole(void)
     gimbal_direct.yaw.set.vel=PID_calc(&gimbal_direct_pid.yaw_angle,0,delta_yaw);
     gimbal_direct.yaw.set.curr=gimbal_direct.yaw.direction * PID_calc(&gimbal_direct_pid.yaw_velocity,gimbal_direct.feedback_vel.yaw,gimbal_direct.yaw.set.vel);
   }
-  else if (gimbal_direct.mode == GIMBAL_INIT)
-  {
-    gimbal_direct.pitch.set.vel=PID_calc(&gimbal_direct_pid.pitch_angle,gimbal_direct.pitch.fdb.pos,gimbal_direct.reference.pitch);
-    gimbal_direct.pitch.set.curr=PID_calc(&gimbal_direct_pid.pitch_velocity,gimbal_direct.pitch.fdb.vel,gimbal_direct.pitch.set.vel);
-
-    fp32 delta_yaw=loop_fp32_constrain(gimbal_direct.reference.yaw-gimbal_direct.yaw.fdb.pos,-M_PI,M_PI);
-    gimbal_direct.yaw.set.vel=PID_calc(&gimbal_direct_pid.yaw_angle,0,delta_yaw);
-    gimbal_direct.yaw.set.curr=PID_calc(&gimbal_direct_pid.yaw_velocity,gimbal_direct.yaw.fdb.vel,gimbal_direct.yaw.set.vel);
-  }
- 
 }
   
 

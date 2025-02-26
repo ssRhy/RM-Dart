@@ -5,8 +5,9 @@
   * @note       包括初始化，目标量更新、状态量更新、控制量计算与直接控制量的发送
   * @history
   *  Version    Date            Author          Modification
-  *  V1.0.0     Apr-1-2024      Penguin         1. done
-  *  V1.0.1     Apr-16-2024     Penguin         1. 完成基本框架
+  *  V1.0.0     2024-04-01      Penguin         1. done
+  *  V1.2.0     2025-02-26      Harry_Wong      1.删除了不需要的变量
+  *                                             2.剩余更新详情请见.c文件
   *
   @verbatim
   ==============================================================================
@@ -82,7 +83,6 @@ typedef struct
     Values_t feedback_pos,feedback_vel;     // 状态值(目前专供给IMU数据)
     Values_t upper_limit;  // 上限值
     Values_t lower_limit;  // 下限值
-    Values_t imu_base; //云台的陀螺仪基准位置
 
     PID_t pid;  // PID控制器
 
@@ -90,7 +90,7 @@ typedef struct
 
     uint32_t init_start_time,init_timer;
 
-    bool init_continue,init_base; //是否继续进行校准模式 / 是否需要更新云台基准位置
+    bool init_continue; //是否继续进行校准模式
 } Gimbal_s;
 
 extern void GimbalInit(void);
