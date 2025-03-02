@@ -131,6 +131,27 @@ void ChassisReference(void)
         chassis.reference_rc.vx=fp32_deadline(chassis.rc->rc.ch[3],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
         chassis.reference_rc.vy=fp32_deadline(-chassis.rc->rc.ch[2],-CHASSIS_RC_DEADLINE,CHASSIS_RC_DEADLINE)/CHASSIS_RC_MAX_RANGE*CHASSIS_RC_MAX_SPEED;
 
+        if (chassis.rc->key.v & KEY_PRESSED_OFFSET_W) 
+        {
+            chassis.reference_rc.vx += CHASSIS_RC_MAX_SPEED;
+        }
+
+        else if (chassis.rc->key.v & KEY_PRESSED_OFFSET_S) 
+        {
+            chassis.reference_rc.vx -= CHASSIS_RC_MAX_SPEED;
+        }
+
+        if (chassis.rc->key.v & KEY_PRESSED_OFFSET_A) 
+        {
+            chassis.reference_rc.vy += CHASSIS_RC_MAX_SPEED;
+        }
+
+        else if (chassis.rc->key.v & KEY_PRESSED_OFFSET_D) 
+        {
+            chassis.reference_rc.vy -= CHASSIS_RC_MAX_SPEED;
+        }
+
+
         chassis.reference.vx =  chassis.reference_rc.vx * cosf(chassis.yaw_delta) - chassis.reference_rc.vy * sinf(chassis.yaw_delta);
         chassis.reference.vy =  chassis.reference_rc.vx * sinf(chassis.yaw_delta) + chassis.reference_rc.vy * cos(chassis.yaw_delta);
 

@@ -78,7 +78,7 @@
 //遥控器相关参数
 #define CHASSIS_RC_DEADLINE (5.0f)      // 摇杆死区
 #define CHASSIS_RC_MAX_RANGE (660.0f)   //遥控器最大量程
-#define CHASSIS_RC_MAX_SPEED (2.0f)     //最大速度(m/s)
+#define CHASSIS_RC_MAX_SPEED (1.0f)     //最大速度(m/s)
 #define CHASSIS_RC_MAX_VELOCITY (2.0f)  //最大角速度(rad/s) 仅用于无云台模式
 
 /*-------------------- Gimbal --------------------*/
@@ -86,7 +86,7 @@
 #define GIMBAL_INIT_TIME (uint32_t)1000
 
 //mouse sensitivity ---------------------
-#define MOUSE_SENSITIVITY (0.5f)
+#define MOUSE_SENSITIVITY (200000.0f)
 //remote controller sensitivity ---------------------
 #define REMOTE_CONTROLLER_SENSITIVITY (100000.0f)
 #define REMOTE_CONTROLLER_MAX_DEADLINE (20.0f)
