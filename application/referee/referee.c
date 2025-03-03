@@ -200,6 +200,12 @@ void get_shoot_heat1_limit_and_heat1(uint16_t * heat1_limit, uint16_t * heat1)
     *heat1 = power_heat_data.shooter_17mm_2_barrel_heat;  // 第 2 个 17mm 发射机构的枪口热量
 }
 
+void get_shoot_heat42_limit_and_heat42(uint16_t *heat_limit, uint16_t *heat)
+{
+    *heat_limit = robot_status.shooter_barrel_heat_limit;
+    *heat = power_heat_data.shooter_42mm_barrel_heat;
+}
+
 /**
  * @brief 反馈机器人颜色
  * @param  none

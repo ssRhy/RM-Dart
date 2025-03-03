@@ -1,10 +1,6 @@
 /**
   * @file       robot_param_omni_infantry.h
   * @brief      这里是全向轮步兵机器人参数配置文件，包括物理参数、PID参数等
-  * @history
-  *  Version    Date            Author          Modification
-  *  V1.1.0     2024-11-3     Harry_Wong        1. 完成云台所有基本控制
-  *  V1.1.1     2025-1-15     CJH               1. 完成射击基本功能
   */
 
 #ifndef INCLUDED_ROBOT_PARAM_H
@@ -170,9 +166,10 @@ typedef enum {
 
 /*-------------------- Shoot --------------------*/
 //physical parameters ---------------------
-#define FRIC_RADIUS 0.03f  // (m)摩擦轮半径
-#define BULLET_NUM 8       // 定义拨弹盘容纳弹丸个数
-#define GUN_NUM 1          // 定义枪管个数（一个枪管2个摩擦轮）
+#define FRIC_RADIUS 0.03f              // (m)摩擦轮半径
+#define BULLET_NUM 8                   // 定义拨弹盘容纳弹丸个数
+#define GUN_NUM 1                      // 定义枪管个数（一个枪管2个摩擦轮）
+#define TRIGGER_REDUCTION_RATIO 1.0f   // 定义英雄电机到拨弹盘的齿轮减速比
 
 /*MOTOR paramters --------------------*/
 
@@ -191,16 +188,15 @@ typedef enum {
 #define FRIC_MOTOR_L_CAN 1
 
 //电机std_id
-#define TRIGGER_STD_ID 0x1FF
-#define FRIC_STD_ID 0x1FF
-
+#define STD_ID 0x1FF
 //单环拨弹速度
-#define TRIGGER_SPEED               (200.0f)
+#define TRIGGER_SPEED               (300.0f)
 //摩擦轮速度
 #define FRIC_R_SPEED                  (666.0f) 
 #define FRIC_L_SPEED                  (-666.0f) 
-#define FRIC_SPEED_LIMIT            (640.0f) 
+#define FRIC_SPEED_LIMIT            (600.0f) 
 
+/*ECD parameters------------*/
 //电机反馈码盘值范围
 #define HALF_ECD_RANGE              4096
 #define ECD_RANGE                   8191
@@ -216,32 +212,38 @@ typedef enum {
 #define BLOCK_TRIGGER_SPEED         5.0f
 #define BLOCK_TIME                  1000
 #define REVERSE_TIME                1250
-#define REVERSE_SPEED               (-20.0f)  
+#define REVERSE_SPEED               (-20.0f) 
+
+/*MIT parameters ---------------------*/
+
+#define TRIGGER_SPEED_MIT_KD (0.0f)  //  (none)
 
 /*PID parameters ---------------------*/
 
-//拨弹轮电机PID速度单环
-#define TRIGGER_SPEED_PID_KP (50.0f)
+//拨弹轮电机PID速度环
+#define TRIGGER_SPEED_PID_KP (100.0f)
 #define TRIGGER_SPEED_PID_KI (0.5f)
 #define TRIGGER_SPEED_PID_KD (0.1f)
 
 #define TRIGGER_SPEED_PID_MAX_OUT (10000.0f)
 #define TRIGGER_SPEED_PID_MAX_IOUT (1000.0f)
 
-// 单发模式 拨弹轮电机PID角度环
-#define TRIGGER_ANGEL_PID_KP (20.0f)
-#define TRIGGER_ANGEL_PID_KI (0.5f)
-#define TRIGGER_ANGEL_PID_KD (0.0f)
+//拨弹轮电机PID角度环
+#define TRIGGER_ANGEL_PID_KP (25.0f)
+#define TRIGGER_ANGEL_PID_KI (0.05f)
+#define TRIGGER_ANGEL_PID_KD (0.05f)
 
-#define TRIGGER_ANGEL_PID_MAX_OUT (10000.0f)
-#define TRIGGER_ANGEL_PID_MAX_IOUT (1000.0f)
+#define TRIGGER_ANGEL_PID_MAX_OUT (300.0f)
+#define TRIGGER_ANGEL_PID_MAX_IOUT (30.0f)
 
 //摩擦轮电机PID
 #define FRIC_SPEED_PID_KP (666.0f)
 #define FIRC_SPEED_PID_KI (0.6f)
-#define FRIC_SPEED_PID_KD (0.02f)
+#define FRIC_SPEED_PID_KD (1.0f)
 
 #define FRIC_PID_MAX_OUT (16000.0f)
 #define FRIC_PID_MAX_IOUT (1000.0f)
+
+#define SHOOT_HEAT_REMAIN_VALUE     80//89
 
 #endif /* INCLUDED_ROBOT_PARAM_H */

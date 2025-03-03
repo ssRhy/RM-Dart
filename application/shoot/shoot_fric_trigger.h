@@ -8,6 +8,9 @@
   *  V1.0.0     Apr-1-2024      Penguin         1. done
   *  V1.0.1     Apr-16-2024     Penguin         1. 完成基本框架
   *  V1.1.0     2025-1-15       CJH             1. 实现基本功能
+  *  V2.0.0     2025-3-3        CJH             1. 兼容了达妙4310拨弹盘和大疆2006拨弹盘
+  *                                             2. 完善了单发功能，上位机火控功能
+  *                                             3. 增加了热量限制
   @verbatim
   ==============================================================================
 
@@ -24,7 +27,14 @@
 #include "pid.h"
 #include "remote_control.h"
 #include "shoot.h"
-
+#include "CAN_communication.h"
+#include "math.h"
+#include "usb_debug.h"
+#include "supervisory_computer_cmd.h"
+#include "user_lib.h"
+#include "arm_math.h"
+#include "referee.h"
+#include "detect_task.h"
 
 
 typedef enum {
@@ -62,12 +72,16 @@ typedef struct
   uint16_t fric_flag; //    摩擦轮状态
   uint16_t move_flag; //    拨弹盘角度状态，用于判断单发射击执行情况
   uint16_t shoot_flag;//    鼠标左键状态，用于判断弹发射击启动
+  uint16_t fric_ui; //      摩擦轮转速状态ui
    //console
   int16_t last_ecd; //     上一个ecd
   int16_t ecd_count;//     ecd计数
-  int16_t trigger_angel;// 减速箱输出轴位置
+  fp32 trigger_angel;// 减速箱输出轴位置
   int16_t trigger_speed;// 减速箱输出轴速度
   int16_t fric_speed;   // 减速箱输出轴速度
+  // heat
+  uint16_t heat_limit;
+  uint16_t heat;
 } Shoot_s;
 
 extern void ShootInit(void);
