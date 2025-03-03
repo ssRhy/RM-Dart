@@ -20,9 +20,13 @@
 /*-------------------- Chassis --------------------*/
 //physical parameters ---------------------
 #define WHEEL_RADIUS (0.08f)            //(m)轮子直径
-#define WHEEL_CENTER_DISTANCE (0.295f)  //(m)轮子到车的距离（0.22 + 0.21）
+#define WHEEL_CENTER_DISTANCE (0.295f)  //(m)轮子到车的距离（0.22 + 0.21）          
 
 //motor parameters ---------------------
+//底盘电流发送参数
+#define CHASSIS_CAN (1)
+#define CHASSIS_STDID (0x200)
+
 //电机ID ---------------------
 #define WHEEL_1_ID (2)
 #define WHEEL_2_ID (3)
@@ -82,6 +86,10 @@
 #define CHASSIS_RC_MAX_VELOCITY (2.0f)  //最大角速度(rad/s) 仅用于无云台模式
 
 /*-------------------- Gimbal --------------------*/
+//云台电流发送参数
+#define GIMBAL_CAN (2)
+#define GIMBAL_STDID (0x1FF)
+
 //gimbal_init-------------------------------
 #define GIMBAL_INIT_TIME (uint32_t)1000
 

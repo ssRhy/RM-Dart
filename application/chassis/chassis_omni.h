@@ -56,7 +56,7 @@ typedef struct
     float vx;
     float vy;
     float wz;
-} Values_t;
+} Reference_t;
 
 /**
  * @brief  底盘数据结构体
@@ -72,8 +72,11 @@ typedef struct
     Motor_s wheel[4];  //底盘电机
 
     /*-------------------- Values --------------------*/
-    Values_t reference; 
-    Values_t reference_rc;
+    Reference_t reference; 
+    Reference_t reference_rc;
+
+    fp32 feedback[4];
+    fp32 set[4];
 
     fp32 yaw_delta;
 } Chassis_s;

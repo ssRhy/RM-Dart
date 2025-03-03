@@ -101,6 +101,10 @@ void ChassisObserver(void)
         GetMotorMeasure(&chassis.wheel[i]);
     }
 
+    for (int i=0;i<4;++i)
+    {
+        chassis.feedback[i] = chassis.wheel[i].fdb.vel;
+    }
 
     chassis.yaw_delta = GetGimbalDeltaYawMid();
 }
@@ -168,14 +172,14 @@ void ChassisReference(void)
  */
 void ChassisConsole(void)
 {
-    chassis.wheel[0].set.vel = (sqrt(2)*(  chassis.reference.vx - chassis.reference.vy ) - WHEEL_CENTER_DISTANCE * chassis.reference.wz) / WHEEL_RADIUS * chassis.wheel[0].reduction_ratio;
-    chassis.wheel[1].set.vel = (sqrt(2)*(  chassis.reference.vx + chassis.reference.vy ) - WHEEL_CENTER_DISTANCE * chassis.reference.wz) / WHEEL_RADIUS * chassis.wheel[1].reduction_ratio;
-    chassis.wheel[2].set.vel = (sqrt(2)*( -chassis.reference.vx + chassis.reference.vy ) - WHEEL_CENTER_DISTANCE * chassis.reference.wz) / WHEEL_RADIUS * chassis.wheel[2].reduction_ratio;
-    chassis.wheel[3].set.vel = (sqrt(2)*( -chassis.reference.vx - chassis.reference.vy ) - WHEEL_CENTER_DISTANCE * chassis.reference.wz) / WHEEL_RADIUS * chassis.wheel[3].reduction_ratio; 
+    chassis.set[0] = (sqrt(2)*(  chassis.reference.vx - chassis.reference.vy ) - WHEEL_CENTER_DISTANCE * chassis.reference.wz) / WHEEL_RADIUS * chassis.wheel[0].reduction_ratio;
+    chassis.set[1] = (sqrt(2)*(  chassis.reference.vx + chassis.reference.vy ) - WHEEL_CENTER_DISTANCE * chassis.reference.wz) / WHEEL_RADIUS * chassis.wheel[1].reduction_ratio;
+    chassis.set[2] = (sqrt(2)*( -chassis.reference.vx + chassis.reference.vy ) - WHEEL_CENTER_DISTANCE * chassis.reference.wz) / WHEEL_RADIUS * chassis.wheel[2].reduction_ratio;
+    chassis.set[3] = (sqrt(2)*( -chassis.reference.vx - chassis.reference.vy ) - WHEEL_CENTER_DISTANCE * chassis.reference.wz) / WHEEL_RADIUS * chassis.wheel[3].reduction_ratio; 
 
     for (int i=0;i<4;++i)
     {
-        chassis.wheel[i].set.curr = PID_calc(&chassis_pid.wheel_velocity[i], chassis.wheel[i].fdb.vel, chassis.wheel[i].set.vel);
+        chassis.wheel[i].set.curr = PID_calc(&chassis_pid.wheel_velocity[i], chassis.feedback[i], chassis.set[i]);
     }
 }
 
@@ -188,7 +192,7 @@ void ChassisConsole(void)
  */
 
 void ChassisSendCmd(void){
-    CanCmdDjiMotor(1,0x200,chassis.wheel[3].set.curr,chassis.wheel[0].set.curr,chassis.wheel[1].set.curr,chassis.wheel[2].set.curr);
+    CanCmdDjiMotor(CHASSIS_CAN,CHASSIS_STDID,chassis.wheel[3].set.curr,chassis.wheel[0].set.curr,chassis.wheel[1].set.curr,chassis.wheel[2].set.curr);
 
     ModifyDebugDataPackage(0,chassis.yaw_delta,"del");
 }
