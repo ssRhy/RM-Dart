@@ -5,8 +5,7 @@
   * @note       包括初始化，目标量更新、状态量更新、控制量计算与直接控制量的发送
   * @history
   *  Version    Date            Author          Modification
-  *  V1.0.0     Apr-1-2024      Penguin         1. done
-  *  V1.0.1     Apr-16-2024     Penguin         1. 完成基本框架
+  *  V1.0.0   2025.1.19       Harry_Wong        1.重新构建麦轮底盘代码，完成基础控制
   *
   @verbatim
   ==============================================================================
@@ -31,35 +30,33 @@
 #include "CAN_cmd_dji.h"
 
 
-/*-------------------- Structural definition --------------------*/
 
+/*-------------------- Structural definition --------------------*/
 typedef enum {
-    CHASSIS_OFF,         // 底盘关闭
-    CHASSIS_ZERO_FORCE,  // 底盘无力，所有控制量置0
-    CHASSIS_FOLLOW_GIMBAL_YAW,  // 底盘跟随云台（运动方向为云台坐标系方向，需进行坐标转换）
-    CHASSIS_STOP,  // 底盘停止运动(速度为0)
-    CHASSIS_FREE,  // 底盘不跟随云台
-    CHASSIS_SPIN,  // 底盘小陀螺模式
-    CHASSIS_AUTO,  // 底盘自动模式
-    CHASSIS_OPEN   // 遥控器的值乘以比例成电流值开环控制
+    CHASSIS_LOCK,      //底盘锁定，所有轮子速度设定为0
+    CHASSIS_SINGLE,    //只有底盘的模式
+    CHASSIS_FOLLOW,    //云台跟随模式
 } ChassisMode_e;
 
+/**
+ * @brief  底盘轮子PID
+ */
+ typedef struct
+{
+    pid_type_def wheel_velocity[4];//麦轮速度解算PID
+
+    pid_type_def follow; //云台跟随PID
+} PID_t;   
 
 /**
- * @brief 状态、期望和限制值
+ * @brief  底盘期望
  */
-
 typedef struct
 {
-    float wheel_speed[4];  // (m/s)轮子速度
-    ChassisSpeedVector_t speed_vector;
-} Values_t_chassis;
-
-// typedef struct
-// {
-//     pid_type_def wheel_pid_speed[4];
-//     pid_type_def gimbal_follow_pid_angle[4];
-// } PID_t;
+    float vx;
+    float vy;
+    float wz;
+} Values_t;
 
 /**
  * @brief  底盘数据结构体
@@ -70,36 +67,14 @@ typedef struct
     const RC_ctrl_t * rc;  // 底盘使用的遥控器指针
     const Imu_t * imu;     // imu数据
     ChassisMode_e mode;    // 底盘模式
-    ChassisState_e state;  // 底盘状态
-    uint8_t error_code;    // 底盘错误代码
 
     /*-------------------- Motors --------------------*/
-    // 定义4个麦克纳姆轮
-    Motor_s wheel_motor[4];  // 驱动轮电机
+    Motor_s wheel[4];  //底盘电机
+
     /*-------------------- Values --------------------*/
+    Values_t reference; 
 
-    Values_t_chassis ref;          // 期望值
-    Values_t_chassis fdb;          // 状态值
-    Values_t_chassis upper_limit;  // 上限值
-    Values_t_chassis lower_limit;  // 下限值
-
-    pid_type_def pid;  // PID控制器
-    pid_type_def motor_chassis[4];               //chassis motor data.底盘电机数据
-    pid_type_def motor_speed_pid[4];             //motor speed PID.底盘电机速度pid
-    pid_type_def chassis_angle_pid;           //follow angle PID.底盘跟随云台角度pid
-
-    float dyaw;  // (rad)(feedback)当前位置与云台中值角度差（用于坐标转换）
-    uint16_t yaw_mid;  // (ecd)(preset)云台中值角度
-    uint16_t current_set;
-
-    fp32 vx_rc_set;                   //底盘设定速度，遥控器控制云台坐标系下前进方向
-    fp32 vy_rc_set;                   //底盘设定速度，遥控器控制云台坐标系下左右方向
-    fp32 wz_rc_set;                   //底盘设定旋转速度，遥控器控制云台坐标系下
-    fp32 vx_set;                      //底盘设定速度 前进方向 前为正，单位 m/s
-    fp32 vy_set;                      //底盘设定速度 左右方向 左为正，单位 m/s
-    fp32 wz_set;                      //底盘设定旋转角速度，逆时针为正 单位 rad/s
-
-    
+    fp32 yaw_delta;
 } Chassis_s;
 
 
@@ -115,5 +90,5 @@ extern void ChassisConsole(void);
 
 extern void ChassisSendCmd(void);
 
-#endif //CHASSIS_MECANUM_H
-#endif //CHASSIS_MECANUM_WHEEL
+#endif 
+#endif 
