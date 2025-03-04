@@ -47,6 +47,9 @@
 #define DJI_GM6020_MAX_VOLTAGE 30000
 
 // 电机模式
+#define DJI_CURRENT_MODE ((uint16_t)0xAA)  // 电流控制模式
+#define DJI_VOLTAGE_MODE ((uint16_t)0xBB)  // 电压控制模式
+
 #define DJI_3508_MODE_CURRENT_1 ((uint16_t)0x200)  // 3508电流控制模式
 #define DJI_2006_MODE_CURRENT_1 ((uint16_t)0x200)  // 2006电流控制模式
 
@@ -221,7 +224,7 @@ typedef struct __Motor
     MotorType_e type;       // 电机类型
     uint8_t can;            // 电机所用CAN口
     float reduction_ratio;  // 电机减速比，例如2006为36:1，则reduction_ratio=36
-    int8_t direction;       // 电机旋转方向（1或-1）
+    int8_t direction;       // 电机和(执行机构在模型中定义的旋转方向)的关系（1或-1），例如：
     uint16_t mode;          // 电机模式
     bool offline;           // 电机是否离线
 

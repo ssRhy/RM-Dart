@@ -11,8 +11,8 @@
 #define INCLUDED_ROBOT_PARAM_H
 #include "robot_typedef.h"
 
-#define CHASSIS_TYPE CHASSIS_NONE  // 选择底盘类型
-#define GIMBAL_TYPE GIMBAL_NONE    // 选择云台类型
+#define CHASSIS_TYPE CHASSIS_OMNI_WHEEL  // 选择底盘类型
+#define GIMBAL_TYPE GIMBAL_YAW_PITCH_DIRECT    // 选择云台类型
 #define SHOOT_TYPE SHOOT_FRIC_TRIGGER            // 选择发射机构类型
 #define CONTROL_TYPE CHASSIS_AND_GIMBAL  // 选择控制类型
 #define MECHANICAL_ARM_TYPE MECHANICAL_ARM_NONE  //选择机械臂类型
@@ -56,16 +56,16 @@ typedef enum {
 
 //PID parameters ---------------------
 //驱动轮速度环PID参数
-#define KP_CHASSIS_WHEEL_SPEED 20.0f
-#define KI_CHASSIS_WHEEL_SPEED 0.3f
-#define KD_CHASSIS_WHEEL_SPEED 0.3f
+#define KP_CHASSIS_WHEEL_SPEED 193.0f
+#define KI_CHASSIS_WHEEL_SPEED 0.0f
+#define KD_CHASSIS_WHEEL_SPEED 0.4f
 #define MAX_IOUT_CHASSIS_WHEEL_SPEED 10000.0f
 #define MAX_OUT_CHASSIS_WHEEL_SPEED 30000.0f
 
 //云台跟随角度环PID参数
-#define KP_CHASSIS_GIMBAL_FOLLOW_ANGLE 200.0f
-#define KI_CHASSIS_GIMBAL_FOLLOW_ANGLE 0.3f
-#define KD_CHASSIS_GIMBAL_FOLLOW_ANGLE 0.0f
+#define KP_CHASSIS_GIMBAL_FOLLOW_ANGLE 20.0f
+#define KI_CHASSIS_GIMBAL_FOLLOW_ANGLE 0.03f
+#define KD_CHASSIS_GIMBAL_FOLLOW_ANGLE 0.3f
 #define MAX_IOUT_CHASSIS_GIMBAL_FOLLOW_ANGLE 10000.0f
 #define MAX_OUT_CHASSIS_GIMBAL_FOLLOW_ANGLE 300000.0f
 
@@ -181,12 +181,12 @@ typedef enum {
 #define FRIC_MOTOR_TYPE ((MotorType_e)DJI_M3508)
 
 //电机ID
-#define TRIGGER_MOTOR_ID 7
+#define TRIGGER_MOTOR_ID 8
 #define FRIC_MOTOR_R_ID 6
 #define FRIC_MOTOR_L_ID 5
 
 //电机can口
-#define TRIGGER_MOTOR_CAN 2
+#define TRIGGER_MOTOR_CAN 1
 #define FRIC_MOTOR_R_CAN 1
 #define FRIC_MOTOR_L_CAN 1
 
@@ -195,10 +195,11 @@ typedef enum {
 #define FRIC_STD_ID 0x1FF
 
 //单环拨弹速度
-#define TRIGGER_SPEED               (500.0f)
+#define TRIGGER_SPEED               (200.0f)
 //摩擦轮速度
-#define FRIC_SPEED                  (70.0f) 
-#define FRIC_SPEED_LIMIT            (60.0f) 
+#define FRIC_R_SPEED                  (666.0f) 
+#define FRIC_L_SPEED                  (-666.0f) 
+#define FRIC_SPEED_LIMIT            (640.0f) 
 
 //电机反馈码盘值范围
 #define HALF_ECD_RANGE              4096
@@ -212,16 +213,15 @@ typedef enum {
 /*BLOCK&REVERSE parameters------------*/
 
 //初版   看门狗防堵转
-#define BLOCK_TRIGGER_SPEED         1.0f
-#define BLOCK_TIME                  500
-#define REVERSE_TIME                250
-#define REVERSE_SPEED_LIMIT         13.0f
-#define REVERSE_SPEED               (-5.0f)  // (rad/s)
+#define BLOCK_TRIGGER_SPEED         5.0f
+#define BLOCK_TIME                  1000
+#define REVERSE_TIME                1250
+#define REVERSE_SPEED               (-20.0f)  
 
 /*PID parameters ---------------------*/
 
 //拨弹轮电机PID速度单环
-#define TRIGGER_SPEED_PID_KP (15.0f)
+#define TRIGGER_SPEED_PID_KP (50.0f)
 #define TRIGGER_SPEED_PID_KI (0.5f)
 #define TRIGGER_SPEED_PID_KD (0.1f)
 
@@ -233,15 +233,15 @@ typedef enum {
 #define TRIGGER_ANGEL_PID_KI (0.5f)
 #define TRIGGER_ANGEL_PID_KD (0.0f)
 
-#define TRIGGER_ANGEL_PID_MAX_OUT (700.0f)
+#define TRIGGER_ANGEL_PID_MAX_OUT (10000.0f)
 #define TRIGGER_ANGEL_PID_MAX_IOUT (1000.0f)
 
 //摩擦轮电机PID
-#define FRIC_SPEED_PID_KP (500.0f)
-#define FIRC_SPEED_PID_KI (0.1f)
-#define FRIC_SPEED_PID_KD (0.03f)
+#define FRIC_SPEED_PID_KP (666.0f)
+#define FIRC_SPEED_PID_KI (0.6f)
+#define FRIC_SPEED_PID_KD (0.02f)
 
 #define FRIC_PID_MAX_OUT (16000.0f)
-#define FRIC_PID_MAX_IOUT (10.0f)
+#define FRIC_PID_MAX_IOUT (1000.0f)
 
 #endif /* INCLUDED_ROBOT_PARAM_H */

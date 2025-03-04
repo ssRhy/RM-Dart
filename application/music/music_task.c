@@ -14,6 +14,11 @@
 #include "music_start.h"
 #include "music_unity.h"
 #include "music_you.h"
+#include "music_see_you_again.h"
+#include "music_hao_yun_lai.h"
+#include "music_meow.h"
+#include "music_gong_xi_fa_cai.h"
+#include "music_deja_vu.h"
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
 uint32_t music_high_water;
@@ -78,6 +83,11 @@ static void MusicInit(void)
     // MusicUnityInit();
     // MusicCanonInit();
     // MusicCastleInTheSkyInit();
+    // MusicSeeYouAgainInit();
+    // MusicHaoYunLaiInit();
+    // MusicMeowInit();
+    // MusicGongXiFaCaiInit();
+    // MusicDejaVuInit();
 }
 
 static void MusicPlay(void)
@@ -94,6 +104,11 @@ static void MusicPlay(void)
     } else {
         // MusicRefereeDisconnectPlay();
         // MusicErrorPlay();
+        // MusicHaoYunLaiPlay();
+        // MusicMeowPlay();
+        // MusicGongXiFaCaiPlay();
+        // MusicDejaVuPlay();
+
         switch (*cali_buzzer_state) {
             case CALI_BUZZER_OFF: {
                 if (is_play_cali()) {

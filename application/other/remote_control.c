@@ -1,5 +1,5 @@
 /**
-  ****************************(C) COPYRIGHT 2019 DJI****************************
+  ****************************(C) COPYRIGHT 2025 Polarbear****************************
   * @file       remote_control.c/h
   * @brief      遥控器处理，遥控器是通过类似SBUS的协议传输，利用DMA传输方式节约CPU
   *             资源，利用串口空闲中断来拉起处理函数，同时提供一些掉线重启DMA，串口
@@ -9,13 +9,26 @@
   *  Version    Date            Author          Modification
   *  V1.0.0     Dec-26-2018     RM              1. done
   *  V1.0.0     Nov-11-2019     RM              1. support development board tpye c
+  *  V2.0.0     Feb-17-2025     Penguin         1. support RC AT9S PRO
+  *                                             2. support RC HT8A
+  *                                             3. support normal sbus RC in struct Sbus_t
+  *  V2.0.1     Feb-25-2025     Penguin         1. support RC ET08A
   *
   @verbatim
   ==============================================================================
+  使用At9sPro遥控器时请设置5通为SwE，6通为SwG
 
+  注：使用非DT7遥控器时，需要先检查通道值数据是否正常（一般遥控器都带有通道值数据偏移功能，将通道值中值移动到正确数值后再使用）
+      AT9S PRO 遥控器中值为 1000
+      HT8A 遥控器中值为 992
+      ET08A 遥控器中值为 1024
+  
+  ET08A 遥控器设置指南：
+    1. 设置 主菜单->系统设置->摇杆模式 为模式2
+    2. 设置 主菜单->通用功能->通道设置 5通道为 [辅助1 SB --] 6通道为 [辅助2 SC --]
   ==============================================================================
   @endverbatim
-  ****************************(C) COPYRIGHT 2019 DJI****************************
+  ****************************(C) COPYRIGHT 2025 Polarbear****************************
   */
 
 // clang-format off
@@ -27,6 +40,7 @@
 #include "string.h"
 
 #include "detect_task.h"
+#include "robot_param.h"
 
 
 
@@ -53,9 +67,19 @@ static int16_t RC_abs(int16_t value);
   */
 static void sbus_to_rc(volatile const uint8_t *sbus_buf, RC_ctrl_t *rc_ctrl);
 
+#if (__RC_TYPE == RC_AT9S_PRO)
+static void At9sProSbusToRc(volatile const uint8_t *sbus_buf, RC_ctrl_t *rc_ctrl);
+#elif (__RC_TYPE == RC_HT8A)
+static void Ht8aSbusToRc(volatile const uint8_t *sbus_buf, RC_ctrl_t *rc_ctrl);
+#elif (__RC_TYPE == RC_ET08A)
+static void Et08aSbusToRc(volatile const uint8_t *sbus_buf, RC_ctrl_t *rc_ctrl);
+#endif
+
 //remote control data 
 //遥控器控制变量
 RC_ctrl_t rc_ctrl;
+Sbus_t sbus;
+
 //接收原始数据，为18个字节，给了36个字节长度，防止DMA传输越界
 static uint8_t sbus_rx_buf[2][SBUS_RX_BUF_NUM];
 
@@ -87,6 +111,16 @@ void remote_control_init(void)
 const RC_ctrl_t *get_remote_control_point(void)
 {
     return &rc_ctrl;
+}
+
+/**
+  * @brief          获取SBUS遥控器数据指针
+  * @param[in]      none
+  * @retval         SBUS遥控器数据指针
+  */
+const Sbus_t *get_sbus_point(void)
+{
+    return &sbus;
 }
 
 //判断遥控器数据是否出错，
@@ -184,10 +218,24 @@ void USART3_IRQHandler(void)
 
             if(this_time_rx_len == RC_FRAME_LENGTH)
             {
+                //处理遥控器数据
                 sbus_to_rc(sbus_rx_buf[0], &rc_ctrl);
                 //记录数据接收时间
                 detect_hook(DBUS_TOE);
                 sbus_to_usart1(sbus_rx_buf[0]);
+            } 
+            else if (this_time_rx_len == SBUS_RC_FRAME_LENGTH)
+            {
+                //处理遥控器数据
+#if (__RC_TYPE == RC_AT9S_PRO)
+                At9sProSbusToRc(sbus_rx_buf[0], &rc_ctrl);
+#elif (__RC_TYPE == RC_HT8A)
+                Ht8aSbusToRc(sbus_rx_buf[0], &rc_ctrl);
+#elif (__RC_TYPE == RC_ET08A)
+                Et08aSbusToRc(sbus_rx_buf[0], &rc_ctrl);
+#endif
+                //记录数据接收时间
+                detect_hook(DBUS_TOE);
             }
         }
         else
@@ -220,6 +268,19 @@ void USART3_IRQHandler(void)
                 //记录数据接收时间
                 detect_hook(DBUS_TOE);
                 sbus_to_usart1(sbus_rx_buf[1]);
+            }
+            else if (this_time_rx_len == SBUS_RC_FRAME_LENGTH)
+            {
+                //处理遥控器数据
+#if (__RC_TYPE == RC_AT9S_PRO)
+                At9sProSbusToRc(sbus_rx_buf[1], &rc_ctrl);
+#elif (__RC_TYPE == RC_HT8A)
+                Ht8aSbusToRc(sbus_rx_buf[1], &rc_ctrl);
+#elif (__RC_TYPE == RC_ET08A)
+                Et08aSbusToRc(sbus_rx_buf[1], &rc_ctrl);
+#endif
+                //记录数据接收时间
+                detect_hook(DBUS_TOE);
             }
         }
     }
@@ -278,6 +339,135 @@ static void sbus_to_rc(volatile const uint8_t *sbus_buf, RC_ctrl_t *rc_ctrl)
     rc_ctrl->rc.ch[3] -= RC_CH_VALUE_OFFSET;
     rc_ctrl->rc.ch[4] -= RC_CH_VALUE_OFFSET;
 }
+
+// SBUS通道解析
+#define SBUS_DECODE()                                                                 \
+    sbus.ch[0] =((sbus_buf[2]<<8)   + (sbus_buf[1])) & 0x07ff;                        \
+    sbus.ch[1] =((sbus_buf[3]<<5)   + (sbus_buf[2]>>3)) & 0x07ff;                     \
+    sbus.ch[2] =((sbus_buf[5]<<10)  + (sbus_buf[4]<<2) + (sbus_buf[3]>>6)) & 0x07ff;  \
+    sbus.ch[3] =((sbus_buf[6]<<7)   + (sbus_buf[5]>>1)) & 0x07ff;                     \
+    sbus.ch[4] =((sbus_buf[7]<<4)   + (sbus_buf[6]>>4)) & 0x07ff;                     \
+    sbus.ch[5] =((sbus_buf[9]<<9)   + (sbus_buf[8]<<1) + (sbus_buf[7]>>7)) & 0x07ff;  \
+    sbus.ch[6] =((sbus_buf[10]<<6)  + (sbus_buf[9]>>2)) & 0x07ff;                     \
+    sbus.ch[7] =((sbus_buf[11]<<3)  + (sbus_buf[10]>>5)) & 0x07ff;                    \
+    sbus.ch[8] =((sbus_buf[13]<<8)  + (sbus_buf[12])) & 0x07ff;                       \
+    sbus.ch[9] =((sbus_buf[14]<<5)  + (sbus_buf[13]>>3)) & 0x07ff;                    \
+    sbus.ch[10]=((sbus_buf[16]<<10) + (sbus_buf[15]<<2) + (sbus_buf[14]>>6)) & 0x07ff;\
+    sbus.ch[11]=((sbus_buf[17]<<7)  + (sbus_buf[16]>>1)) & 0x07ff;                    \
+    sbus.ch[12]=((sbus_buf[18]<<4)  + (sbus_buf[17]>>4)) & 0x07ff;                    \
+    sbus.ch[13]=((sbus_buf[20]<<9)  + (sbus_buf[19]<<1) + (sbus_buf[18]>>7)) & 0x07ff;\
+    sbus.ch[14]=((sbus_buf[21]<<6)  + (sbus_buf[20]>>2)) & 0x07ff;                    \
+    sbus.ch[15]=((sbus_buf[22]<<3)  + (sbus_buf[21]>>5)) & 0x07ff;                    \
+
+// DT7遥控器特殊通道置零
+#define SPECIAL_CHANNEL_SET_SERO()\
+    rc_ctrl->mouse.x = 0;         \
+    rc_ctrl->mouse.y = 0;         \
+    rc_ctrl->mouse.z = 0;         \
+    rc_ctrl->mouse.press_l = 0;   \
+    rc_ctrl->mouse.press_r = 0;   \
+    rc_ctrl->key.v = 0;           \
+    rc_ctrl->rc.ch[4] = 0;        \
+
+#if (__RC_TYPE == RC_AT9S_PRO)
+
+/**
+  * @brief          AT9S PRO 遥控器协议解析
+  * @param[in]      sbus_buf: 原生数据指针
+  * @param[out]     rc_ctrl: 遥控器数据指针
+  * @retval         none
+  */
+static void At9sProSbusToRc(volatile const uint8_t *sbus_buf, RC_ctrl_t *rc_ctrl)
+{
+    if (sbus_buf == NULL || rc_ctrl == NULL)
+    {
+        return;
+    }
+
+    // SBUS通道解析
+    SBUS_DECODE()
+
+    // 将SBUS通道数据转换为DT7遥控器数据，方便兼容使用
+    rc_ctrl->rc.ch[0] =  (sbus.ch[0] - AT9S_PRO_RC_CH_VALUE_OFFSET) / 800.0f * 660;
+    rc_ctrl->rc.ch[1] = -(sbus.ch[1] - AT9S_PRO_RC_CH_VALUE_OFFSET) / 800.0f * 660;
+    rc_ctrl->rc.ch[2] =  (sbus.ch[3] - AT9S_PRO_RC_CH_VALUE_OFFSET) / 800.0f * 660;
+    rc_ctrl->rc.ch[3] =  (sbus.ch[2] - AT9S_PRO_RC_CH_VALUE_OFFSET) / 800.0f * 660;
+
+    static char sw_mapping[3] = {RC_SW_UP, RC_SW_MID, RC_SW_DOWN};
+    rc_ctrl->rc.s[0] = sw_mapping[(sbus.ch[5] - AT9S_PRO_RC_CH_VALUE_OFFSET) / 800 + 1];
+    rc_ctrl->rc.s[1] = sw_mapping[(sbus.ch[4] - AT9S_PRO_RC_CH_VALUE_OFFSET) / 800 + 1];
+
+    // AT9S PRO 遥控器没有鼠标和键盘数据
+    SPECIAL_CHANNEL_SET_SERO()
+}
+
+#elif (__RC_TYPE == RC_HT8A)
+
+/**
+  * @brief          HT8A 遥控器协议解析
+  * @param[in]      sbus_buf: 原生数据指针
+  * @param[out]     rc_ctrl: 遥控器数据指针
+  * @retval         none
+  */
+static void Ht8aSbusToRc(volatile const uint8_t *sbus_buf, RC_ctrl_t *rc_ctrl)
+{
+    if (sbus_buf == NULL || rc_ctrl == NULL)
+    {
+        return;
+    }
+
+    // SBUS通道解析
+    SBUS_DECODE()
+
+    // 将SBUS通道数据转换为DT7遥控器数据，方便兼容使用
+    rc_ctrl->rc.ch[0] =  (sbus.ch[0] - HT8A_RC_CH013_VALUE_OFFSET) / 560.0f * 660;
+    rc_ctrl->rc.ch[1] =  (sbus.ch[1] - HT8A_RC_CH013_VALUE_OFFSET) / 560.0f * 660;
+    rc_ctrl->rc.ch[2] =  (sbus.ch[3] - HT8A_RC_CH013_VALUE_OFFSET) / 560.0f * 660;
+    rc_ctrl->rc.ch[3] =  (sbus.ch[2] - HT8A_RC_CH247_VALUE_OFFSET) / 800.0f * 660;
+
+    static char sw_mapping[3] = {RC_SW_UP, RC_SW_MID, RC_SW_DOWN};
+    rc_ctrl->rc.s[0] = sw_mapping[(sbus.ch[7] - HT8A_RC_CH247_VALUE_OFFSET) / 800 + 1];
+    rc_ctrl->rc.s[1] = sw_mapping[(sbus.ch[4] - HT8A_RC_CH247_VALUE_OFFSET) / 800 + 1];
+
+    // HT8A 遥控器没有鼠标和键盘数据
+    SPECIAL_CHANNEL_SET_SERO()
+}
+
+#elif (__RC_TYPE == RC_ET08A)
+
+/**
+  * @brief          ET08A 遥控器协议解析
+  * @param[in]      sbus_buf: 原生数据指针
+  * @param[out]     rc_ctrl: 遥控器数据指针
+  * @retval         none
+  */
+static void Et08aSbusToRc(volatile const uint8_t *sbus_buf, RC_ctrl_t *rc_ctrl){
+    if (sbus_buf == NULL || rc_ctrl == NULL)
+    {
+        return;
+    }
+
+    // SBUS通道解析
+    SBUS_DECODE()
+
+    // 将SBUS通道数据转换为DT7遥控器数据，方便兼容使用
+    rc_ctrl->rc.ch[0] =  (sbus.ch[0] - ET08A_RC_CH_VALUE_OFFSET) / 671.0f * 660;
+    rc_ctrl->rc.ch[1] = -(sbus.ch[1] - ET08A_RC_CH_VALUE_OFFSET) / 671.0f * 660;
+    rc_ctrl->rc.ch[2] =  (sbus.ch[3] - ET08A_RC_CH_VALUE_OFFSET) / 671.0f * 660;
+    rc_ctrl->rc.ch[3] =  (sbus.ch[2] - ET08A_RC_CH_VALUE_OFFSET) / 671.0f * 660;
+
+    static char sw_mapping[3] = {RC_SW_UP, RC_SW_MID, RC_SW_DOWN};
+    rc_ctrl->rc.s[0] = sw_mapping[(sbus.ch[5] - ET08A_RC_CH_VALUE_OFFSET) / 670 + 1];
+    rc_ctrl->rc.s[1] = sw_mapping[(sbus.ch[4] - ET08A_RC_CH_VALUE_OFFSET) / 670 + 1];
+
+    // ET08A 遥控器没有鼠标和键盘数据
+    SPECIAL_CHANNEL_SET_SERO()
+}
+
+#endif
+
+#undef SBUS_DECODE
+#undef SPECIAL_CHANNEL_SET_SERO
 
 /**
   * @brief          send sbus data by usart1, called in usart3_IRQHandle

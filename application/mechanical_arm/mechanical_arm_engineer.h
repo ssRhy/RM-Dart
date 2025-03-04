@@ -117,15 +117,10 @@ typedef struct
         } min;
     } limit;
 
-    // struct
-    // {
-    //     struct
-    //     {
-    //         float angle;     // (rad)位置
-    //         float velocity;  // (rad/s)速度
-    //         float value;     // 电流值
-    //     } joint[JOINT_NUM];
-    // } cmd;
+    struct
+    {
+        bool pump_on;
+    } cmd;
 
     struct
     {  // 0为角度环，1为速度环

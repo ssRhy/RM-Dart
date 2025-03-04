@@ -19,9 +19,10 @@
 #include "shoot_fric_trigger.h"
 
 #include "CAN_communication.h"
+#include "math.h"
 // 导入usb通信相关的库
-#include "supervisory_computer_cmd.h"
 #include "usb_debug.h"
+#include "supervisory_computer_cmd.h"
 #include "user_lib.h"
 #include "arm_math.h"
 
@@ -80,17 +81,17 @@ void ShootSetMode(void)
   /*键鼠遥控器控制方式初版----------------------------*/
       if (switch_is_up(SHOOT.rc->rc.s[SHOOT_MODE_CHANNEL]))//上档防止误触
     {
-        SHOOT.mode = LOAD_STOP;
         SHOOT.state = FRIC_NOT_READY;
+        SHOOT.mode = LOAD_STOP;
     } 
 
     else if (switch_is_mid(SHOOT.rc->rc.s[SHOOT_MODE_CHANNEL]))
     {
-        if(SHOOT.rc->key.v & KEY_PRESSED_OFFSET_Q)//Q启动摩擦轮
+        if(SHOOT.rc->key.v & KEY_PRESSED_OFFSET_Q || GetScCmdFricOn())//Q启动摩擦轮
         {
           SHOOT.fric_flag = 1;
         }
-        else if(SHOOT.rc->key.v & KEY_PRESSED_OFFSET_E)//E关闭摩擦轮
+        else if(SHOOT.rc->key.v & KEY_PRESSED_OFFSET_E || !GetScCmdFricOn())//E关闭摩擦轮
         {
           SHOOT.fric_flag = 0;
         }
@@ -115,7 +116,7 @@ void ShootSetMode(void)
             SHOOT.mode = LAOD_BULLET;
             SHOOT.shoot_flag = 0;
         }
-        else if (SHOOT.rc->mouse.press_r)
+        else if (SHOOT.rc->mouse.press_r || GetScCmdFire())
         {
           SHOOT.mode = LOAD_BURSTFIRE;
         }
@@ -134,8 +135,21 @@ void ShootSetMode(void)
 
     else if (switch_is_down(SHOOT.rc->rc.s[SHOOT_MODE_CHANNEL]))
     {
+      //清弹
+        //SHOOT.state = FRIC_READY;
+        //SHOOT.mode = LOAD_BURSTFIRE;
+
+      //上位机测试
         SHOOT.state = FRIC_READY;
-        SHOOT.mode = LOAD_BURSTFIRE;
+
+        if (GetScCmdFire())
+        {
+          SHOOT.mode = LOAD_BURSTFIRE;
+        }
+        else
+        {
+          SHOOT.mode = LOAD_STOP;
+        }
     }
 
 
@@ -173,7 +187,7 @@ void ShootSetMode(void)
     //过热保护
     if (SHOOT.mode == LOAD_BURSTFIRE||SHOOT.mode == LAOD_BULLET)
     {
-        if (SHOOT.last_fric_vel < FRIC_SPEED_LIMIT)
+        if (fabs(SHOOT.last_fric_vel) < FRIC_SPEED_LIMIT)
         {
           SHOOT.mode = LOAD_STOP;
         }
@@ -272,8 +286,8 @@ void ShootReference(void)
     break;
 
     case FRIC_READY:
-    SHOOT.fric_motor[0].set.vel=FRIC_SPEED;
-    SHOOT.fric_motor[1].set.vel=-(FRIC_SPEED);
+    SHOOT.fric_motor[0].set.vel=FRIC_R_SPEED;
+    SHOOT.fric_motor[1].set.vel=FRIC_L_SPEED;
     break;
     
     default:
@@ -361,13 +375,10 @@ void ShootConsole(void)
  */
 void ShootSendCmd(void) 
 {
-  CanCmdDjiMotor(FRIC_MOTOR_R_CAN, FRIC_STD_ID , SHOOT.fric_motor[1].set.curr,SHOOT.fric_motor[0].set.curr,0, 0);
-  CanCmdDjiMotor(TRIGGER_MOTOR_CAN, TRIGGER_STD_ID ,0 ,0 ,SHOOT.trigger_motor.set.curr, 0);
+  CanCmdDjiMotor(FRIC_MOTOR_R_CAN, FRIC_STD_ID , SHOOT.fric_motor[1].set.curr,SHOOT.fric_motor[0].set.curr,0, SHOOT.trigger_motor.set.curr);
 
-  //ModifyDebugDataPackage(1,SHOOT.trigger_motor.set.pos,"set"); 
-  ModifyDebugDataPackage(2,SHOOT.trigger_angel,"fdb");
-  
-  
+  ModifyDebugDataPackage(1,SHOOT.fric_motor[0].set.vel,"set"); 
+  ModifyDebugDataPackage(2,SHOOT.fric_motor[0].fdb.vel,"fb"); 
 }
 
 #endif  // SHOOT_TYPE == SHOOT_FRIC

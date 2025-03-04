@@ -3159,14 +3159,14 @@
               <FilePath>..\bsp\boards\bsp_usart.c</FilePath>
             </File>
             <File>
-              <FileName>bsp_servo_pwm.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\bsp\boards\bsp_servo_pwm.c</FilePath>
-            </File>
-            <File>
               <FileName>bsp_uart.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\bsp\boards\bsp_uart.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_pwm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\bsp\boards\bsp_pwm.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -3277,11 +3277,6 @@
               <FileName>detect_task.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\application\assist\detect_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>servo_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\application\assist\servo_task.c</FilePath>
             </File>
             <File>
               <FileName>develop_task.c</FileName>
@@ -3503,6 +3498,31 @@
               <FileType>1</FileType>
               <FilePath>..\application\music\music_error.c</FilePath>
             </File>
+            <File>
+              <FileName>music_see_you_again.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\music\music_see_you_again.c</FilePath>
+            </File>
+            <File>
+              <FileName>music_hao_yun_lai.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\music\music_hao_yun_lai.c</FilePath>
+            </File>
+            <File>
+              <FileName>music_meow.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\music\music_meow.c</FilePath>
+            </File>
+            <File>
+              <FileName>music_gong_xi_fa_cai.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\music\music_gong_xi_fa_cai.c</FilePath>
+            </File>
+            <File>
+              <FileName>music_deja_vu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\music\music_deja_vu.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -3597,6 +3617,16 @@
               <FileName>CAN_cmd_SupCap.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\application\robot_cmd\CAN_cmd_SupCap.c</FilePath>
+            </File>
+            <File>
+              <FileName>PWM_cmd_pump.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\robot_cmd\PWM_cmd_pump.c</FilePath>
+            </File>
+            <File>
+              <FileName>PWM_cmd_servo.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\robot_cmd\PWM_cmd_servo.c</FilePath>
             </File>
           </Files>
         </Group>
