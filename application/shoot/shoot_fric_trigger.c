@@ -31,11 +31,12 @@ static Shoot_s SHOOT = {
   .move_flag = 0,
   .ecd_count = 0,
   .shoot_flag = 0,
-  .fric_ui = 0,
   .heat = 0,
-  .heat_limit = 0
+  .heat_limit = 0,
 };
 
+
+uint8_t fric_ui;
 fp32 delta;
 
 /*-------------------- Init --------------------*/
@@ -88,14 +89,14 @@ void ShootInit(void)
 void ShootSetMode(void)
 {
   /*键鼠遥控器控制方式初版----------------------------*/
-      if (switch_is_up(SHOOT.rc->rc.s[SHOOT_MODE_CHANNEL]))//上档防止误触
-    {
+   if (switch_is_up(SHOOT.rc->rc.s[SHOOT_MODE_CHANNEL]))//上档防止误触
+   {
         SHOOT.state = FRIC_NOT_READY;
         SHOOT.mode = LOAD_STOP;
-    } 
+   } 
 
-    else if (switch_is_mid(SHOOT.rc->rc.s[SHOOT_MODE_CHANNEL]))
-    {
+   else if (switch_is_mid(SHOOT.rc->rc.s[SHOOT_MODE_CHANNEL]))
+   {
         // if(SHOOT.rc->key.v & KEY_PRESSED_OFFSET_Q || GetScCmdFricOn())//Q启动摩擦轮
         // {
         //   SHOOT.fric_flag = 1;
@@ -123,13 +124,40 @@ void ShootSetMode(void)
         }
 
 
-        if (SHOOT.rc->mouse.press_l && SHOOT.shoot_flag==0)
+        // if (SHOOT.rc->mouse.press_l && SHOOT.shoot_flag==0)
+        // {
+        //   SHOOT.mode = LAOD_BULLET;
+        // }
+        // else if (SHOOT.rc->mouse.press_r || GetScCmdFire())
+        // {
+        //   SHOOT.mode = LOAD_BURSTFIRE;
+        // }
+        // else
+        // {
+        //   SHOOT.mode = LOAD_STOP;
+        // }
+        
+        // SHOOT.shoot_flag = SHOOT.rc->mouse.press_l;
+
+        // if (SHOOT.move_flag)
+        // {
+        //   SHOOT.mode = LAOD_BULLET;
+        //}
+
+        if (SHOOT.rc->mouse.press_l && !SHOOT.shoot_flag)
         {
           SHOOT.mode = LAOD_BULLET;
         }
-        else if (SHOOT.rc->mouse.press_r || GetScCmdFire())
+        else if (SHOOT.rc->mouse.press_r)
         {
-          SHOOT.mode = LOAD_BURSTFIRE;
+            if (GetScCmdFire())
+            {
+              SHOOT.mode = LOAD_BURSTFIRE;
+            }
+            else
+            {
+              SHOOT.mode = LOAD_STOP;
+            }
         }
         else
         {
@@ -142,8 +170,24 @@ void ShootSetMode(void)
         {
           SHOOT.mode = LAOD_BULLET;
         }
+        
+        if (SHOOT.rc->mouse.press_l)
+        {
+          if (SHOOT.mr_time < 180)
+          {
+            SHOOT.mr_time++;
+          }
+          else
+          {
+            SHOOT.mode = LOAD_BURSTFIRE;
+            SHOOT.move_flag = 0;
+          }
+        }
+        else
+        {
+          SHOOT.mr_time = 0;
+        }
     } 
-
     else if (switch_is_down(SHOOT.rc->rc.s[SHOOT_MODE_CHANNEL]))
     {
       //清弹
@@ -191,11 +235,11 @@ void ShootSetMode(void)
     if (fabs(SHOOT.last_fric_vel) < FRIC_SPEED_LIMIT)
     {
       SHOOT.mode = LOAD_STOP;
-      SHOOT.fric_ui = 0;
+      fric_ui = 0;
     }
     else
     {
-      SHOOT.fric_ui = 1;
+      fric_ui = 1;
     }
     
     //热量限制
@@ -240,18 +284,12 @@ void ShootObserver(void)
   GetMotorMeasure(&SHOOT.trigger_motor);
   GetMotorMeasure(&SHOOT.fric_motor[0]);
   GetMotorMeasure(&SHOOT.fric_motor[1]);
-  
-}
 
-/*-------------------- Reference --------------------*/
+  SHOOT.FDB.fric_speed_fdb_R = SHOOT.fric_motor[0].fdb.vel;
+  SHOOT.FDB.fric_speed_fdb_L = SHOOT.fric_motor[1].fdb.vel;
 
-/**
- * @brief          更新目标量
- * @param[in]      none
- * @retval         none
- */
-void ShootReference(void) 
-{
+  SHOOT.FDB.trigger_speed_fdb = SHOOT.trigger_motor.fdb.vel;
+
   if (TRIGGER_MOTOR_TYPE == DJI_M2006)
   {
     if (SHOOT.trigger_motor.fdb.ecd - SHOOT.last_ecd > HALF_ECD_RANGE)
@@ -273,7 +311,7 @@ void ShootReference(void)
         SHOOT.ecd_count = FULL_COUNT-1;
     }
     //计算输出轴角度
-    SHOOT.trigger_angel = (SHOOT.ecd_count * ECD_RANGE + SHOOT.trigger_motor.fdb.ecd )* MOTOR_ECD_TO_ANGLE;
+    SHOOT.FDB.trigger_angel_fdb = (SHOOT.ecd_count * ECD_RANGE + SHOOT.trigger_motor.fdb.ecd )* MOTOR_ECD_TO_ANGLE;
 
     //记录上一个ecd值
    SHOOT.last_ecd = SHOOT.trigger_motor.fdb.ecd;
@@ -326,83 +364,93 @@ void ShootReference(void)
   }
   else if (TRIGGER_MOTOR_TYPE == DM_4310)
   {
-    SHOOT.trigger_angel = theta_format(SHOOT.trigger_motor.fdb.pos);
+    SHOOT.FDB.trigger_angel_fdb = theta_format(SHOOT.trigger_motor.fdb.pos);
   }
-
+  
     //记录上一个拨弹盘vel,用于堵转模式判断
   SHOOT.last_trigger_vel = SHOOT.trigger_motor.fdb.vel;
 
     //记录上一个摩擦轮vel,用于过热保护
   SHOOT.last_fric_vel = SHOOT.fric_motor[0].fdb.vel;
+}
 
-    switch (SHOOT.state)
-    {
-    case FRIC_NOT_READY:
-    SHOOT.fric_motor[0].set.vel=0.0f;
-    SHOOT.fric_motor[1].set.vel=0.0f;
-    break;
+/*-------------------- Reference --------------------*/
 
-    case FRIC_READY:
-    SHOOT.fric_motor[0].set.vel=FRIC_R_SPEED;
-    SHOOT.fric_motor[1].set.vel=FRIC_L_SPEED;
-    break;
-    
-    default:
-    break;
-    }
+/**
+ * @brief          更新目标量
+ * @param[in]      none
+ * @retval         none
+ */
+void ShootReference(void) 
+{
+  switch (SHOOT.state)
+  {
+  case FRIC_NOT_READY:
+  SHOOT.REF.fric_speed_ref_R=0.0f;
+  SHOOT.REF.fric_speed_ref_L=0.0f;
+  break;
 
-    switch (SHOOT.mode)
-    {
-    case LOAD_STOP:
-    SHOOT.trigger_motor.set.vel=0.0f;
-    break;
-    
-    case LAOD_BULLET:
-    if (TRIGGER_MOTOR_TYPE == DJI_M2006)
-    {
-      if (SHOOT.move_flag == 0)
-      {
-        SHOOT.trigger_motor.set.pos = theta_format(SHOOT.trigger_angel + 2*PI/BULLET_NUM/TRIGGER_REDUCTION_RATIO);
-      }
+  case FRIC_READY:
+  SHOOT.REF.fric_speed_ref_R=FRIC_R_SPEED;
+  SHOOT.REF.fric_speed_ref_L=FRIC_L_SPEED;
+  break;
   
-      if (theta_format(SHOOT.trigger_motor.set.pos - SHOOT.trigger_angel) > 0.01f)
-      {
-        SHOOT.move_flag = 1;
-      }
-      else
-      {
-        SHOOT.move_flag = 0;
-      }
-    }
-    else if (TRIGGER_MOTOR_TYPE == DM_4310)
-    {
-      if (SHOOT.move_flag == 0)
-      {
-        SHOOT.trigger_motor.set.pos = theta_format(SHOOT.trigger_angel - 2*PI/BULLET_NUM/TRIGGER_REDUCTION_RATIO);
-      }
+  default:
+  break;
+  }
+
+  switch (SHOOT.mode)
+  {
+  case LOAD_STOP:
+  SHOOT.REF.trigger_speed_ref=0.0f;
+  break;
   
-      if (theta_format(SHOOT.trigger_angel - SHOOT.trigger_motor.set.pos) > 0.01f)
-      {
-        SHOOT.move_flag = 1;
-      }
-      else
-      {
-        SHOOT.move_flag = 0;
-      }
+  case LAOD_BULLET:
+  if (TRIGGER_MOTOR_TYPE == DJI_M2006)
+  {
+    if (SHOOT.move_flag == 0)
+    {
+      SHOOT.REF.trigger_angel_ref = theta_format(SHOOT.FDB.trigger_angel_fdb + 2*PI/BULLET_NUM/TRIGGER_REDUCTION_RATIO);
     }
-    break;
 
-    case LOAD_BURSTFIRE:
-    SHOOT.trigger_motor.set.vel= TRIGGER_SPEED;
-    break;
-
-    case LOAD_BLOCK:
-    SHOOT.trigger_motor.set.vel = REVERSE_SPEED;
-    break;
-
-    default:
-      break;
+    if (theta_format(SHOOT.REF.trigger_angel_ref - SHOOT.FDB.trigger_angel_fdb) > 0.01f)
+    {
+      SHOOT.move_flag = 1;
     }
+    else
+    {
+      SHOOT.move_flag = 0;
+    }
+  }
+  else if (TRIGGER_MOTOR_TYPE == DM_4310)
+  {
+    if (SHOOT.move_flag == 0)
+    {
+      SHOOT.REF.trigger_angel_ref = theta_format(SHOOT.FDB.trigger_angel_fdb - 2*PI/BULLET_NUM/TRIGGER_REDUCTION_RATIO);
+    }
+
+    if (theta_format(SHOOT.FDB.trigger_angel_fdb - SHOOT.REF.trigger_angel_ref) > 0.01f)
+    {
+      SHOOT.move_flag = 1;
+    }
+    else
+    {
+      SHOOT.move_flag = 0;
+    }
+  }
+  break;
+
+  case LOAD_BURSTFIRE:
+  SHOOT.REF.trigger_speed_ref = TRIGGER_SPEED;
+  break;
+
+  case LOAD_BLOCK:
+  SHOOT.REF.trigger_speed_ref = REVERSE_SPEED;
+  break;
+
+  default:
+    break;
+  }
   
 
   
@@ -417,41 +465,52 @@ void ShootReference(void)
  */
 void ShootConsole(void) 
 {
-  SHOOT.fric_motor[0].set.curr=PID_calc(&SHOOT.fric_pid[0], SHOOT.fric_motor[0].fdb.vel,SHOOT.fric_motor[0].set.vel);
-  SHOOT.fric_motor[1].set.curr=PID_calc(&SHOOT.fric_pid[1], SHOOT.fric_motor[1].fdb.vel,SHOOT.fric_motor[1].set.vel);
+  SHOOT.fric_motor[0].set.curr= PID_calc(&SHOOT.fric_pid[0], SHOOT.FDB.fric_speed_fdb_R,SHOOT.REF.fric_speed_ref_R);
+  SHOOT.fric_motor[1].set.curr= PID_calc(&SHOOT.fric_pid[1], SHOOT.FDB.fric_speed_fdb_L,SHOOT.REF.fric_speed_ref_L);
 
   if (TRIGGER_MOTOR_TYPE == DJI_M2006)
   {
     if (SHOOT.mode == LOAD_STOP)
     {
-        SHOOT.trigger_motor.set.curr =PID_calc(&SHOOT.trigger_speed_pid, SHOOT.trigger_motor.fdb.vel, SHOOT.trigger_motor.set.vel);
+        SHOOT.trigger_motor.set.curr = PID_calc(&SHOOT.trigger_speed_pid, SHOOT.FDB.trigger_speed_fdb, SHOOT.REF.trigger_speed_ref);
     }
     else if (SHOOT.mode == LOAD_BURSTFIRE)
     {
-        SHOOT.trigger_motor.set.curr =PID_calc(&SHOOT.trigger_speed_pid, SHOOT.trigger_motor.fdb.vel, SHOOT.trigger_motor.set.vel);
+        SHOOT.trigger_motor.set.curr = PID_calc(&SHOOT.trigger_speed_pid, SHOOT.FDB.trigger_speed_fdb, SHOOT.REF.trigger_speed_ref);
     }
     else if (SHOOT.mode == LAOD_BULLET)
     {
-        delta = theta_format(SHOOT.trigger_motor.set.pos - SHOOT.trigger_angel);
+        delta = theta_format(SHOOT.REF.trigger_angel_ref - SHOOT.FDB.trigger_angel_fdb);
 
-        SHOOT.trigger_motor.set.vel = PID_calc(&SHOOT.trigger_angel_pid,0,delta);
-        SHOOT.trigger_motor.set.curr = PID_calc(&SHOOT.trigger_speed_pid,SHOOT.trigger_motor.fdb.vel,SHOOT.trigger_motor.set.vel);
+        SHOOT.REF.trigger_speed_ref = PID_calc(&SHOOT.trigger_angel_pid,0,delta);
+        SHOOT.trigger_motor.set.curr = PID_calc(&SHOOT.trigger_speed_pid,SHOOT.FDB.trigger_speed_fdb, SHOOT.REF.trigger_speed_ref);
     }
     else if (SHOOT.mode == LOAD_BLOCK) 
     {
-        SHOOT.trigger_motor.set.curr =PID_calc(&SHOOT.trigger_speed_pid, SHOOT.trigger_motor.fdb.vel, SHOOT.trigger_motor.set.vel);
+        SHOOT.trigger_motor.set.curr = PID_calc(&SHOOT.trigger_speed_pid, SHOOT.FDB.trigger_speed_fdb, SHOOT.REF.trigger_speed_ref);
     }
   }
   else if (TRIGGER_MOTOR_TYPE == DM_4310)
   {
-    if (SHOOT.mode == LAOD_BULLET)
+    if (SHOOT.mode == LOAD_STOP)
     {
-         delta = theta_format(SHOOT.trigger_motor.set.pos - SHOOT.trigger_angel);
-         SHOOT.trigger_motor.set.vel = PID_calc(&SHOOT.trigger_angel_pid,0,delta);
+        SHOOT.trigger_motor.set.vel = SHOOT.REF.trigger_speed_ref;
+    }
+    else if (SHOOT.mode == LOAD_BURSTFIRE)
+    {
+        SHOOT.trigger_motor.set.vel = SHOOT.REF.trigger_speed_ref;
+    }
+    else if (SHOOT.mode == LAOD_BULLET)
+    {
+        delta = theta_format(SHOOT.REF.trigger_angel_ref - SHOOT.FDB.trigger_angel_fdb);
+        SHOOT.trigger_motor.set.vel = PID_calc(&SHOOT.trigger_angel_pid,0,delta);
+    }
+    else if (SHOOT.mode == LOAD_BLOCK) 
+    {
+        SHOOT.trigger_motor.set.vel = SHOOT.REF.trigger_speed_ref;
     }
   }
   
-
 }
 
 /*-------------------- Cmd --------------------*/
@@ -479,7 +538,7 @@ void ShootSendCmd(void)
   }
 
   //ModifyDebugDataPackage(1,SHOOT.heat,"heat"); 
-  //ModifyDebugDataPackage(2,SHOOT.heat_limit,"limit"); 
+  //ModifyDebugDataPackage(1,SHOOT.heat_limit,"limit"); 
   //ModifyDebugDataPackage(1,SHOOT.fric_motor[0].set.vel,"set"); 
   //ModifyDebugDataPackage(2,SHOOT.fric_motor[0].fdb.vel,"fb"); 
 }
