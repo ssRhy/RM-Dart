@@ -3413,6 +3413,11 @@
               <FileType>1</FileType>
               <FilePath>..\application\gimbal\gimbal_yaw_pitch_direct.c</FilePath>
             </File>
+            <File>
+              <FileName>gimbal_virtual.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\gimbal\gimbal_virtual.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
