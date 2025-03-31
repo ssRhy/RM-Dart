@@ -261,10 +261,6 @@ void CustomControllerSendCmd(void)
         CUSTOM_CONTROLLER.joint_motor[4].set.value, 
         CUSTOM_CONTROLLER.joint_motor[5].set.value, 0);
     // clang-format on
-
-    ModifyDebugDataPackage(0, CUSTOM_CONTROLLER.fdb.joint[0].pos, "j0_pos_f");
-    ModifyDebugDataPackage(1, CUSTOM_CONTROLLER.fdb.joint[1].pos, "j1_pos_f");
-    ModifyDebugDataPackage(2, CUSTOM_CONTROLLER.fdb.joint[2].pos, "j2_pos_f");
 }
 
 #endif  // CUSTOM_CONTROLLER_TYPE
