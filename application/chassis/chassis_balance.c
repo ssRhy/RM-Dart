@@ -408,18 +408,6 @@ void ChassisObserver(void)
     float F0_Tp[2];
     GetLegForce(
         CHASSIS.fdb.leg[0].J, CHASSIS.fdb.leg[0].joint.T1, CHASSIS.fdb.leg[0].joint.T2, F0_Tp);
-
-    // ModifyDebugDataPackage(0, F0_Tp[0], "F0");
-    // ModifyDebugDataPackage(1, F0_Tp[1], "Tp");
-    // ModifyDebugDataPackage(2, CHASSIS.fdb.world.z_accel, "wod_az");
-
-    ModifyDebugDataPackage(3, CHASSIS.fdb.leg[0].Fn, "Fnl");
-    ModifyDebugDataPackage(4, CHASSIS.fdb.leg[1].Fn, "Fnr");
-    // ModifyDebugDataPackage(5, 0, "whe_az");
-
-    // ModifyDebugDataPackage(6, CHASSIS.fdb.leg[0].rod.L0, "L0");
-    // ModifyDebugDataPackage(7, CHASSIS.fdb.leg[0].rod.dL0, "dL0");
-    // ModifyDebugDataPackage(8, CHASSIS.fdb.leg[0].rod.ddL0, "ddL0");
 }
 
 /**
@@ -594,14 +582,6 @@ static void UpdateLegStatus(void)
             CHASSIS.fdb.leg[i].touch_time += CHASSIS.duration;
             CHASSIS.fdb.leg[i].take_off_time = 0;
         }
-
-        // if (i == 0) {
-        //     ModifyDebugDataPackage(0, P, "P");
-        //     ModifyDebugDataPackage(1, theta, "theta");
-        //     ModifyDebugDataPackage(2, F0, "F0");
-        //     ModifyDebugDataPackage(4, WHEEL_MASS * (9.8f + ddot_z_w), "wg");
-        //     ModifyDebugDataPackage(5, Tp, "Tp");
-        // }
     }
 }
 

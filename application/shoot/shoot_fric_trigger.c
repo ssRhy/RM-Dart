@@ -536,11 +536,6 @@ void ShootSendCmd(void)
   
     CanCmdDjiMotor(FRIC_MOTOR_R_CAN, STD_ID ,0 ,SHOOT.fric_motor[1].set.curr,SHOOT.fric_motor[0].set.curr, 0);
   }
-
-  //ModifyDebugDataPackage(1,SHOOT.heat,"heat"); 
-  //ModifyDebugDataPackage(1,SHOOT.heat_limit,"limit"); 
-  //ModifyDebugDataPackage(1,SHOOT.fric_motor[0].set.vel,"set"); 
-  //ModifyDebugDataPackage(2,SHOOT.fric_motor[0].fdb.vel,"fb"); 
 }
 
 #endif  // SHOOT_TYPE == SHOOT_FRIC
