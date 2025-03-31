@@ -60,6 +60,17 @@
 #define RC_HT8A     2  // HT8A遥控器
 #define RC_ET08A    3  // ET08A遥控器
 
+// C板id
+#define C_BOARD_DEFAULT                  1  // C板默认id
+#define C_BOARD_BALANCE_CHASSIS          2  // 平衡底盘C板
+#define C_BOARD_BALANCE_GIMBAL           3  // 平衡云台C板
+#define C_BOARD_ENGINEER_CHASSIS         4  // 工程底盘C板
+#define C_BOARD_ENGINEER_MECHANICAL_ARM  5  // 工程机械臂C板
+#define C_BOARD_ENGINEER_GIMBAL          6  // 工程云台C板
+#define C_BOARD_OMNI_INFANTRY            7  // (单板)全向轮步兵C板
+#define C_BOARD_MECANUM_HERO             8  // (单板)麦克纳姆轮英雄C板
+#define C_BOARD_OMNI_SENTINEIL           9  // (单板)全向轮哨兵C板
+
 // 可用电机类型
 typedef enum __MotorType {
     DJI_M2006 = 0,

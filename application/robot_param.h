@@ -26,18 +26,22 @@
 #include "robot_param_omni_infantry.h"
 
 // 选择机器人的各种类型
-#define __RC_TYPE RC_DT7      // 遥控器类型
+#define __RC_TYPE RC_ET08A         // 遥控器类型
 #define __DEVELOP 1                // 开发模式
 #define __DEBUG 0                  // 调试模式
 #define __TUNING 0                 // 调参模式
 #define __MUSIC_ON 0               // 开启音乐
 #define __TUNING_MODE TUNING_NONE  // 调参模式
-#define __SELF_BOARD_ID 1          // 本板ID
 #define __HEAT_IMU 1  // 加热IMU(防止Debug时因断点导致pid失效产生过热，烧坏IMU)
 #define __CALI_DATA_FROM CALI_FROM_FLASH  // 校准数据来源(部分flash损坏的C板需要采用其他数据源)
 
 // USB通信的部分选项
 #define __USB_SEND_DEBUG 1  // 发送DEBUG数据
+
+// 本板id
+#ifndef __SELF_BOARD_ID
+#define __SELF_BOARD_ID C_BOARD_DEFAULT
+#endif
 
 // 模块检查
 #ifndef CHASSIS_TYPE
