@@ -347,12 +347,6 @@ void Uart2TaskLoop(void)
 
     DataUnpack();
 
-    uint32_t recv_time = LastReceiveTime.Data_Gimbal;
-    uint32_t send_time = Receive_Data_Gimbal.time_stamp;
-    ModifyDebugDataPackage(0, recv_time, "recv_time");
-    ModifyDebugDataPackage(1, send_time, "send_time");
-    ModifyDebugDataPackage(2, recv_time - send_time, "Latency");
-    ModifyDebugDataPackage(3, TASK_DURATION, "dura");
 }
 
 /*------------------------------ End of File ------------------------------*/
