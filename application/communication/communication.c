@@ -38,6 +38,8 @@
 /* Macro Definitions                                                           */
 /*******************************************************************************/
 
+#define UART2_OFFLINE_TIME 100 // ms
+
 #define USART_RX_BUF_LENGHT 512
 #define USART1_FIFO_BUF_LENGTH 1024
 
@@ -346,7 +348,52 @@ void Uart2TaskLoop(void)
 #endif
 
     DataUnpack();
+}
 
+/*******************************************************************************/
+/* API                                                                         */
+/*     GetUartOffline                                                          */
+/*     GetUartRcToeError                                                       */
+/*     GetUartRcPoint                                                          */
+/*     GetUartGimbalYawMotorPos                                                */
+/*     GetUartGimbalInitJudge                                                  */
+/*******************************************************************************/
+
+bool GetUartOffline(void){
+    if (HAL_GetTick() - LastReceiveTime.Interrupt > UART2_OFFLINE_TIME) {
+        return true;
+    }
+    return false;
+}
+
+bool GetUartRcToeError(void)
+{
+    if (HAL_GetTick() - LastReceiveTime.Data_Rc > UART2_OFFLINE_TIME) {
+        return true;
+    }
+    return Receive_Data_Rc.data.rc_toe_error;
+}
+
+const RC_ctrl_t * GetUartRcPoint(void) { return &Receive_Data_Rc.data.rc_ctrl; }
+
+float GetUartGimbalYawMotorPos(void)
+{
+    if (HAL_GetTick() - LastReceiveTime.Data_Gimbal > UART2_OFFLINE_TIME) {
+        return 0;
+    }
+    return Receive_Data_Gimbal.data.yaw_motor_pos;
+}
+
+bool GetUartGimbalInitJudge(void)
+{
+    if (HAL_GetTick() - LastReceiveTime.Data_Gimbal > UART2_OFFLINE_TIME) {
+        return false;
+    }
+    return Receive_Data_Gimbal.data.init_judge;
+}
+
+uint32_t GetUartTimeStampForTest(void){
+    return Receive_Data_Test.time_stamp;
 }
 
 /*------------------------------ End of File ------------------------------*/

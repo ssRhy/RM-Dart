@@ -32,7 +32,7 @@
 
 #define Uart2_Data_Test_Duration        ((uint32_t)20) // ms
 #define Uart2_Data_Rc_Duration          ((uint32_t)16) // ms
-#define Uart2_Data_Gimbal_Duration      ((uint32_t)20) // ms
+#define Uart2_Data_Gimbal_Duration      ((uint32_t)10) // ms
 
 // UART2通信协议数据包长度定义
 #define UART2_FRAME_MAX_SIZE            ((uint8_t)250) // Byte
