@@ -1,38 +1,41 @@
+/**
+  ****************************(C) COPYRIGHT 2024 Polarbear****************************
+  * @file       communication.c/h
+  * @brief      这里是机器人通信部分
+  * @history
+  *  Version    Date            Author          Modification
+  *  V1.0.0     Jun-14-2024     Penguin         1. done
+  *  V1.1.0     2025-03-10      Harry_Wong      1. 初步完成自定义内容通信
+  *  V1.2.0     Apr-01-2025     Penguin         1. 重构与优化
+  *
+  @verbatim
+  ==============================================================================
+  关于Usart1 和 Uart2 之间的关系：Usart1是内部配置，Uart2是C板上的外侧标注，两者为对应关系。
+
+  ==============================================================================
+  @endverbatim
+  ****************************(C) COPYRIGHT 2024 Polarbear****************************
+*/
+
 #ifndef __COMMUNICATION_H
 #define __COMMUNICATION_H
 
+#include "remote_control.h"
+#include "stdbool.h"
 #include "struct_typedef.h"
-
-#define FRAME_HEADER_SOF 0xA5
-#define FRAME_HEADER_LEN 5  // （字节）数据帧头部长度
-#define DATA_LEN 20         // 数据段长度
-#define DATA_NUM 8          // 数据段数量
-
-#define FRAME_HEADER_LEN_OFFEST 1
-#define FRAME_HEADER_ID_OFFEST 2
-#define FRAME_HEADER_TYPE_OFFEST 3
-
-typedef struct
-{
-    struct frame_header
-    {
-        uint8_t sof;   // 数据帧起始字节，固定值为 0xA5
-        uint8_t len;   // 数据段长度
-        uint8_t id;    // 数据段id
-        uint8_t type;  // 数据段类型
-        uint8_t crc;   // 数据帧头的 CRC8 校验
-    } __attribute__((packed)) frame_header;
-
-    uint8_t data[DATA_LEN];
-    uint16_t crc;
-} __attribute__((packed)) BoardCommunicateData_s;
-
-extern BoardCommunicateData_s BOARD_TX_DATA;
 
 extern void Usart1Init(void);
 
-extern void DataPack(uint8_t * data, uint8_t data_lenth, uint8_t data_id);
+extern void Uart2TaskLoop(void);
 
-extern void DataUnpack(void);
+// API
+
+extern bool GetUartOffline(void);
+extern bool GetUartRcToeError(void);
+extern const RC_ctrl_t * GetUartRcPoint(void);
+extern float GetUartGimbalYawMotorPos(void);
+extern bool GetUartGimbalInitJudge(void);
+extern uint32_t GetUartTimeStampForTest(void);
 
 #endif  // __COMMUNICATION_H
+/*------------------------------ End of File ------------------------------*/

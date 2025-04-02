@@ -1,6 +1,6 @@
 /**
-  * @file       robot_param_balanced_infantry.h
-  * @brief      这里是平衡步兵机器人参数配置文件，包括物理参数、PID参数等
+  * @file       robot_param_communicate.h
+  * @brief      ...
   */
 
 #ifndef INCLUDED_ROBOT_PARAM_H
