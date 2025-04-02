@@ -5,8 +5,8 @@
   * @history
   *  Version    Date            Author          Modification
   *  V1.0.0     Apr-1-2024      Penguin         1. done
-  *  V1.0.0     May-5-2024      Penguin         1. 添加dji电机的速度和位置控制
-  *
+  *  V1.0.1     May-5-2024      Penguin         1. 添加dji电机的速度和位置控制
+  *  V1.0.2     Apr-02-2024     Penguin         1. 添加了离线电机的扫描
   @verbatim
   ==============================================================================
 
@@ -19,6 +19,10 @@
 
 #include "cmsis_os.h"
 #include "pid.h"
+
+#define MAX_MOTOR_NUM 30
+Motor_s * MOTORS[MAX_MOTOR_NUM];
+uint32_t MOTORS_USED_NUM = 0;
 
 /**
  * @brief       电机初始化
@@ -42,5 +46,26 @@ void MotorInit(
     p_motor->mode = mode;
 
     p_motor->offline = true;
+
+    MOTORS[MOTORS_USED_NUM] = p_motor;  // 将电机添加到电机列表中
+    MOTORS_USED_NUM++;
+    if (MOTORS_USED_NUM > MAX_MOTOR_NUM) {
+        MOTORS_USED_NUM = MAX_MOTOR_NUM;
+    }
 }
 
+/**
+ * @brief          扫描所有电机，检测是否有离线电机
+ * @return         true: 有离线电机 false: 全部在线
+ */
+bool ScanOfflineMotor(void)
+{
+    for (uint32_t i = 0; i < MOTORS_USED_NUM; i++) {
+        if (MOTORS[i]->offline) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/************************ END OF FILE ************************/

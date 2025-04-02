@@ -231,13 +231,13 @@ typedef struct __Motor
     /*状态量*/
     struct __fdb
     {
-        float acc;      // (rad/s^2)电机加速度
+        float acc;  // (rad/s^2)电机加速度
 
-        float vel;      // (rad/s) 电机反馈转速
-        float tor;      // (N*m)   电机反馈力矩
-        float pos;      // (rad)   电机反馈位置
-        float temp;     // (℃)    电机反馈温度
-        float curr;     // (A)     电机反馈电流
+        float vel;   // (rad/s) 电机反馈转速
+        float tor;   // (N*m)   电机反馈力矩
+        float pos;   // (rad)   电机反馈位置
+        float temp;  // (℃)    电机反馈温度
+        float curr;  // (A)     电机反馈电流
 
         int16_t round;  // (r)电机旋转圈数(用于计算输出轴位置)
         uint16_t ecd;   // 电机编码器值
@@ -247,11 +247,11 @@ typedef struct __Motor
     /*设定值*/
     struct __set
     {
-        float curr;   // (A)     电机设定电流
-        float volt;   // (V)     电机设定电压
-        float tor;    // (N*m)   电机设定力矩
-        float vel;    // (rad/s) 电机设定转速
-        float pos;    // (rad)   电机设定位置
+        float curr;  // (A)     电机设定电流
+        float volt;  // (V)     电机设定电压
+        float tor;   // (N*m)   电机设定力矩
+        float vel;   // (rad/s) 电机设定转速
+        float pos;   // (rad)   电机设定位置
 
         float value;  // 可发送的直接控制量，无单位
     } set;
@@ -263,5 +263,7 @@ typedef struct __Motor
 extern void MotorInit(
     Motor_s * p_motor, uint8_t id, uint8_t can, MotorType_e motor_type, int8_t direction,
     float reduction_ratio, uint16_t mode);
+
+extern bool ScanOfflineMotor(void);
 
 #endif  // MOTOR_H
