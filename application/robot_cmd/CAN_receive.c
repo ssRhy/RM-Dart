@@ -12,6 +12,7 @@
   *  V2.1.0     Mar-20-2024     Penguin         1. 添加DM电机的适配
   *  V2.2.0     May-22-2024     Penguin         1. 添加LK电机的适配
   *  V2.3.0     May-22-2024     Penguin         1. 添加板间通信数据解码
+  *  V2.3.1     Apr-01-2024     Penguin         1. 添加了DJI电机离线的判断
   *
   @verbatim
   ==============================================================================
@@ -323,6 +324,13 @@ static void GetDjiFdbData(Motor_s * p_motor, const DjiMotorMeasure_t * p_dji_mot
     p_motor->fdb.temp = p_dji_motor_measure->temperate;
     p_motor->fdb.curr = p_dji_motor_measure->given_current;
     p_motor->fdb.ecd = p_dji_motor_measure->ecd;
+
+    uint32_t now = HAL_GetTick();
+    if (now - p_dji_motor_measure->last_fdb_time > MOTOR_STABLE_RUNNING_TIME) {
+        p_motor->offline = true;
+    } else {
+        p_motor->offline = false;
+    }
 }
 
 /**
