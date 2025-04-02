@@ -1,6 +1,6 @@
 /**
   ****************************(C) COPYRIGHT 2024 Polarbear****************************
-  * @file       communication.h
+  * @file       communication.c/h
   * @brief      这里是机器人通信部分
   * @history
   *  Version    Date            Author          Modification
@@ -10,16 +10,12 @@
   *
   @verbatim
   ==============================================================================
-关于Usart1 和 Uart2 之间的关系：Usart1是内部配置，Uart2是C板上的外侧标注，两者为对应关系。
+  关于Usart1 和 Uart2 之间的关系：Usart1是内部配置，Uart2是C板上的外侧标注，两者为对应关系。
 
-板间通信的数据包结构如下：
-    0x00 header
-    0x01 data
-    0x03 CRC16
   ==============================================================================
   @endverbatim
   ****************************(C) COPYRIGHT 2024 Polarbear****************************
-  */
+*/
 
 #include "communication.h"
 
@@ -38,7 +34,7 @@
 /* Macro Definitions                                                           */
 /*******************************************************************************/
 
-#define UART2_OFFLINE_TIME 100 // ms
+#define UART2_OFFLINE_TIME 200  // ms
 
 #define USART_RX_BUF_LENGHT 512
 #define USART1_FIFO_BUF_LENGTH 1024
@@ -359,7 +355,8 @@ void Uart2TaskLoop(void)
 /*     GetUartGimbalInitJudge                                                  */
 /*******************************************************************************/
 
-bool GetUartOffline(void){
+bool GetUartOffline(void)
+{
     if (HAL_GetTick() - LastReceiveTime.Interrupt > UART2_OFFLINE_TIME) {
         return true;
     }
@@ -392,8 +389,6 @@ bool GetUartGimbalInitJudge(void)
     return Receive_Data_Gimbal.data.init_judge;
 }
 
-uint32_t GetUartTimeStampForTest(void){
-    return Receive_Data_Test.time_stamp;
-}
+uint32_t GetUartTimeStampForTest(void) { return Receive_Data_Test.time_stamp; }
 
 /*------------------------------ End of File ------------------------------*/
