@@ -185,6 +185,15 @@ void slove_data_error(void)
     RC_restart(SBUS_RX_BUF_NUM);
 }
 
+// clang-format on
+// 记录接收数据的次数
+#define COUNT_RECEIVED                            \
+    if (now - last_receive_time > RC_LOST_TIME) { \
+        receive_count = 0;                        \
+    }                                             \
+    receive_count++;
+// clang-format off
+
 //串口中断
 void USART3_IRQHandler(void)
 {
@@ -228,10 +237,9 @@ void USART3_IRQHandler(void)
             {
                 //处理遥控器数据
                 sbus_to_rc(sbus_rx_buf[0], &rc_ctrl);
-                if (now - last_receive_time > RC_LOST_TIME) {
-                    receive_count = 0;
-                }
-                receive_count++;
+                
+                COUNT_RECEIVED
+                
                 //记录数据接收时间
                 last_receive_time = HAL_GetTick();
                 detect_hook(DBUS_TOE);
@@ -247,10 +255,9 @@ void USART3_IRQHandler(void)
 #elif (__RC_TYPE == RC_ET08A)
                 Et08aSbusToRc(sbus_rx_buf[0], &rc_ctrl);
 #endif
-                if (now - last_receive_time > RC_LOST_TIME) {
-                    receive_count = 0;
-                }
-                receive_count++;
+                
+                COUNT_RECEIVED
+                
                 //记录数据接收时间
                 last_receive_time = HAL_GetTick();
                 receive_count++;
@@ -284,10 +291,9 @@ void USART3_IRQHandler(void)
             {
                 //处理遥控器数据
                 sbus_to_rc(sbus_rx_buf[1], &rc_ctrl);
-                if (now - last_receive_time > RC_LOST_TIME) {
-                    receive_count = 0;
-                }
-                receive_count++;
+                
+                COUNT_RECEIVED
+
                 //记录数据接收时间
                 last_receive_time = HAL_GetTick();
                 receive_count++;
@@ -304,10 +310,9 @@ void USART3_IRQHandler(void)
 #elif (__RC_TYPE == RC_ET08A)
                 Et08aSbusToRc(sbus_rx_buf[1], &rc_ctrl);
 #endif
-                if (now - last_receive_time > RC_LOST_TIME) {
-                    receive_count = 0;
-                }
-                receive_count++;
+                
+                COUNT_RECEIVED
+
                 //记录数据接收时间
                 last_receive_time = HAL_GetTick();
                 receive_count++;
