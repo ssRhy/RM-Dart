@@ -14,8 +14,8 @@
   @endverbatim
   ****************************(C) COPYRIGHT 2024 Polarbear****************************
 **/
-#ifndef UART1_TYPEDEF_H
-#define UART1_TYPEDEF_H
+#ifndef UART2_TYPEDEF_H
+#define UART2_TYPEDEF_H
 
 #include "attribute_typedef.h"
 #include "remote_control.h"
