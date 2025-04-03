@@ -137,19 +137,21 @@ static void MusicInit(void)
 
     music_step = STEP_INIT;
 
-    MUSICS[start] = MusicStartInit();
+    // clang-format off
+    MUSICS[start]             = MusicStartInit();
     // MUSICS[referee] = MusicRefereeInit();
     // MUSICS[error] = MusicErrorInit();
-    MUSICS[motor_offline] = MusicMotorOfflineInit();
-    // MusicYouInit();
-    // MusicUnityInit();
-    // MusicCanonInit();
-    // MusicCastleInTheSkyInit();
-    // MusicSeeYouAgainInit();
-    // MusicHaoYunLaiInit();
-    // MusicMeowInit();
-    // MusicGongXiFaCaiInit();
-    // MusicDejaVuInit();
+    MUSICS[motor_offline]     = MusicMotorOfflineInit();
+    MUSICS[you]               = MusicYouInit();
+    // MUSICS[unity]             = MusicUnityInit();
+    // MUSICS[canon]             = MusicCanonInit();
+    // MUSICS[castle_in_the_sky] = MusicCastleInTheSkyInit();
+    // MUSICS[see_you_again]     = MusicSeeYouAgainInit();
+    // MUSICS[hao_yun_lai]       = MusicHaoYunLaiInit();
+    // MUSICS[meow]              = MusicMeowInit();
+    // MUSICS[gong_xi_fa_cai]    = MusicGongXiFaCaiInit();
+    // MUSICS[deja_vu]           = MusicDejaVuInit();
+    // clang-format on
 }
 
 static void MusicPlay(void)
@@ -159,10 +161,10 @@ static void MusicPlay(void)
             music_step = STEP_NORMAL;
             is_play = PLAY_NONE;
         }
-    } else {  // 正常状态
-        if (task_count % 2000 == 0) {// 检测是否存在离线电机
+    } else {                           // 正常状态
+        if (task_count % 2000 == 0) {  // 检测是否存在离线电机
             if (ScanOfflineMotor()) {
-                is_play = PLAY_MOTOR_OFFLINE;
+                // is_play = PLAY_MOTOR_OFFLINE;
             }
         }
 
@@ -172,8 +174,9 @@ static void MusicPlay(void)
                 if (PlayMusic(&MUSICS[motor_offline], 0.5f)) is_play = PLAY_NONE;
             } break;
 
-            default:
-                break;
+            default: {
+                PlayMusic(&MUSICS[you], 0.5f);
+            } break;
         }
     }
 }
