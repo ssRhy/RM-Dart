@@ -6,7 +6,7 @@
 #include "stm32f4xx_hal.h"
 
 #define NOTE_START 1000
-#define NOTE_ON 150
+#define NOTE_ON 400
 #define NOTE_OFF 0
 
 #define NOTE_LONE 250
@@ -22,12 +22,12 @@ MusicInfo_s MusicRcOfflineInit(void)
 {
     MUSIC_INFO.notes = Notes;
 
-    WRITE_NOTE(1000, 30);
+    WRITE_NOTE(1200, 100);
 
     // 哔-
     WRITE_NOTE(NOTE_ON, 400);
 
-    WRITE_NOTE(1000, 30);
+    WRITE_NOTE(1200, 100);
     WRITE_NOTE(NOTE_OFF, 100);
 
     return MUSIC_INFO;

@@ -24,6 +24,7 @@
 #include "music_typedef.h"
 #include "music_unity.h"
 #include "music_you.h"
+#include "remote_control.h"
 #include "stm32f4xx_hal.h"
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
@@ -177,12 +178,12 @@ static void MusicPlay(void)
             is_play = PLAY_NONE;
         }
     } else {  // 正常状态
-        if (task_count % 4000 == 0) {
+        if (task_count % 5000 == 0) {
+            if (GetRcOffline()) {  // 检测遥控器是否离线
+                fifo_s_put(&play_list_fifo, PLAY_RC_OFFLINE);
+            }
             if (ScanOfflineMotor()) {  // 检测是否存在离线电机
                 fifo_s_put(&play_list_fifo, PLAY_MOTOR_OFFLINE);
-            }
-            if (0) {
-                fifo_s_put(&play_list_fifo, PLAY_RC_OFFLINE);
             }
         }
 
