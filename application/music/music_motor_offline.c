@@ -22,17 +22,17 @@ MusicInfo_s MusicMotorOfflineInit(void)
 {
     MUSIC_INFO.notes = Notes;
 
-    WRITE_NOTE(1000, 100);
-    WRITE_NOTE(NOTE_OFF, SLEEP_LONE);
+    WRITE_NOTE(1000, 30);
+    WRITE_NOTE(NOTE_OFF, 100);
 
     // 滴-滴-滴-
     WRITE_NOTE(NOTE_ON, NOTE_LONE);
     WRITE_NOTE(NOTE_OFF, SLEEP_LONE);
 
     WRITE_NOTE(NOTE_ON, NOTE_LONE);
-    WRITE_NOTE(NOTE_OFF, SLEEP_LONE);
-
-    WRITE_NOTE(1000, 100);
+    
+    WRITE_NOTE(NOTE_OFF, 100);
+    WRITE_NOTE(1000, 30);
 
     return MUSIC_INFO;
 }
