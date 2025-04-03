@@ -20,13 +20,12 @@
 #include "detect_task.h"
 #include "protocol.h"
 #include "stdio.h"
-#include "string.h"
 #include "stm32f4xx_hal.h"
+#include "string.h"
 
-#define REFEREE_TIMEOUT 20  //裁判系统超时时间
-bool referee_is_offline = false;
+#define REFEREE_TIMEOUT 300  //裁判系统超时时间
 uint32_t referee_online_time = 0;
-
+uint32_t referee_receive_count = 0;
 
 frame_header_struct_t referee_receive_header;
 frame_header_struct_t referee_send_header;
@@ -84,6 +83,11 @@ void init_referee_struct_data(void)
 
 void referee_data_solve(uint8_t * frame)
 {
+    if (HAL_GetTick() - referee_online_time > REFEREE_TIMEOUT) {
+        referee_receive_count = 0;
+    }
+    referee_receive_count++;
+
     uint16_t cmd_id = 0;
 
     uint8_t index = 0;
@@ -94,7 +98,6 @@ void referee_data_solve(uint8_t * frame)
 
     memcpy(&cmd_id, frame + index, sizeof(uint16_t));
     index += sizeof(uint16_t);
-    buzzer_on(100, 300);
 
     switch (cmd_id) {
         case GAME_STATE_CMD_ID: {
@@ -175,6 +178,7 @@ void referee_data_solve(uint8_t * frame)
             referee_online_time = HAL_GetTick();
         } break;
         default: {
+            referee_receive_count--;
             break;
         }
     }
@@ -200,7 +204,7 @@ void get_shoot_heat1_limit_and_heat1(uint16_t * heat1_limit, uint16_t * heat1)
     *heat1 = power_heat_data.shooter_17mm_2_barrel_heat;  // 第 2 个 17mm 发射机构的枪口热量
 }
 
-void get_shoot_heat42_limit_and_heat42(uint16_t *heat_limit, uint16_t *heat)
+void get_shoot_heat42_limit_and_heat42(uint16_t * heat_limit, uint16_t * heat)
 {
     *heat_limit = robot_status.shooter_barrel_heat_limit;
     *heat = power_heat_data.shooter_42mm_barrel_heat;
@@ -256,9 +260,10 @@ CustomControllerData_t * GetCustomControllerDataPoint(void) { return &CUSTOM_CON
 
 /*========== API ==========*/
 
-inline bool GetRefereeState(void) { 
+inline bool GetRefereeOffline(void)
+{
     uint32_t current_time = HAL_GetTick();
-    return current_time - referee_online_time < REFEREE_TIMEOUT && current_time>REFEREE_TIMEOUT;
+    return !((referee_receive_count > 5) && (current_time - referee_online_time < REFEREE_TIMEOUT));
 }
 
 /**
@@ -266,12 +271,12 @@ inline bool GetRefereeState(void) {
  * @param  index 数据索引
  * @return float 数据
  */
-inline float GetCustomControllerPos(uint8_t index){
+inline float GetCustomControllerPos(uint8_t index)
+{
     float data = 0;
     memcpy(&data, &CUSTOM_CONTROLLER_DATA.data[index * 4], 4);
     return data;
     // return *((float *)(&CUSTOM_CONTROLLER_DATA.data[index * 4]));
 }
-
 
 /*------------------------------ End of File ------------------------------*/

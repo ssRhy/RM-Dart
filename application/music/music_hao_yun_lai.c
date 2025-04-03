@@ -27,8 +27,6 @@ static MusicInfo_s MUSIC_INFO;
 MusicInfo_s MusicHaoYunLaiInit(void)
 {
     MUSIC_INFO.notes = Notes;
-    
-    SLEEP_NOTE(500);
 
     // do re mi fa so la si
     // 1  2  3  4  5  6  7
@@ -96,9 +94,11 @@ MusicInfo_s MusicHaoYunLaiInit(void)
     WRITE_NOTE(D_so, ONE_FOURTH);           // 5
     WRITE_NOTE(D_do * 2, ONE_FOURTH_HALF);  // 1`_
     WRITE_NOTE(D_la, ONE_FOURTH_HALF);      // 6_
-    WRITE_NOTE(D_la, ONE_FOURTH * 2);           // 6
+    WRITE_NOTE(D_la, ONE_FOURTH * 2);       // 6
 
     // 尾奏
+
+    SLEEP_NOTE(500);
 
     return MUSIC_INFO;
 }

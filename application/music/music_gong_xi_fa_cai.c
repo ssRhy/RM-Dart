@@ -31,8 +31,6 @@ MusicInfo_s MusicGongXiFaCaiInit(void)
 {
     MUSIC_INFO.notes = Notes;
 
-    SLEEP_NOTE(1500);
-
     // do re mi fa so la si
     // 1  2  3  4  5  6  7
 
@@ -198,6 +196,8 @@ MusicInfo_s MusicGongXiFaCaiInit(void)
     // 怪
     // 6 - - -
     WRITE_NOTE(A_la, ONE_FOURTH * 4);  // 6
+
+    SLEEP_NOTE(1500);
 
     return MUSIC_INFO;
 }
