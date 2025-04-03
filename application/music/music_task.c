@@ -145,7 +145,7 @@ static void MusicInit(void)
     MUSICS[you]               = MusicYouInit();
     MUSICS[unity]             = MusicUnityInit();
     MUSICS[canon]             = MusicCanonInit();
-    // MUSICS[castle_in_the_sky] = MusicCastleInTheSkyInit();
+    MUSICS[castle_in_the_sky] = MusicCastleInTheSkyInit();
     // MUSICS[see_you_again]     = MusicSeeYouAgainInit();
     // MUSICS[hao_yun_lai]       = MusicHaoYunLaiInit();
     // MUSICS[meow]              = MusicMeowInit();
@@ -175,7 +175,7 @@ static void MusicPlay(void)
             } break;
 
             default: {
-                PlayMusic(&MUSICS[canon], 0.1f);
+                PlayMusic(&MUSICS[castle_in_the_sky], 0.1f);
             } break;
         }
     }

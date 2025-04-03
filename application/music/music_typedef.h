@@ -27,22 +27,9 @@
             MUSIC_INFO.notes[MUSIC_INFO.last_note_id].end + LONG;  \
         MUSIC_INFO.last_note_id++;                                 \
     }
-// #define WRITE_NOTE(NOTE, LONG)                                \
-//     {                                                         \
-//         Notes[write_id].note = NOTE;                          \
-//         Notes[write_id].Long = LONG;                          \
-//         Notes[write_id].end = Notes[write_id - 1].end + LONG; \
-//         write_id++;                                           \
-//     }
 
 // 空拍
-#define SLEEP_NOTE(LONG)                                      \
-    {                                                         \
-        Notes[write_id].note = 0;                             \
-        Notes[write_id].Long = LONG;                          \
-        Notes[write_id].end = Notes[write_id - 1].end + LONG; \
-        write_id++;                                           \
-    }
+#define SLEEP_NOTE(LONG) WRITE_NOTE(0, LONG)
 
 typedef struct
 {

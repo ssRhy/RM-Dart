@@ -3,7 +3,6 @@
 #include "bsp_buzzer.h"
 #include "music.h"
 #include "stm32f4xx_hal.h"
-#include "music_typedef.h"
 
 // clang-format off
 #define	qdo    262 
@@ -46,408 +45,378 @@
 
 #define NOTE_NUM 400
 static Note Notes[NOTE_NUM];  // Array of notes
-
-static uint32_t last_note_id = 0;  // Index of the last note
-static uint32_t write_id = 1;      // Index of the note to be written
-static uint32_t play_id = 1;       // Index of the note to be played
-
-static uint32_t start_time = 0;  // Start time of the music
-static uint32_t now = 0;
-
-/*-------------------- Private functions --------------------*/
-static void WriteNote(int note, float Long)
-{
-    Notes[write_id].note = note;
-    Notes[write_id].Long = Long;
-    Notes[write_id].end = Notes[write_id - 1].end + Long;
-    write_id++;
-}
-
-static void SleepNote(float Long) { WriteNote(0, Long); }
+static MusicInfo_s MUSIC_INFO;
 
 /*-------------------- User functions --------------------*/
-void MusicCastleInTheSkyPlay(void)
-{
-    now = HAL_GetTick();
-    if (now - start_time >= Notes[play_id].end) {
-        play_id++;
-        if (play_id > last_note_id) {
-            play_id = 1;
-            start_time = now;
-        }
 
-        buzzer_note(Notes[play_id].note, 0.07);
-    }
-}
-
-void MusicCastleInTheSkyInit(void)
+MusicInfo_s MusicCastleInTheSkyInit(void)
 {
+    MUSIC_INFO.notes = Notes;
+
     int pai = 400, ban = 200;
     int ting = 128;
 
-    SleepNote(1000);
+    SLEEP_NOTE(1000);
 
-    WriteNote(la, ban);
-    WriteNote(si, ban);
-    SleepNote(ting);
+    WRITE_NOTE(la, ban);
+    WRITE_NOTE(si, ban);
+    SLEEP_NOTE(ting);
 
-    WriteNote(do1, pai + ban);
-    WriteNote(si, ban);
-    SleepNote(ting);
-    WriteNote(do1, pai);
-    SleepNote(ting);
-    WriteNote(mi1, pai);
-    SleepNote(ting);
+    WRITE_NOTE(do1, pai + ban);
+    WRITE_NOTE(si, ban);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(do1, pai);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(mi1, pai);
+    SLEEP_NOTE(ting);
 
-    WriteNote(si, 3 * pai);
-    SleepNote(ting);
-    WriteNote(mi, ban);
-    WriteNote(mi, ban);
+    WRITE_NOTE(si, 3 * pai);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(mi, ban);
+    WRITE_NOTE(mi, ban);
 
-    WriteNote(la, ban + pai);
-    WriteNote(so, ban);
-    SleepNote(ting);
-    WriteNote(la, pai);
-    SleepNote(ting);
-    WriteNote(do1, pai);
-    SleepNote(ting);
+    WRITE_NOTE(la, ban + pai);
+    WRITE_NOTE(so, ban);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(la, pai);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(do1, pai);
+    SLEEP_NOTE(ting);
 
-    WriteNote(so, 2 * pai);
-    SleepNote(ting);
-    SleepNote(pai);
-    WriteNote(mi, ban);
-    SleepNote(ting / 2);
-    WriteNote(mi, ban);
-    SleepNote(ting / 2);
+    WRITE_NOTE(so, 2 * pai);
+    SLEEP_NOTE(ting);
+    SLEEP_NOTE(pai);
+    WRITE_NOTE(mi, ban);
+    SLEEP_NOTE(ting / 2);
+    WRITE_NOTE(mi, ban);
+    SLEEP_NOTE(ting / 2);
 
-    WriteNote(fa, pai + ban);
-    WriteNote(mi, ban);
-    SleepNote(ting);
-    WriteNote(fa, ban);
-    WriteNote(do1, ban + pai);
-    SleepNote(ting);
+    WRITE_NOTE(fa, pai + ban);
+    WRITE_NOTE(mi, ban);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(fa, ban);
+    WRITE_NOTE(do1, ban + pai);
+    SLEEP_NOTE(ting);
 
-    WriteNote(mi, 2 * pai);
-    SleepNote(ting);
-    SleepNote(ban);
-    WriteNote(do1, ban);
-    SleepNote(ting / 2);
-    WriteNote(do1, ban);
-    SleepNote(ting / 2);
-    WriteNote(do1, ban);
-    SleepNote(ting / 2);
+    WRITE_NOTE(mi, 2 * pai);
+    SLEEP_NOTE(ting);
+    SLEEP_NOTE(ban);
+    WRITE_NOTE(do1, ban);
+    SLEEP_NOTE(ting / 2);
+    WRITE_NOTE(do1, ban);
+    SLEEP_NOTE(ting / 2);
+    WRITE_NOTE(do1, ban);
+    SLEEP_NOTE(ting / 2);
 
-    WriteNote(si, ban + pai);
-    WriteNote(sfa, ban);
-    SleepNote(ting);
-    WriteNote(sfa, pai);
-    WriteNote(si, pai);
-    SleepNote(ting);
+    WRITE_NOTE(si, ban + pai);
+    WRITE_NOTE(sfa, ban);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(sfa, pai);
+    WRITE_NOTE(si, pai);
+    SLEEP_NOTE(ting);
 
-    WriteNote(si, 2 * pai);
-    SleepNote(ting);
-    SleepNote(pai);
-    WriteNote(la, ban);
-    WriteNote(si, ban);
-    SleepNote(ting);
+    WRITE_NOTE(si, 2 * pai);
+    SLEEP_NOTE(ting);
+    SLEEP_NOTE(pai);
+    WRITE_NOTE(la, ban);
+    WRITE_NOTE(si, ban);
+    SLEEP_NOTE(ting);
 
-    WriteNote(do1, pai + ban);
-    WriteNote(si, ban);
-    SleepNote(ting);
-    WriteNote(do1, pai);
-    SleepNote(ting);
-    WriteNote(mi1, pai);
-    SleepNote(ting);
+    WRITE_NOTE(do1, pai + ban);
+    WRITE_NOTE(si, ban);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(do1, pai);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(mi1, pai);
+    SLEEP_NOTE(ting);
 
-    WriteNote(si, 2 * pai);
-    SleepNote(ting);
-    SleepNote(pai);
-    WriteNote(mi, ban);
-    SleepNote(20);
-    WriteNote(mi, ban);
-    SleepNote(ting);
+    WRITE_NOTE(si, 2 * pai);
+    SLEEP_NOTE(ting);
+    SLEEP_NOTE(pai);
+    WRITE_NOTE(mi, ban);
+    SLEEP_NOTE(20);
+    WRITE_NOTE(mi, ban);
+    SLEEP_NOTE(ting);
 
-    WriteNote(la, pai + ban);
-    WriteNote(so, ban);
-    SleepNote(ting);
-    WriteNote(la, pai);
-    SleepNote(ting);
-    WriteNote(do1, pai);
-    SleepNote(ting);
+    WRITE_NOTE(la, pai + ban);
+    WRITE_NOTE(so, ban);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(la, pai);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(do1, pai);
+    SLEEP_NOTE(ting);
 
-    WriteNote(so, 3 * pai);
-    SleepNote(ting + ban);
-    WriteNote(mi, ban);
-    SleepNote(ting / 2);
+    WRITE_NOTE(so, 3 * pai);
+    SLEEP_NOTE(ting + ban);
+    WRITE_NOTE(mi, ban);
+    SLEEP_NOTE(ting / 2);
 
-    WriteNote(fa, pai);
-    SleepNote(ting);
-    WriteNote(do1, ban);
-    WriteNote(si, ban);
-    SleepNote(20);
-    WriteNote(si, pai);
-    SleepNote(ting);
-    WriteNote(do1, pai);
-    SleepNote(ting);
+    WRITE_NOTE(fa, pai);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(do1, ban);
+    WRITE_NOTE(si, ban);
+    SLEEP_NOTE(20);
+    WRITE_NOTE(si, pai);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(do1, pai);
+    SLEEP_NOTE(ting);
 
-    WriteNote(re1, ban);
-    SleepNote(20);
-    WriteNote(re1, ban);
-    SleepNote(20);
-    WriteNote(mi1, ban);
-    SleepNote(ting / 2);
-    WriteNote(do1, pai);
-    SleepNote(ting + pai);
+    WRITE_NOTE(re1, ban);
+    SLEEP_NOTE(20);
+    WRITE_NOTE(re1, ban);
+    SLEEP_NOTE(20);
+    WRITE_NOTE(mi1, ban);
+    SLEEP_NOTE(ting / 2);
+    WRITE_NOTE(do1, pai);
+    SLEEP_NOTE(ting + pai);
 
-    WriteNote(do1, pai);
-    WriteNote(si, ban);
-    SleepNote(ting);
-    WriteNote(la, ban);
-    SleepNote(20);
-    WriteNote(la, ban);
-    SleepNote(ting);
-    WriteNote(si, pai);
-    SleepNote(ting);
-    WriteNote(sso, pai);
-    SleepNote(ting);
+    WRITE_NOTE(do1, pai);
+    WRITE_NOTE(si, ban);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(la, ban);
+    SLEEP_NOTE(20);
+    WRITE_NOTE(la, ban);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(si, pai);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(sso, pai);
+    SLEEP_NOTE(ting);
 
-    WriteNote(sso, 2 * pai);
-    SleepNote(ting + pai);
-    WriteNote(do1, ban);
-    WriteNote(re1, ban);
-    SleepNote(ting);
+    WRITE_NOTE(sso, 2 * pai);
+    SLEEP_NOTE(ting + pai);
+    WRITE_NOTE(do1, ban);
+    WRITE_NOTE(re1, ban);
+    SLEEP_NOTE(ting);
 
-    WriteNote(mi1, pai + ban);
-    WriteNote(re1, ban);
-    SleepNote(ting);
-    WriteNote(mi1, pai);
-    SleepNote(ting);
-    WriteNote(fa1, pai);
-    SleepNote(ting);
+    WRITE_NOTE(mi1, pai + ban);
+    WRITE_NOTE(re1, ban);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(mi1, pai);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(fa1, pai);
+    SLEEP_NOTE(ting);
 
-    WriteNote(re1, 2 * pai);
-    SleepNote(pai + ting);
-    WriteNote(so, ban);
-    SleepNote(20);
-    WriteNote(so, ban);
-    SleepNote(ting);
+    WRITE_NOTE(re1, 2 * pai);
+    SLEEP_NOTE(pai + ting);
+    WRITE_NOTE(so, ban);
+    SLEEP_NOTE(20);
+    WRITE_NOTE(so, ban);
+    SLEEP_NOTE(ting);
 
-    WriteNote(do1, ban);
-    WriteNote(si, ban);
-    SleepNote(ting);
-    WriteNote(do1, pai);
-    SleepNote(ting);
-    WriteNote(mi1, pai);
-    SleepNote(ting);
+    WRITE_NOTE(do1, ban);
+    WRITE_NOTE(si, ban);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(do1, pai);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(mi1, pai);
+    SLEEP_NOTE(ting);
 
-    WriteNote(mi1, 2 * pai);
-    SleepNote(ting + 2 * pai);
+    WRITE_NOTE(mi1, 2 * pai);
+    SLEEP_NOTE(ting + 2 * pai);
 
-    WriteNote(la, ban);
-    WriteNote(si, ban);
-    SleepNote(ting);
-    WriteNote(do1, pai);
-    SleepNote(ting);
-    WriteNote(si, pai);
-    SleepNote(ting);
-    WriteNote(re1, ban);
-    SleepNote(20);
-    WriteNote(re1, ban);
-    SleepNote(ting);
+    WRITE_NOTE(la, ban);
+    WRITE_NOTE(si, ban);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(do1, pai);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(si, pai);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(re1, ban);
+    SLEEP_NOTE(20);
+    WRITE_NOTE(re1, ban);
+    SLEEP_NOTE(ting);
 
-    WriteNote(do1, pai + ban);
-    WriteNote(so, ban);
-    SleepNote(20);
-    WriteNote(so, pai);
-    SleepNote(pai + ting);
+    WRITE_NOTE(do1, pai + ban);
+    WRITE_NOTE(so, ban);
+    SLEEP_NOTE(20);
+    WRITE_NOTE(so, pai);
+    SLEEP_NOTE(pai + ting);
 
-    WriteNote(fa1, pai);
-    SleepNote(ting);
-    WriteNote(mi1, pai);
-    SleepNote(ting);
-    WriteNote(re1, pai);
-    SleepNote(ting);
-    WriteNote(do1, pai);
-    SleepNote(ting);
+    WRITE_NOTE(fa1, pai);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(mi1, pai);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(re1, pai);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(do1, pai);
+    SLEEP_NOTE(ting);
 
-    WriteNote(mi1, 4 * pai);
+    WRITE_NOTE(mi1, 4 * pai);
 
-    WriteNote(mi1, pai * 2);
-    SleepNote(pai + ting);
-    WriteNote(mi1, pai);
-    SleepNote(ting);
+    WRITE_NOTE(mi1, pai * 2);
+    SLEEP_NOTE(pai + ting);
+    WRITE_NOTE(mi1, pai);
+    SLEEP_NOTE(ting);
 
-    WriteNote(la1, 2 * pai);
-    SleepNote(ting);
-    WriteNote(so1, pai);
-    SleepNote(ting);
-    WriteNote(so1, pai);
-    SleepNote(ting);
+    WRITE_NOTE(la1, 2 * pai);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(so1, pai);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(so1, pai);
+    SLEEP_NOTE(ting);
 
-    WriteNote(mi1, ban);
-    SleepNote(ting / 2);
-    WriteNote(re1, ban);
-    SleepNote(ting);
-    WriteNote(do1, pai);
-    SleepNote(ting + ban);
-    WriteNote(do1, ban);
-    SleepNote(ting);
+    WRITE_NOTE(mi1, ban);
+    SLEEP_NOTE(ting / 2);
+    WRITE_NOTE(re1, ban);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(do1, pai);
+    SLEEP_NOTE(ting + ban);
+    WRITE_NOTE(do1, ban);
+    SLEEP_NOTE(ting);
 
-    WriteNote(re1, pai);
-    SleepNote(ting);
-    WriteNote(do1, ban);
-    WriteNote(re1, ban);
-    SleepNote(20);
-    WriteNote(re1, ban);
-    SleepNote(ting);
-    WriteNote(so1, pai);
-    SleepNote(ting);
+    WRITE_NOTE(re1, pai);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(do1, ban);
+    WRITE_NOTE(re1, ban);
+    SLEEP_NOTE(20);
+    WRITE_NOTE(re1, ban);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(so1, pai);
+    SLEEP_NOTE(ting);
 
-    WriteNote(mi1, 2 * pai);
-    SleepNote(ting + pai);
-    WriteNote(mi, pai);
-    SleepNote(ting);
+    WRITE_NOTE(mi1, 2 * pai);
+    SLEEP_NOTE(ting + pai);
+    WRITE_NOTE(mi, pai);
+    SLEEP_NOTE(ting);
 
-    WriteNote(la1, 2 * pai);
-    SleepNote(ting);
-    WriteNote(so1, 2 * pai);
-    SleepNote(ting);
+    WRITE_NOTE(la1, 2 * pai);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(so1, 2 * pai);
+    SLEEP_NOTE(ting);
 
-    WriteNote(mi1, ban);
-    WriteNote(re1, ban);
-    SleepNote(ting);
-    WriteNote(do1, 2 * pai);
-    SleepNote(ting + ban);
-    WriteNote(do1, ban);
-    SleepNote(ting);
+    WRITE_NOTE(mi1, ban);
+    WRITE_NOTE(re1, ban);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(do1, 2 * pai);
+    SLEEP_NOTE(ting + ban);
+    WRITE_NOTE(do1, ban);
+    SLEEP_NOTE(ting);
 
-    WriteNote(re1, pai);
-    SleepNote(ting);
-    WriteNote(do1, ban);
-    WriteNote(re1, ban);
-    SleepNote(20);
-    WriteNote(re1, ban);
-    SleepNote(ting);
-    WriteNote(si, pai);
-    SleepNote(ting);
+    WRITE_NOTE(re1, pai);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(do1, ban);
+    WRITE_NOTE(re1, ban);
+    SLEEP_NOTE(20);
+    WRITE_NOTE(re1, ban);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(si, pai);
+    SLEEP_NOTE(ting);
 
-    WriteNote(la, 2 * pai);
-    SleepNote(ting);
-    WriteNote(la, ban);
-    WriteNote(si, ban);
+    WRITE_NOTE(la, 2 * pai);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(la, ban);
+    WRITE_NOTE(si, ban);
 
-    WriteNote(do1, pai + ban);
-    WriteNote(si, ban);
-    SleepNote(ting);
-    WriteNote(do1, pai);
-    SleepNote(ting);
-    WriteNote(mi1, pai);
-    SleepNote(ting);
+    WRITE_NOTE(do1, pai + ban);
+    WRITE_NOTE(si, ban);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(do1, pai);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(mi1, pai);
+    SLEEP_NOTE(ting);
 
-    WriteNote(si, 3 * pai);
-    SleepNote(ting);
-    WriteNote(mi, ban);
-    WriteNote(mi, ban);
+    WRITE_NOTE(si, 3 * pai);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(mi, ban);
+    WRITE_NOTE(mi, ban);
 
-    WriteNote(la, ban + pai);
-    WriteNote(so, ban);
-    SleepNote(ting);
-    WriteNote(la, pai);
-    SleepNote(ting);
-    WriteNote(do1, pai);
-    SleepNote(ting);
+    WRITE_NOTE(la, ban + pai);
+    WRITE_NOTE(so, ban);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(la, pai);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(do1, pai);
+    SLEEP_NOTE(ting);
 
-    WriteNote(so, 2 * pai);
-    SleepNote(ting);
-    SleepNote(pai);
-    WriteNote(mi, ban);
-    SleepNote(ting / 2);
-    WriteNote(mi, ban);
-    SleepNote(ting / 2);
+    WRITE_NOTE(so, 2 * pai);
+    SLEEP_NOTE(ting);
+    SLEEP_NOTE(pai);
+    WRITE_NOTE(mi, ban);
+    SLEEP_NOTE(ting / 2);
+    WRITE_NOTE(mi, ban);
+    SLEEP_NOTE(ting / 2);
 
-    WriteNote(fa, pai + ban);
-    WriteNote(mi, ban);
-    SleepNote(ting);
-    WriteNote(fa, ban);
-    WriteNote(do1, ban + pai);
-    SleepNote(ting);
+    WRITE_NOTE(fa, pai + ban);
+    WRITE_NOTE(mi, ban);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(fa, ban);
+    WRITE_NOTE(do1, ban + pai);
+    SLEEP_NOTE(ting);
 
-    WriteNote(mi, 2 * pai);
-    SleepNote(ting);
-    SleepNote(ban);
-    WriteNote(do1, ban);
-    SleepNote(ting / 2);
-    WriteNote(do1, ban);
-    SleepNote(ting / 2);
-    WriteNote(do1, ban);
-    SleepNote(ting / 2);
+    WRITE_NOTE(mi, 2 * pai);
+    SLEEP_NOTE(ting);
+    SLEEP_NOTE(ban);
+    WRITE_NOTE(do1, ban);
+    SLEEP_NOTE(ting / 2);
+    WRITE_NOTE(do1, ban);
+    SLEEP_NOTE(ting / 2);
+    WRITE_NOTE(do1, ban);
+    SLEEP_NOTE(ting / 2);
 
-    WriteNote(si, ban + pai);
-    WriteNote(sfa, ban);
-    SleepNote(ting);
-    WriteNote(sfa, pai);
-    WriteNote(si, pai);
-    SleepNote(ting);
+    WRITE_NOTE(si, ban + pai);
+    WRITE_NOTE(sfa, ban);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(sfa, pai);
+    WRITE_NOTE(si, pai);
+    SLEEP_NOTE(ting);
 
-    WriteNote(si, 2 * pai);
-    SleepNote(ting);
-    SleepNote(pai);
-    WriteNote(la, ban);
-    WriteNote(si, ban);
-    SleepNote(ting);
+    WRITE_NOTE(si, 2 * pai);
+    SLEEP_NOTE(ting);
+    SLEEP_NOTE(pai);
+    WRITE_NOTE(la, ban);
+    WRITE_NOTE(si, ban);
+    SLEEP_NOTE(ting);
 
-    WriteNote(do1, pai + ban);
-    WriteNote(si, ban);
-    SleepNote(ting);
-    WriteNote(do1, pai);
-    SleepNote(ting);
-    WriteNote(mi1, pai);
-    SleepNote(ting);
+    WRITE_NOTE(do1, pai + ban);
+    WRITE_NOTE(si, ban);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(do1, pai);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(mi1, pai);
+    SLEEP_NOTE(ting);
 
-    WriteNote(si, 2 * pai);
-    SleepNote(ting);
-    SleepNote(pai);
-    WriteNote(mi, ban);
-    SleepNote(20);
-    WriteNote(mi, ban);
-    SleepNote(ting);
+    WRITE_NOTE(si, 2 * pai);
+    SLEEP_NOTE(ting);
+    SLEEP_NOTE(pai);
+    WRITE_NOTE(mi, ban);
+    SLEEP_NOTE(20);
+    WRITE_NOTE(mi, ban);
+    SLEEP_NOTE(ting);
 
-    WriteNote(la, pai + ban);
-    WriteNote(so, ban);
-    SleepNote(ting);
-    WriteNote(la, pai);
-    SleepNote(ting);
-    WriteNote(do1, pai);
-    SleepNote(ting);
+    WRITE_NOTE(la, pai + ban);
+    WRITE_NOTE(so, ban);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(la, pai);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(do1, pai);
+    SLEEP_NOTE(ting);
 
-    WriteNote(so, 3 * pai);
-    SleepNote(ting + ban);
-    WriteNote(mi, ban);
-    SleepNote(ting / 2);
+    WRITE_NOTE(so, 3 * pai);
+    SLEEP_NOTE(ting + ban);
+    WRITE_NOTE(mi, ban);
+    SLEEP_NOTE(ting / 2);
 
-    WriteNote(fa, pai);
-    SleepNote(ting);
-    WriteNote(do1, ban);
-    WriteNote(si, ban);
-    SleepNote(20);
-    WriteNote(si, pai);
-    SleepNote(ting);
-    WriteNote(do1, pai);
-    SleepNote(ting);
+    WRITE_NOTE(fa, pai);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(do1, ban);
+    WRITE_NOTE(si, ban);
+    SLEEP_NOTE(20);
+    WRITE_NOTE(si, pai);
+    SLEEP_NOTE(ting);
+    WRITE_NOTE(do1, pai);
+    SLEEP_NOTE(ting);
 
-    WriteNote(re1, ban);
-    SleepNote(20);
-    WriteNote(re1, ban);
-    SleepNote(20);
-    WriteNote(mi1, ban);
-    SleepNote(ting / 2);
-    WriteNote(do1, pai);
-    SleepNote(ting + pai);
+    WRITE_NOTE(re1, ban);
+    SLEEP_NOTE(20);
+    WRITE_NOTE(re1, ban);
+    SLEEP_NOTE(20);
+    WRITE_NOTE(mi1, ban);
+    SLEEP_NOTE(ting / 2);
+    WRITE_NOTE(do1, pai);
+    SLEEP_NOTE(ting + pai);
 
-    WriteNote(la, 4 * pai);
+    WRITE_NOTE(la, 4 * pai);
 
-    SleepNote(1000);
 
-    last_note_id = write_id - 1;
-    write_id = 1;
+    return MUSIC_INFO;
 }
