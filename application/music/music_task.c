@@ -148,8 +148,7 @@ static void MusicInit(void)
     MUSICS[castle_in_the_sky] = MusicCastleInTheSkyInit();
     MUSICS[see_you_again]     = MusicSeeYouAgainInit();
     MUSICS[hao_yun_lai]       = MusicHaoYunLaiInit();
-    // MUSICS[meow]              = MusicMeowInit();
-    // MUSICS[gong_xi_fa_cai]    = MusicGongXiFaCaiInit();
+    MUSICS[gong_xi_fa_cai]    = MusicGongXiFaCaiInit();
     // MUSICS[deja_vu]           = MusicDejaVuInit();
     // clang-format on
 }
@@ -175,7 +174,7 @@ static void MusicPlay(void)
             } break;
 
             default: {
-                PlayMusic(&MUSICS[hao_yun_lai], 0.1f);
+                PlayMusic(&MUSICS[gong_xi_fa_cai], 0.1f);
             } break;
         }
     }

@@ -1,9 +1,9 @@
 #ifndef __MUSIC_GONG_XI_FA_CAI_H_
 #define __MUSIC_GONG_XI_FA_CAI_H_
 
-extern void MusicGongXiFaCaiInit(void);
+#include "music_typedef.h"
 
-extern void MusicGongXiFaCaiPlay(void);
+extern MusicInfo_s MusicGongXiFaCaiInit(void);
 
 #endif  // __MUSIC_GONG_XI_FA_CAI_H_
 /*------------------------------ End of File ------------------------------*/
