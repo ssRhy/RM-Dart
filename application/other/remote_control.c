@@ -42,7 +42,8 @@
 #include "detect_task.h"
 #include "robot_param.h"
 
-
+// 遥控器掉线时间阈值
+#define RC_LOST_TIME 100  // ms
 
 //遥控器出错数据上限
 #define RC_CHANNAL_ERROR_VALUE 700
@@ -83,6 +84,11 @@ Sbus_t sbus;
 //接收原始数据，为18个字节，给了36个字节长度，防止DMA传输越界
 static uint8_t sbus_rx_buf[2][SBUS_RX_BUF_NUM];
 
+// 上一次接收数据的时间
+static uint32_t last_receive_time = 0;
+
+// 记录连续接收数据的次数
+static uint32_t receive_count = 0;
 
 /**
   * @brief          remote control init
@@ -192,6 +198,8 @@ void USART3_IRQHandler(void)
 
         __HAL_UART_CLEAR_PEFLAG(&huart3);
 
+        uint32_t now = HAL_GetTick();
+
         if ((hdma_usart3_rx.Instance->CR & DMA_SxCR_CT) == RESET)
         {
             /* Current memory buffer used is Memory 0 */
@@ -220,7 +228,12 @@ void USART3_IRQHandler(void)
             {
                 //处理遥控器数据
                 sbus_to_rc(sbus_rx_buf[0], &rc_ctrl);
+                if (now - last_receive_time > RC_LOST_TIME) {
+                    receive_count = 0;
+                }
+                receive_count++;
                 //记录数据接收时间
+                last_receive_time = HAL_GetTick();
                 detect_hook(DBUS_TOE);
                 sbus_to_usart1(sbus_rx_buf[0]);
             } 
@@ -234,7 +247,13 @@ void USART3_IRQHandler(void)
 #elif (__RC_TYPE == RC_ET08A)
                 Et08aSbusToRc(sbus_rx_buf[0], &rc_ctrl);
 #endif
+                if (now - last_receive_time > RC_LOST_TIME) {
+                    receive_count = 0;
+                }
+                receive_count++;
                 //记录数据接收时间
+                last_receive_time = HAL_GetTick();
+                receive_count++;
                 detect_hook(DBUS_TOE);
             }
         }
@@ -265,7 +284,13 @@ void USART3_IRQHandler(void)
             {
                 //处理遥控器数据
                 sbus_to_rc(sbus_rx_buf[1], &rc_ctrl);
+                if (now - last_receive_time > RC_LOST_TIME) {
+                    receive_count = 0;
+                }
+                receive_count++;
                 //记录数据接收时间
+                last_receive_time = HAL_GetTick();
+                receive_count++;
                 detect_hook(DBUS_TOE);
                 sbus_to_usart1(sbus_rx_buf[1]);
             }
@@ -279,7 +304,13 @@ void USART3_IRQHandler(void)
 #elif (__RC_TYPE == RC_ET08A)
                 Et08aSbusToRc(sbus_rx_buf[1], &rc_ctrl);
 #endif
+                if (now - last_receive_time > RC_LOST_TIME) {
+                    receive_count = 0;
+                }
+                receive_count++;
                 //记录数据接收时间
+                last_receive_time = HAL_GetTick();
+                receive_count++;
                 detect_hook(DBUS_TOE);
             }
         }
@@ -497,12 +528,22 @@ void sbus_to_usart1(uint8_t *sbus)
 /******************************************************************/
 /* API                                                            */
 /*----------------------------------------------------------------*/
-/* function:      GetDt7RcCh                                      */
+/* function:      GetRcOffline                                    */
+/*                GetDt7RcCh                                      */
 /*                GetDt7RcSw                                      */
 /*                GetDt7MouseSpeed                                */
 /*                GetDt7Mouse                                     */
 /*                GetDt7Keyboard                                  */
 /******************************************************************/
+
+/**
+  * @brief          获取遥控器是否离线。
+  * @retval         true:离线，false:在线
+  */
+inline bool GetRcOffline(void)
+{
+    return !((receive_count > 5) && (HAL_GetTick() - last_receive_time < RC_LOST_TIME));
+}
 
 /**
   * @brief          获取DT7遥控器通道值。
