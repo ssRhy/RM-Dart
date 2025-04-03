@@ -5,6 +5,7 @@
 #include "bsp_buzzer.h"
 #include "cmsis_os.h"
 #include "data_exchange.h"
+#include "fifo.h"
 #include "motor.h"
 #include "music.h"
 #include "music_calibrate.h"
@@ -31,9 +32,17 @@ uint32_t music_high_water;
 #define STEP_INIT 1
 #define STEP_NORMAL 2
 
+#define PLAY_LIST_FIFO_BUF_LENGTH 10
+
 #define is_play_cali()                                                                 \
     (is_play == CALI_BEGIN || is_play == CALI_MIDDLE_TIME || is_play == CALI_GIMBAL || \
      is_play == CALI_IMU || is_play == CALI_CHASSIS)
+
+#define SET_MUSIC_TO_PLAY(MUSIC_INDEX) \
+    if (is_play < MUSIC_INDEX) {       \
+        is_play = MUSIC_INDEX;         \
+        play_id = 0;                   \
+    }
 
 // Enum Declarations，根据优先级排列，越后面优先级越高
 typedef enum {
@@ -48,17 +57,17 @@ typedef enum {
 } Playing_e;
 
 typedef enum {
-    canon = 0,
+    start = 0,
+    motor_offline,
+    canon,
     castle_in_the_sky,
     deja_vu,
     error,
     gong_xi_fa_cai,
     hao_yun_lai,
     meow,
-    motor_offline,
     referee,
     see_you_again,
-    start,
     unity,
     you,
 } MusicIndex_e;
@@ -67,6 +76,8 @@ typedef enum {
 static uint8_t music_step = STEP_INIT;
 
 Playing_e is_play = POWER_UP;
+fifo_s_t play_list_fifo;
+uint8_t play_list_fifo_buf[PLAY_LIST_FIFO_BUF_LENGTH];
 
 static MusicInfo_s MUSICS[20];
 static uint32_t now = 0;
@@ -134,6 +145,7 @@ void music_task(void const * pvParameters)
 static void MusicInit(void)
 {
     // cali_buzzer_state = Subscribe(CALI_BUZZER_STATE_NAME);
+    fifo_s_init(&play_list_fifo, play_list_fifo_buf, PLAY_LIST_FIFO_BUF_LENGTH);
 
     music_step = STEP_INIT;
 
@@ -160,21 +172,33 @@ static void MusicPlay(void)
             music_step = STEP_NORMAL;
             is_play = PLAY_NONE;
         }
-    } else {                           // 正常状态
-        if (task_count % 2000 == 0) {  // 检测是否存在离线电机
-            if (ScanOfflineMotor()) {
-                // is_play = PLAY_MOTOR_OFFLINE;
+    } else {  // 正常状态
+        if (task_count % 4000 == 0) {
+            if (ScanOfflineMotor()) {  // 检测是否存在离线电机
+                fifo_s_put(&play_list_fifo, PLAY_MOTOR_OFFLINE);
+                fifo_s_put(&play_list_fifo, POWER_UP);
+
+                // SET_MUSIC_TO_PLAY(PLAY_MOTOR_OFFLINE)
             }
+        }
+
+        // 播放列表内容
+        if (play_list_fifo.used_num > 0 && is_play == PLAY_NONE) {
+            is_play = (Playing_e)fifo_s_get(&play_list_fifo);
         }
 
         // 根据is_play播放对应音乐
         switch (is_play) {
+            case POWER_UP: {
+                if (PlayMusic(&MUSICS[start], 0.5f)) is_play = PLAY_NONE;
+            } break;
+            
             case PLAY_MOTOR_OFFLINE: {
                 if (PlayMusic(&MUSICS[motor_offline], 0.5f)) is_play = PLAY_NONE;
             } break;
 
             default: {
-                PlayMusic(&MUSICS[gong_xi_fa_cai], 0.1f);
+                // PlayMusic(&MUSICS[gong_xi_fa_cai], 0.1f);
             } break;
         }
     }
