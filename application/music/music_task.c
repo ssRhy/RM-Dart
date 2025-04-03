@@ -143,7 +143,7 @@ static void MusicInit(void)
     // MUSICS[error] = MusicErrorInit();
     MUSICS[motor_offline]     = MusicMotorOfflineInit();
     MUSICS[you]               = MusicYouInit();
-    // MUSICS[unity]             = MusicUnityInit();
+    MUSICS[unity]             = MusicUnityInit();
     // MUSICS[canon]             = MusicCanonInit();
     // MUSICS[castle_in_the_sky] = MusicCastleInTheSkyInit();
     // MUSICS[see_you_again]     = MusicSeeYouAgainInit();
@@ -175,7 +175,7 @@ static void MusicPlay(void)
             } break;
 
             default: {
-                PlayMusic(&MUSICS[you], 0.5f);
+                PlayMusic(&MUSICS[unity], 0.5f);
             } break;
         }
     }
