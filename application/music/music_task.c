@@ -17,6 +17,7 @@
 #include "music_hao_yun_lai.h"
 #include "music_meow.h"
 #include "music_motor_offline.h"
+#include "music_rc_offline.h"
 #include "music_referee.h"
 #include "music_see_you_again.h"
 #include "music_start.h"
@@ -54,11 +55,13 @@ typedef enum {
     CALI_IMU,
     CALI_CHASSIS,
     PLAY_MOTOR_OFFLINE,
+    PLAY_RC_OFFLINE,
 } Playing_e;
 
 typedef enum {
     start = 0,
     motor_offline,
+    rc_offline,
     canon,
     castle_in_the_sky,
     deja_vu,
@@ -154,6 +157,7 @@ static void MusicInit(void)
     // MUSICS[referee] = MusicRefereeInit();
     // MUSICS[error] = MusicErrorInit();
     MUSICS[motor_offline]     = MusicMotorOfflineInit();
+    MUSICS[rc_offline]        = MusicRcOfflineInit();
     MUSICS[you]               = MusicYouInit();
     MUSICS[unity]             = MusicUnityInit();
     MUSICS[canon]             = MusicCanonInit();
@@ -176,9 +180,9 @@ static void MusicPlay(void)
         if (task_count % 4000 == 0) {
             if (ScanOfflineMotor()) {  // 检测是否存在离线电机
                 fifo_s_put(&play_list_fifo, PLAY_MOTOR_OFFLINE);
-                fifo_s_put(&play_list_fifo, POWER_UP);
-
-                // SET_MUSIC_TO_PLAY(PLAY_MOTOR_OFFLINE)
+            }
+            if (1) {
+                fifo_s_put(&play_list_fifo, PLAY_RC_OFFLINE);
             }
         }
 
@@ -192,9 +196,13 @@ static void MusicPlay(void)
             case POWER_UP: {
                 if (PlayMusic(&MUSICS[start], 0.5f)) is_play = PLAY_NONE;
             } break;
-            
+
             case PLAY_MOTOR_OFFLINE: {
                 if (PlayMusic(&MUSICS[motor_offline], 0.5f)) is_play = PLAY_NONE;
+            } break;
+
+            case PLAY_RC_OFFLINE: {
+                if (PlayMusic(&MUSICS[rc_offline], 0.5f)) is_play = PLAY_NONE;
             } break;
 
             default: {
