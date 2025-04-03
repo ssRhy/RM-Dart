@@ -21,213 +21,184 @@
 #define ONE_FOURTH_HALF 125
 #define ONE_FOURTH_HALF_HALF 63
 
-#define NOTE_NUM 200
+#define NOTE_NUM 120
 static Note Notes[NOTE_NUM];  // Array of notes
-
-static uint32_t last_note_id = 0;  // Index of the last note
-static uint32_t write_id = 1;      // Index of the note to be written
-static uint32_t play_id = 1;       // Index of the note to be played
-
-static uint32_t start_time = 0;  // Start time of the music
-static uint32_t now = 0;
-
-/*-------------------- Private functions --------------------*/
-static void WriteNote(int note, float Long)
-{
-    Notes[write_id].note = note;
-    Notes[write_id].Long = Long;
-    Notes[write_id].end = Notes[write_id - 1].end + Long;
-    write_id++;
-}
-
-static void SleepNote(float Long) { WriteNote(0, Long); }
+static MusicInfo_s MUSIC_INFO;
 
 /*-------------------- User functions --------------------*/
-void MusicGongXiFaCaiPlay(void)
-{
-    now = HAL_GetTick();
-    if (now - start_time >= Notes[play_id].end) {
-        play_id++;
-        if (play_id > last_note_id) {
-            play_id = 1;
-            start_time = now;
-        }
 
-        buzzer_note(Notes[play_id].note, 0.1);
-    }
-}
-
-void MusicGongXiFaCaiInit(void)
+MusicInfo_s MusicGongXiFaCaiInit(void)
 {
-    SleepNote(1500);
+    MUSIC_INFO.notes = Notes;
+
+    SLEEP_NOTE(1500);
 
     // do re mi fa so la si
     // 1  2  3  4  5  6  7
 
     // 前奏
     // 2·_ 3__ 2_ 5_ 2_ 3_ 2
-    WriteNote(A_re, ONE_FOURTH_HALF + ONE_FOURTH_HALF_HALF);  // 2·_
-    WriteNote(A_mi, ONE_FOURTH_HALF_HALF);                    // 3__
-    WriteNote(A_re, ONE_FOURTH_HALF);                         // 2_
-    WriteNote(A_so, ONE_FOURTH_HALF);                         // 5_
-    WriteNote(A_re, ONE_FOURTH_HALF);                         // 2_
-    WriteNote(A_mi, ONE_FOURTH_HALF);                         // 3_
-    WriteNote(A_re, ONE_FOURTH);                              // 2
+    WRITE_NOTE(A_re, ONE_FOURTH_HALF + ONE_FOURTH_HALF_HALF);  // 2·_
+    WRITE_NOTE(A_mi, ONE_FOURTH_HALF_HALF);                    // 3__
+    WRITE_NOTE(A_re, ONE_FOURTH_HALF);                         // 2_
+    WRITE_NOTE(A_so, ONE_FOURTH_HALF);                         // 5_
+    WRITE_NOTE(A_re, ONE_FOURTH_HALF);                         // 2_
+    WRITE_NOTE(A_mi, ONE_FOURTH_HALF);                         // 3_
+    WRITE_NOTE(A_re, ONE_FOURTH);                              // 2
 
     // 2·_ 3__ 2_ 1_ 6._ 1_ 6.
-    WriteNote(A_re, ONE_FOURTH_HALF + ONE_FOURTH_HALF_HALF);  // 2·_
-    WriteNote(A_mi, ONE_FOURTH_HALF_HALF);                    // 3__
-    WriteNote(A_re, ONE_FOURTH_HALF);                         // 2_
-    WriteNote(A_do, ONE_FOURTH_HALF);                         // 1_
-    WriteNote(A_la / 2, ONE_FOURTH_HALF);                     // 6._
-    WriteNote(A_do, ONE_FOURTH_HALF);                         // 1_
-    WriteNote(A_la / 2, ONE_FOURTH);                          // 6.
+    WRITE_NOTE(A_re, ONE_FOURTH_HALF + ONE_FOURTH_HALF_HALF);  // 2·_
+    WRITE_NOTE(A_mi, ONE_FOURTH_HALF_HALF);                    // 3__
+    WRITE_NOTE(A_re, ONE_FOURTH_HALF);                         // 2_
+    WRITE_NOTE(A_do, ONE_FOURTH_HALF);                         // 1_
+    WRITE_NOTE(A_la / 2, ONE_FOURTH_HALF);                     // 6._
+    WRITE_NOTE(A_do, ONE_FOURTH_HALF);                         // 1_
+    WRITE_NOTE(A_la / 2, ONE_FOURTH);                          // 6.
 
     // 2·_ 3__ 2_ 5_ 2_ 3_ 2_ 1_
-    WriteNote(A_re, ONE_FOURTH_HALF + ONE_FOURTH_HALF_HALF);  // 2·_
-    WriteNote(A_mi, ONE_FOURTH_HALF_HALF);                    // 3__
-    WriteNote(A_re, ONE_FOURTH_HALF);                         // 2_
-    WriteNote(A_so, ONE_FOURTH_HALF);                         // 5_
-    WriteNote(A_re, ONE_FOURTH_HALF);                         // 2_
-    WriteNote(A_mi, ONE_FOURTH_HALF);                         // 3_
-    WriteNote(A_re, ONE_FOURTH_HALF);                         // 2_
-    WriteNote(A_do, ONE_FOURTH_HALF);                         // 1_
+    WRITE_NOTE(A_re, ONE_FOURTH_HALF + ONE_FOURTH_HALF_HALF);  // 2·_
+    WRITE_NOTE(A_mi, ONE_FOURTH_HALF_HALF);                    // 3__
+    WRITE_NOTE(A_re, ONE_FOURTH_HALF);                         // 2_
+    WRITE_NOTE(A_so, ONE_FOURTH_HALF);                         // 5_
+    WRITE_NOTE(A_re, ONE_FOURTH_HALF);                         // 2_
+    WRITE_NOTE(A_mi, ONE_FOURTH_HALF);                         // 3_
+    WRITE_NOTE(A_re, ONE_FOURTH_HALF);                         // 2_
+    WRITE_NOTE(A_do, ONE_FOURTH_HALF);                         // 1_
 
     // 6.·_ 1__ 6._ 5._ 1_ 0_ 1_ 0_
-    WriteNote(A_la / 2, ONE_FOURTH_HALF + ONE_FOURTH_HALF_HALF);  // 6.·_
-    WriteNote(A_do, ONE_FOURTH_HALF_HALF);                        // 1__
-    WriteNote(A_la / 2, ONE_FOURTH_HALF);                         // 6._
-    WriteNote(A_so, ONE_FOURTH_HALF);                             // 5._
-    WriteNote(A_do, ONE_FOURTH_HALF);                             // 1_
-    WriteNote(Z_no, ONE_FOURTH_HALF);                             // 0_
-    WriteNote(A_do, ONE_FOURTH_HALF);                             // 1_
-    WriteNote(Z_no, ONE_FOURTH_HALF);                             // 0_
+    WRITE_NOTE(A_la / 2, ONE_FOURTH_HALF + ONE_FOURTH_HALF_HALF);  // 6.·_
+    WRITE_NOTE(A_do, ONE_FOURTH_HALF_HALF);                        // 1__
+    WRITE_NOTE(A_la / 2, ONE_FOURTH_HALF);                         // 6._
+    WRITE_NOTE(A_so, ONE_FOURTH_HALF);                             // 5._
+    WRITE_NOTE(A_do, ONE_FOURTH_HALF);                             // 1_
+    WRITE_NOTE(Z_no, ONE_FOURTH_HALF);                             // 0_
+    WRITE_NOTE(A_do, ONE_FOURTH_HALF);                             // 1_
+    WRITE_NOTE(Z_no, ONE_FOURTH_HALF);                             // 0_
 
     // 嘿咦耶
     // 2 3 5 3
-    WriteNote(A_re, ONE_FOURTH);  // 2
-    WriteNote(A_mi, ONE_FOURTH);  // 3
-    WriteNote(A_so, ONE_FOURTH);  // 5
-    WriteNote(A_mi, ONE_FOURTH);  // 3
+    WRITE_NOTE(A_re, ONE_FOURTH);  // 2
+    WRITE_NOTE(A_mi, ONE_FOURTH);  // 3
+    WRITE_NOTE(A_so, ONE_FOURTH);  // 5
+    WRITE_NOTE(A_mi, ONE_FOURTH);  // 3
 
     // 耶咦咦哈吼
     // 2·_ 3__ 2_ 1_ 6. -
-    WriteNote(A_re, ONE_FOURTH_HALF + ONE_FOURTH_HALF_HALF);  // 2·_
-    WriteNote(A_mi, ONE_FOURTH_HALF_HALF);                    // 3__
-    WriteNote(A_re, ONE_FOURTH_HALF);                         // 2_
-    WriteNote(A_do, ONE_FOURTH_HALF);                         // 1_
-    WriteNote(A_la / 2, ONE_FOURTH_HALF * 2);                 // 6.
+    WRITE_NOTE(A_re, ONE_FOURTH_HALF + ONE_FOURTH_HALF_HALF);  // 2·_
+    WRITE_NOTE(A_mi, ONE_FOURTH_HALF_HALF);                    // 3__
+    WRITE_NOTE(A_re, ONE_FOURTH_HALF);                         // 2_
+    WRITE_NOTE(A_do, ONE_FOURTH_HALF);                         // 1_
+    WRITE_NOTE(A_la / 2, ONE_FOURTH_HALF * 2);                 // 6.
 
     // 嘿咦耶
     // 2 3 5 3
-    WriteNote(A_re, ONE_FOURTH);  // 2
-    WriteNote(A_mi, ONE_FOURTH);  // 3
-    WriteNote(A_so, ONE_FOURTH);  // 5
-    WriteNote(A_mi, ONE_FOURTH);  // 3
+    WRITE_NOTE(A_re, ONE_FOURTH);  // 2
+    WRITE_NOTE(A_mi, ONE_FOURTH);  // 3
+    WRITE_NOTE(A_so, ONE_FOURTH);  // 5
+    WRITE_NOTE(A_mi, ONE_FOURTH);  // 3
 
     // 耶咦咦哈吼
     // 2·_ 3__ 2_ 6._ 1 -
-    WriteNote(A_re, ONE_FOURTH_HALF + ONE_FOURTH_HALF_HALF);  // 2·_
-    WriteNote(A_mi, ONE_FOURTH_HALF_HALF);                    // 3__
-    WriteNote(A_re, ONE_FOURTH_HALF);                         // 2_
-    WriteNote(A_la / 2, ONE_FOURTH_HALF);                     // 6._
-    WriteNote(A_do, ONE_FOURTH_HALF * 2);                     // 1
+    WRITE_NOTE(A_re, ONE_FOURTH_HALF + ONE_FOURTH_HALF_HALF);  // 2·_
+    WRITE_NOTE(A_mi, ONE_FOURTH_HALF_HALF);                    // 3__
+    WRITE_NOTE(A_re, ONE_FOURTH_HALF);                         // 2_
+    WRITE_NOTE(A_la / 2, ONE_FOURTH_HALF);                     // 6._
+    WRITE_NOTE(A_do, ONE_FOURTH_HALF * 2);                     // 1
 
     // 6.·_ 1__ 3._ 5._ 6.·_ 1__ 3._ 5._
-    WriteNote(A_la / 2, ONE_FOURTH_HALF + ONE_FOURTH_HALF_HALF);  // 6.·_
-    WriteNote(A_do, ONE_FOURTH_HALF_HALF);                        // 1__
-    WriteNote(A_mi, ONE_FOURTH_HALF);                             // 3._
-    WriteNote(A_so, ONE_FOURTH_HALF);                             // 5._
-    WriteNote(A_la / 2, ONE_FOURTH_HALF + ONE_FOURTH_HALF_HALF);  // 6.·_
-    WriteNote(A_do, ONE_FOURTH_HALF_HALF);                        // 1__
-    WriteNote(A_mi, ONE_FOURTH_HALF);                             // 3._
-    WriteNote(A_so, ONE_FOURTH_HALF);                             // 5._
+    WRITE_NOTE(A_la / 2, ONE_FOURTH_HALF + ONE_FOURTH_HALF_HALF);  // 6.·_
+    WRITE_NOTE(A_do, ONE_FOURTH_HALF_HALF);                        // 1__
+    WRITE_NOTE(A_mi, ONE_FOURTH_HALF);                             // 3._
+    WRITE_NOTE(A_so, ONE_FOURTH_HALF);                             // 5._
+    WRITE_NOTE(A_la / 2, ONE_FOURTH_HALF + ONE_FOURTH_HALF_HALF);  // 6.·_
+    WRITE_NOTE(A_do, ONE_FOURTH_HALF_HALF);                        // 1__
+    WRITE_NOTE(A_mi, ONE_FOURTH_HALF);                             // 3._
+    WRITE_NOTE(A_so, ONE_FOURTH_HALF);                             // 5._
 
     // 6.·_ 1__ 3._ 5._ 6._ 5._ 6.
-    WriteNote(A_la / 2, ONE_FOURTH_HALF + ONE_FOURTH_HALF_HALF);  // 6.·_
-    WriteNote(A_do, ONE_FOURTH_HALF_HALF);                        // 1__
-    WriteNote(A_mi, ONE_FOURTH_HALF);                             // 3._
-    WriteNote(A_so, ONE_FOURTH_HALF);                             // 5._
-    WriteNote(A_la / 2, ONE_FOURTH_HALF);                         // 6._
-    WriteNote(A_so, ONE_FOURTH_HALF);                             // 5._
-    WriteNote(A_la / 2, ONE_FOURTH);                              // 6.
+    WRITE_NOTE(A_la / 2, ONE_FOURTH_HALF + ONE_FOURTH_HALF_HALF);  // 6.·_
+    WRITE_NOTE(A_do, ONE_FOURTH_HALF_HALF);                        // 1__
+    WRITE_NOTE(A_mi, ONE_FOURTH_HALF);                             // 3._
+    WRITE_NOTE(A_so, ONE_FOURTH_HALF);                             // 5._
+    WRITE_NOTE(A_la / 2, ONE_FOURTH_HALF);                         // 6._
+    WRITE_NOTE(A_so, ONE_FOURTH_HALF);                             // 5._
+    WRITE_NOTE(A_la / 2, ONE_FOURTH);                              // 6.
 
     // 6.·_ 1__ 3._ 5._ 6.·_ 1__ 3._ 5._
-    WriteNote(A_la / 2, ONE_FOURTH_HALF + ONE_FOURTH_HALF_HALF);  // 6.·_
-    WriteNote(A_do, ONE_FOURTH_HALF_HALF);                        // 1__
-    WriteNote(A_mi, ONE_FOURTH_HALF);                             // 3._
-    WriteNote(A_so, ONE_FOURTH_HALF);                             // 5._
-    WriteNote(A_la / 2, ONE_FOURTH_HALF + ONE_FOURTH_HALF_HALF);  // 6.·_
-    WriteNote(A_do, ONE_FOURTH_HALF_HALF);                        // 1__
-    WriteNote(A_mi, ONE_FOURTH_HALF);                             // 3._
-    WriteNote(A_so, ONE_FOURTH_HALF);                             // 6.
+    WRITE_NOTE(A_la / 2, ONE_FOURTH_HALF + ONE_FOURTH_HALF_HALF);  // 6.·_
+    WRITE_NOTE(A_do, ONE_FOURTH_HALF_HALF);                        // 1__
+    WRITE_NOTE(A_mi, ONE_FOURTH_HALF);                             // 3._
+    WRITE_NOTE(A_so, ONE_FOURTH_HALF);                             // 5._
+    WRITE_NOTE(A_la / 2, ONE_FOURTH_HALF + ONE_FOURTH_HALF_HALF);  // 6.·_
+    WRITE_NOTE(A_do, ONE_FOURTH_HALF_HALF);                        // 1__
+    WRITE_NOTE(A_mi, ONE_FOURTH_HALF);                             // 3._
+    WRITE_NOTE(A_so, ONE_FOURTH_HALF);                             // 6.
 
     // 6.·_ 1__ 3._ 5._ 6._ 5._ 6.
-    WriteNote(A_la / 2, ONE_FOURTH_HALF + ONE_FOURTH_HALF_HALF);  // 6.·_
-    WriteNote(A_do, ONE_FOURTH_HALF_HALF);                        // 1__
-    WriteNote(A_mi, ONE_FOURTH_HALF);                             // 3._
-    WriteNote(A_so, ONE_FOURTH_HALF);                             // 5._
-    WriteNote(A_la / 2, ONE_FOURTH_HALF);                         // 6._
-    WriteNote(A_so, ONE_FOURTH_HALF);                             // 5._
-    WriteNote(A_la / 2, ONE_FOURTH);                              // 6.
+    WRITE_NOTE(A_la / 2, ONE_FOURTH_HALF + ONE_FOURTH_HALF_HALF);  // 6.·_
+    WRITE_NOTE(A_do, ONE_FOURTH_HALF_HALF);                        // 1__
+    WRITE_NOTE(A_mi, ONE_FOURTH_HALF);                             // 3._
+    WRITE_NOTE(A_so, ONE_FOURTH_HALF);                             // 5._
+    WRITE_NOTE(A_la / 2, ONE_FOURTH_HALF);                         // 6._
+    WRITE_NOTE(A_so, ONE_FOURTH_HALF);                             // 5._
+    WRITE_NOTE(A_la / 2, ONE_FOURTH);                              // 6.
 
     // 恭喜你发财
     // 6 5 6 5_ 2_
-    WriteNote(A_la, ONE_FOURTH);       // 6
-    WriteNote(A_so, ONE_FOURTH);       // 5
-    WriteNote(A_la, ONE_FOURTH);       // 6
-    WriteNote(A_so, ONE_FOURTH_HALF);  // 5_
-    WriteNote(A_re, ONE_FOURTH_HALF);  // 2_
+    WRITE_NOTE(A_la, ONE_FOURTH);       // 6
+    WRITE_NOTE(A_so, ONE_FOURTH);       // 5
+    WRITE_NOTE(A_la, ONE_FOURTH);       // 6
+    WRITE_NOTE(A_so, ONE_FOURTH_HALF);  // 5_
+    WRITE_NOTE(A_re, ONE_FOURTH_HALF);  // 2_
 
     // 3 - - -
-    WriteNote(A_mi, ONE_FOURTH * 4);  // 3
+    WRITE_NOTE(A_mi, ONE_FOURTH * 4);  // 3
 
     // 恭喜你进财
     // 6 5 6 5_ 5_
-    WriteNote(A_la, ONE_FOURTH);       // 6
-    WriteNote(A_so, ONE_FOURTH);       // 5
-    WriteNote(A_la, ONE_FOURTH);       // 6
-    WriteNote(A_so, ONE_FOURTH_HALF);  // 5_
-    WriteNote(A_so, ONE_FOURTH_HALF);  // 5_
+    WRITE_NOTE(A_la, ONE_FOURTH);       // 6
+    WRITE_NOTE(A_so, ONE_FOURTH);       // 5
+    WRITE_NOTE(A_la, ONE_FOURTH);       // 6
+    WRITE_NOTE(A_so, ONE_FOURTH_HALF);  // 5_
+    WRITE_NOTE(A_so, ONE_FOURTH_HALF);  // 5_
 
     // 请
     // 6 - - 0_ 3_
-    WriteNote(A_la, ONE_FOURTH * 3);   // 6
-    WriteNote(Z_no, ONE_FOURTH_HALF);  // 0_
-    WriteNote(A_mi, ONE_FOURTH_HALF);  // 3_
+    WRITE_NOTE(A_la, ONE_FOURTH * 3);   // 6
+    WRITE_NOTE(Z_no, ONE_FOURTH_HALF);  // 0_
+    WRITE_NOTE(A_mi, ONE_FOURTH_HALF);  // 3_
 
     // 好的经过来 不
     // 2·_ 3__ 2_ 1_ 6. 0_ 3_
-    WriteNote(A_re, ONE_FOURTH_HALF + ONE_FOURTH_HALF_HALF);  // 2·_
-    WriteNote(A_mi, ONE_FOURTH_HALF_HALF);                    // 3__
-    WriteNote(A_re, ONE_FOURTH_HALF);                         // 2_
-    WriteNote(A_do, ONE_FOURTH_HALF);                         // 1_
-    WriteNote(A_la / 2, ONE_FOURTH_HALF);                     // 6.
-    WriteNote(Z_no, ONE_FOURTH_HALF);                         // 0_
-    WriteNote(A_mi, ONE_FOURTH_HALF);                         // 3_
+    WRITE_NOTE(A_re, ONE_FOURTH_HALF + ONE_FOURTH_HALF_HALF);  // 2·_
+    WRITE_NOTE(A_mi, ONE_FOURTH_HALF_HALF);                    // 3__
+    WRITE_NOTE(A_re, ONE_FOURTH_HALF);                         // 2_
+    WRITE_NOTE(A_do, ONE_FOURTH_HALF);                         // 1_
+    WRITE_NOTE(A_la / 2, ONE_FOURTH_HALF);                     // 6.
+    WRITE_NOTE(Z_no, ONE_FOURTH_HALF);                         // 0_
+    WRITE_NOTE(A_mi, ONE_FOURTH_HALF);                         // 3_
 
     // 好的请走开 而
     // 2·_ 3__ 2_ 1_ 2 0_ 2_
-    WriteNote(A_re, ONE_FOURTH_HALF + ONE_FOURTH_HALF_HALF);  // 2·_
-    WriteNote(A_mi, ONE_FOURTH_HALF_HALF);                    // 3__
-    WriteNote(A_re, ONE_FOURTH_HALF);                         // 2_
-    WriteNote(A_do, ONE_FOURTH_HALF);                         // 1_
-    WriteNote(A_re, ONE_FOURTH);                              // 2
-    WriteNote(Z_no, ONE_FOURTH_HALF);                         // 0_
-    WriteNote(A_re, ONE_FOURTH_HALF);                         // 2_
+    WRITE_NOTE(A_re, ONE_FOURTH_HALF + ONE_FOURTH_HALF_HALF);  // 2·_
+    WRITE_NOTE(A_mi, ONE_FOURTH_HALF_HALF);                    // 3__
+    WRITE_NOTE(A_re, ONE_FOURTH_HALF);                         // 2_
+    WRITE_NOTE(A_do, ONE_FOURTH_HALF);                         // 1_
+    WRITE_NOTE(A_re, ONE_FOURTH);                              // 2
+    WRITE_NOTE(Z_no, ONE_FOURTH_HALF);                         // 0_
+    WRITE_NOTE(A_re, ONE_FOURTH_HALF);                         // 2_
 
     // 礼多人不
     // 1 2 3 5
-    WriteNote(A_do, ONE_FOURTH);  // 1
-    WriteNote(A_re, ONE_FOURTH);  // 2
-    WriteNote(A_mi, ONE_FOURTH);  // 3
-    WriteNote(A_so, ONE_FOURTH);  // 5
+    WRITE_NOTE(A_do, ONE_FOURTH);  // 1
+    WRITE_NOTE(A_re, ONE_FOURTH);  // 2
+    WRITE_NOTE(A_mi, ONE_FOURTH);  // 3
+    WRITE_NOTE(A_so, ONE_FOURTH);  // 5
 
     // 怪
     // 6 - - -
-    WriteNote(A_la, ONE_FOURTH * 4);  // 6
+    WRITE_NOTE(A_la, ONE_FOURTH * 4);  // 6
 
-    last_note_id = write_id - 1;
-    write_id = 1;
+    return MUSIC_INFO;
 }
 /*------------------------------ End of File ------------------------------*/
