@@ -3,6 +3,7 @@
 #include "bsp_buzzer.h"
 #include "music.h"
 #include "stm32f4xx_hal.h"
+#include "music_typedef.h"
 
 //http://www.jianpu.cn/pu/86/86325.htm
 

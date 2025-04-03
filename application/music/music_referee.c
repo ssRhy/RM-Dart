@@ -4,6 +4,7 @@
 #include "bsp_buzzer.h"
 #include "music.h"
 #include "stm32f4xx_hal.h"
+#include "music_typedef.h"
 
 // clang-format off
 //定义低音  

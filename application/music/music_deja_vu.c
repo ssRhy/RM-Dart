@@ -3,6 +3,7 @@
 #include "bsp_buzzer.h"
 #include "music.h"
 #include "stm32f4xx_hal.h"
+#include "music_typedef.h"
 
 //https://www.douyin.com/user/self?from_tab_name=main&modal_id=7009575449315642657&showSubTab=video&showTab=favorite_collection
 

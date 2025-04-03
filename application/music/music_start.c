@@ -50,59 +50,22 @@
 
 #define NOTE_NUM 10
 static Note Notes[NOTE_NUM];  // Array of notes
-
-static uint32_t last_note_id = 0;  // Index of the last note
-static uint32_t write_id = 1;      // Index of the note to be written
-static uint32_t play_id = 1;       // Index of the note to be played
-
-static uint32_t start_time = 0;  // Start time of the music
-static uint32_t now = 0;
-
-/*-------------------- Private functions --------------------*/
-static void WriteNote(int note, float Long)
-{
-    Notes[write_id].note = note;
-    Notes[write_id].Long = Long;
-    Notes[write_id].end = Notes[write_id - 1].end + Long;
-    write_id++;
-}
+static MusicInfo_s MUSIC_INFO;
 
 /*-------------------- User functions --------------------*/
 
-/**
- * @brief 播放音乐
- * @param  none
- * @return 结束1 未结束0
- */
-bool MusicStartPlay(void)
+MusicInfo_s MusicStartInit(void)
 {
-    now = HAL_GetTick();
-    bool end = false;
-    if (now - start_time >= Notes[play_id].end) {
-        play_id++;
-        if (play_id > last_note_id) {
-            end = true;
-            play_id = 1;
-            start_time = now;
-        }
+    MUSIC_INFO.notes = Notes;
 
-        buzzer_note(Notes[play_id].note, 0.1);
-    }
+    WRITE_NOTE(0, 2);
+    WRITE_NOTE(B1, HalfBeat * 2);
+    WRITE_NOTE(0, 3);
+    WRITE_NOTE(C3, HalfBeat * 2);
+    WRITE_NOTE(0, 3);
+    WRITE_NOTE(D5, HalfBeat * 2);
+    WRITE_NOTE(0, 15);
+    WRITE_NOTE(D1, HalfBeat * 5);
 
-    return end;
-}
-
-void MusicStartInit(void)
-{
-    WriteNote(0, 2);
-    WriteNote(B1, HalfBeat * 2);
-    WriteNote(0, 3);
-    WriteNote(C3, HalfBeat * 2);
-    WriteNote(0, 3);
-    WriteNote(D5, HalfBeat * 2);
-    WriteNote(0, 15);
-    WriteNote(D1, HalfBeat * 5);
-
-    last_note_id = write_id - 1;
-    write_id = 1;
+    return MUSIC_INFO;
 }
