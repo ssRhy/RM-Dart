@@ -181,7 +181,7 @@ static void MusicPlay(void)
             if (ScanOfflineMotor()) {  // 检测是否存在离线电机
                 fifo_s_put(&play_list_fifo, PLAY_MOTOR_OFFLINE);
             }
-            if (1) {
+            if (0) {
                 fifo_s_put(&play_list_fifo, PLAY_RC_OFFLINE);
             }
         }
