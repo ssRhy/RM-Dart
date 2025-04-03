@@ -24,6 +24,7 @@
 #include "music_typedef.h"
 #include "music_unity.h"
 #include "music_you.h"
+#include "referee.h"
 #include "remote_control.h"
 #include "stm32f4xx_hal.h"
 
@@ -148,22 +149,19 @@ void music_task(void const * pvParameters)
 
 static void MusicInit(void)
 {
-    // cali_buzzer_state = Subscribe(CALI_BUZZER_STATE_NAME);
     fifo_s_init(&play_list_fifo, play_list_fifo_buf, PLAY_LIST_FIFO_BUF_LENGTH);
 
     music_step = STEP_INIT;
 
     // clang-format off
     MUSICS[start]             = MusicStartInit();
-    // MUSICS[referee] = MusicRefereeInit();
-    // MUSICS[error] = MusicErrorInit();
     MUSICS[motor_offline]     = MusicMotorOfflineInit();
     MUSICS[rc_offline]        = MusicRcOfflineInit();
-    MUSICS[you]               = MusicYouInit();
-    MUSICS[unity]             = MusicUnityInit();
-    MUSICS[canon]             = MusicCanonInit();
-    MUSICS[castle_in_the_sky] = MusicCastleInTheSkyInit();
-    MUSICS[see_you_again]     = MusicSeeYouAgainInit();
+    // MUSICS[you]               = MusicYouInit();
+    // MUSICS[unity]             = MusicUnityInit();
+    // MUSICS[canon]             = MusicCanonInit();
+    // MUSICS[castle_in_the_sky] = MusicCastleInTheSkyInit();
+    // MUSICS[see_you_again]     = MusicSeeYouAgainInit();
     MUSICS[hao_yun_lai]       = MusicHaoYunLaiInit();
     MUSICS[gong_xi_fa_cai]    = MusicGongXiFaCaiInit();
     // MUSICS[deja_vu]           = MusicDejaVuInit();
@@ -179,7 +177,7 @@ static void MusicPlay(void)
         }
     } else {  // 正常状态
         if (task_count % 5000 == 0) {
-            if (GetRcOffline()) {  // 检测遥控器是否离线
+            if (1 && GetRcOffline()) {  // 检测遥控器是否离线
                 fifo_s_put(&play_list_fifo, PLAY_RC_OFFLINE);
             }
             if (ScanOfflineMotor()) {  // 检测是否存在离线电机
@@ -190,6 +188,7 @@ static void MusicPlay(void)
         // 播放列表内容
         if (play_list_fifo.used_num > 0 && is_play == PLAY_NONE) {
             is_play = (Playing_e)fifo_s_get(&play_list_fifo);
+            play_id = 0;
         }
 
         // 根据is_play播放对应音乐
@@ -207,7 +206,11 @@ static void MusicPlay(void)
             } break;
 
             default: {
-                // PlayMusic(&MUSICS[gong_xi_fa_cai], 0.1f);
+                if (!GetRefereeOffline()) {
+                    PlayMusic(&MUSICS[hao_yun_lai], 0.03f);
+                }else {
+                    buzzer_off();
+                }
             } break;
         }
     }
