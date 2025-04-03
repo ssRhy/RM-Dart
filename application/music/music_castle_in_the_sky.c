@@ -43,7 +43,7 @@
 #define sla1   1865
 // clang-format on
 
-#define NOTE_NUM 400
+#define NOTE_NUM 370
 static Note Notes[NOTE_NUM];  // Array of notes
 static MusicInfo_s MUSIC_INFO;
 
