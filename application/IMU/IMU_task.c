@@ -808,7 +808,7 @@ void DMA2_Stream2_IRQHandler(void)
   * @param[in]      axis:轴id，可配合定义好的轴id宏使用
   * @retval         (rad) axis轴的角度值
   */
-inline float GetImuAngle(uint8_t axis) { return INS_angle[2 - axis]; }
+inline float GetImuAngle(uint8_t axis) { return INS_angle[axis]; }
 /**
   * @brief          获取角速度
   * @param[in]      axis:轴id，可配合定义好的轴id宏使用
