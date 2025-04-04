@@ -404,20 +404,25 @@ void IMU_task(void const * pvParameters)
 static void UpdateImuData(void)
 {
     // clang-format off
-    IMU_DATA.pitch = INS_angle[INS_PITCH_ADDRESS_OFFSET];
-    IMU_DATA.roll  = INS_angle[INS_ROLL_ADDRESS_OFFSET];
-    IMU_DATA.yaw   = INS_angle[INS_YAW_ADDRESS_OFFSET];
+    IMU_DATA.pitch = INS.Pitch;
+    IMU_DATA.roll  = INS.Roll;
+    IMU_DATA.yaw   = INS.Yaw;
 
     IMU_DATA.roll_vel  = INS_gyro[INS_GYRO_X_ADDRESS_OFFSET];
     IMU_DATA.pitch_vel = INS_gyro[INS_GYRO_Y_ADDRESS_OFFSET];
     IMU_DATA.yaw_vel   = INS_gyro[INS_GYRO_Z_ADDRESS_OFFSET];
     
-    IMU_DATA.x_accel = INS_accel[INS_ACCEL_X_ADDRESS_OFFSET];
-    IMU_DATA.y_accel = INS_accel[INS_ACCEL_Y_ADDRESS_OFFSET];
-    IMU_DATA.z_accel = INS_accel[INS_ACCEL_Z_ADDRESS_OFFSET];
+    IMU_DATA.x_accel = gVec[AX_X];
+    IMU_DATA.y_accel = gVec[AX_Y];
+    IMU_DATA.z_accel = gVec[AX_Z];
 
-    // OutputPCData.packets[18].data = INS_angle[INS_ROLL_ADDRESS_OFFSET];
-    // OutputPCData.packets[19].data = INS_angle[INS_PITCH_ADDRESS_OFFSET];
+    INS_angle[AX_ROLL] = INS.Roll;
+    INS_angle[AX_PITCH] = INS.Pitch;
+    INS_angle[AX_YAW] = INS.Yaw;
+
+    for (uint32_t i = 0; i < 3; i++){
+      INS_accel[i] = gVec[i];
+    }
     // clang-format on
 }
 
