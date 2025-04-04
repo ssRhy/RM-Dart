@@ -55,8 +55,6 @@
 
 
 #define IMU_CALI_MAX_COUNT 100
-
-#define IMU_CONTROL_TEMPERATURE 35 // (度)
 // clang-format on
 
 /**
@@ -276,7 +274,7 @@ static void imu_temp_control(fp32 temp)
     }
     else if (first_temperate)
     {
-        PID_calc(&imu_temp_pid, temp, IMU_CONTROL_TEMPERATURE);
+        PID_calc(&imu_temp_pid, temp, __IMU_CONTROL_TEMPERATURE);
         if (imu_temp_pid.out < 0.0f)
         {
             imu_temp_pid.out = 0.0f;
@@ -288,7 +286,7 @@ static void imu_temp_control(fp32 temp)
     {
         //在没有达到设置的温度，一直最大功率加热
         //in beginning, max power
-        if (temp > IMU_CONTROL_TEMPERATURE)
+        if (temp > __IMU_CONTROL_TEMPERATURE)
         {
             temp_constant_time++;
             if (temp_constant_time > 200)
