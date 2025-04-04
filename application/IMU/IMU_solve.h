@@ -25,5 +25,12 @@
 #ifndef __IMU_SOLVE_H
 #define __IMU_SOLVE_H
 
+void IMU_QuaternionEKF_Init(float process_noise1, float process_noise2, float measure_noise, float lambda);
+void IMU_QuaternionEKF_Update(float gx, float gy, float gz, float ax, float ay, float az, float dt);
+
+extern float GetEkfYaw(void);
+extern float GetEkfPitch(void);
+extern float GetEkfRoll(void);
+
 #endif /* __IMU_SOLVE_H */
 /*------------------------------ End of File ------------------------------*/
