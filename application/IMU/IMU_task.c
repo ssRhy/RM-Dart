@@ -129,6 +129,7 @@ static fp32 INS_accel[3] = {0.0f, 0.0f, 0.0f};
 static fp32 INS_mag[3] = {0.0f, 0.0f, 0.0f};
 static fp32 INS_quat[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 fp32 INS_angle[3] = {0.0f, 0.0f, 0.0f};      //euler angle, unit rad.欧拉角 单位 rad
+fp32 INS_angle_last[3] = {0.0f, 0.0f, 0.0f};
 // clang-format on
 
 static Imu_t IMU_DATA = {
@@ -142,7 +143,6 @@ static Imu_t IMU_DATA = {
     .y_accel = 0.0f,
     .z_accel = 0.0f,
 };
-
 
 /**
   * @brief          imu任务, 初始化 bmi088, ist8310, 计算欧拉角
@@ -511,6 +511,7 @@ void DMA2_Stream2_IRQHandler(void)
 /* function:      GetImuAngle                                     */
 /*                GetImuVelocity                                  */
 /*                GetImuAccel                                     */
+/*                GetYawBias                                      */
 /******************************************************************/
 
 /**
@@ -531,5 +532,26 @@ inline float GetImuVelocity(uint8_t axis) { return INS_gyro[axis]; }
   * @retval         (m/s^2) axis轴上的加速度
   */
 inline float GetImuAccel(uint8_t axis) { return INS_accel[axis]; }
+/**
+  * @brief          获取yaw零飘修正值
+  * @retval         (rad/s) yaw零飘修正值
+  */
+float GetYawBias(void)
+{
+    static float bias_sum = 0;
+    static uint32_t count = 0;
+
+    if (HAL_GetTick() < 1000) {  // 运行时间不到1000ms不够稳定，不进行计算
+        return 0.0f;
+    }
+
+    float bias = (INS_angle[AX_YAW] - INS_angle_last[AX_YAW]) / timing_time;
+    INS_angle_last[AX_YAW] = INS_angle[AX_YAW];
+
+    bias_sum += bias;
+    count++;
+
+    return bias_sum / count + __GYRO_BIAS_YAW;
+}
 
 /*------------------------------ End of File ------------------------------*/
