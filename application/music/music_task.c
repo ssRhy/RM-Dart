@@ -32,6 +32,13 @@
 uint32_t music_high_water;
 #endif
 
+// 启用遥控器离线报警
+#define ENABLE_ALARM_RC_OFFLINE false
+// 启用电机离线报警
+#define ENABLE_ALARM_MOTOR_OFFLINE true
+// 启用裁判系统离线检测
+#define ENABLE_CHECK_REFEREE_OFFLINE true
+
 #define STEP_INIT 1
 #define STEP_NORMAL 2
 
@@ -177,10 +184,10 @@ static void MusicPlay(void)
         }
     } else {  // 正常状态
         if (task_count % 5000 == 0) {
-            if (1 && GetRcOffline()) {  // 检测遥控器是否离线
+            if (ENABLE_ALARM_RC_OFFLINE && GetRcOffline()) {  // 检测遥控器是否离线
                 fifo_s_put(&play_list_fifo, PLAY_RC_OFFLINE);
             }
-            if (ScanOfflineMotor()) {  // 检测是否存在离线电机
+            if (ENABLE_ALARM_MOTOR_OFFLINE && ScanOfflineMotor()) {  // 检测是否存在离线电机
                 fifo_s_put(&play_list_fifo, PLAY_MOTOR_OFFLINE);
             }
         }
@@ -206,8 +213,8 @@ static void MusicPlay(void)
             } break;
 
             default: {
-                if (!GetRefereeOffline()) {
-                    PlayMusic(&MUSICS[hao_yun_lai], 0.03f);
+                if ((!ENABLE_CHECK_REFEREE_OFFLINE) || (!GetRefereeOffline())) {
+                    PlayMusic(&MUSICS[hao_yun_lai], 0.1f);
                 }else {
                     buzzer_off();
                 }
