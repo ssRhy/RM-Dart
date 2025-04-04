@@ -33,7 +33,7 @@
 #define __MUSIC_ON 0               // 开启音乐
 #define __TUNING_MODE TUNING_NONE  // 调参模式
 #define __HEAT_IMU 1  // 加热IMU(防止Debug时因断点导致pid失效产生过热，烧坏IMU)
-#define __CALI_DATA_FROM CALI_FROM_FLASH  // 校准数据来源(部分flash损坏的C板需要采用其他数据源)
+#define __IMU_CONTROL_TEMPERATURE 35 // (度)IMU目标控制温度
 
 // USB通信的部分选项
 #define __USB_SEND_DEBUG 1  // 发送DEBUG数据
