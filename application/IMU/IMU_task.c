@@ -1,5 +1,5 @@
 /**
-  ****************************(C) COPYRIGHT 2019 DJI****************************
+  ****************************(C) COPYRIGHT 2025 PolarBear****************************
   * @file       INS_task.c/h
   * @brief      use bmi088 to calculate the euler angle. no use ist8310, so only
   *             enable data ready pin to save cpu time.enalbe bmi088 data ready
@@ -12,14 +12,16 @@
   *  Version    Date            Author          Modification
   *  V1.0.0     Dec-26-2018     RM              1. done
   *  V2.0.0     Nov-11-2019     RM              1. support bmi088, but don't support mpu6500
+  *  V3.0.0     Apr-05-2025     Penguin         1. 采用王工开源的陀螺仪EKF解算
+  *                                             2. 删除了大量旧代码
   *
   @verbatim
   ==============================================================================
 
   ==============================================================================
   @endverbatim
-  ****************************(C) COPYRIGHT 2019 DJI****************************
-  */
+  ****************************(C) COPYRIGHT 2025 PolarBear****************************
+*/
 
 #include "IMU_task.h"
 
