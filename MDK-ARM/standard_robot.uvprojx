@@ -3528,6 +3528,16 @@
               <FileType>1</FileType>
               <FilePath>..\application\music\music_deja_vu.c</FilePath>
             </File>
+            <File>
+              <FileName>music_motor_offline.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\music\music_motor_offline.c</FilePath>
+            </File>
+            <File>
+              <FileName>music_rc_offline.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\music\music_rc_offline.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
