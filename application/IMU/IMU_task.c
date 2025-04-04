@@ -24,6 +24,7 @@
 #include "IMU_task.h"
 
 #include "IMU.h"
+#include "IMU_solve.h"
 #include "ahrs.h"
 #include "bmi088driver.h"
 #include "bsp_imu_pwm.h"
@@ -265,6 +266,9 @@ void IMU_task(void const * pvParameters)
 
     imu_start_dma_flag = 1;
     
+    gEstimateKF_Init(1, 2000);
+    IMU_QuaternionEKF_Init(10, 0.001, 1000000, 0.9996);
+
     while (1)
     {
         //wait spi DMA tansmit done
@@ -329,6 +333,18 @@ void IMU_task(void const * pvParameters)
         }
         // clang-format on
         // AutoCaliImuData();
+
+        // clang-format off
+        // 更新加速度
+        gEstimateKF_Update(bmi088_real_data.gyro[0],  bmi088_real_data.gyro[1],  bmi088_real_data.gyro[2],
+                           bmi088_real_data.accel[0], bmi088_real_data.accel[1], bmi088_real_data.accel[2],
+                           timing_time);
+        // 更新欧拉角
+        IMU_QuaternionEKF_Update(bmi088_real_data.gyro[0], bmi088_real_data.gyro[1], bmi088_real_data.gyro[2],
+                                 gVec[0], gVec[1], gVec[2],
+                                 timing_time);
+        // clang-format on
+
         UpdateImuData();
     }
 }
