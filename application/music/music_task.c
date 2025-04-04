@@ -35,9 +35,9 @@ uint32_t music_high_water;
 // 启用遥控器离线报警
 #define ENABLE_ALARM_RC_OFFLINE false
 // 启用电机离线报警
-#define ENABLE_ALARM_MOTOR_OFFLINE false
+#define ENABLE_ALARM_MOTOR_OFFLINE true
 // 启用裁判系统离线检测
-#define ENABLE_CHECK_REFEREE_OFFLINE false
+#define ENABLE_CHECK_REFEREE_OFFLINE true
 
 #define STEP_INIT 1
 #define STEP_NORMAL 2
