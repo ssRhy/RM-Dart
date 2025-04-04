@@ -3292,13 +3292,6 @@
         </Group>
         <Group>
           <GroupName>calibrate</GroupName>
-          <Files>
-            <File>
-              <FileName>calibrate_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\application\calibrate\calibrate_task.c</FilePath>
-            </File>
-          </Files>
         </Group>
         <Group>
           <GroupName>chassis</GroupName>
@@ -3427,6 +3420,11 @@
               <FileName>IMU_task.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\application\IMU\IMU_task.c</FilePath>
+            </File>
+            <File>
+              <FileName>IMU_solve.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\IMU\IMU_solve.c</FilePath>
             </File>
           </Files>
         </Group>
