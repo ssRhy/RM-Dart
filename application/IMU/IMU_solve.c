@@ -25,6 +25,7 @@
 #include "IMU_solve.h"
 #include "kalman_filter.h"
 #include "stdbool.h"
+#include "robot_param.h"
 
 #define TRUE 1
 #define FALSE 0
@@ -456,12 +457,12 @@ void IMU_QuaternionEKF_Update(float gx, float gy, float gz, float ax, float ay, 
     INS.q[3] = INS.IMU_QuaternionEKF.FilteredValue[3];
     INS.GyroBias[0] = INS.IMU_QuaternionEKF.FilteredValue[4];
     INS.GyroBias[1] = INS.IMU_QuaternionEKF.FilteredValue[5];
-    INS.GyroBias[2] = 0;
+    INS.GyroBias[2] = GYRO_BIAS_YAW; // 陀螺仪yaw零飘，单位rad/s(在参数文件中配置)
 
     // 四元数反解欧拉角
-    INS.Yaw = atan2f(2.0f * (INS.q[0] * INS.q[3] + INS.q[1] * INS.q[2]), 2.0f * (INS.q[0] * INS.q[0] + INS.q[1] * INS.q[1]) - 1.0f) * 57.295779513f;
-    INS.Pitch = atan2f(2.0f * (INS.q[0] * INS.q[1] + INS.q[2] * INS.q[3]), 2.0f * (INS.q[0] * INS.q[0] + INS.q[3] * INS.q[3]) - 1.0f) * 57.295779513f;
-    INS.Roll = asinf(-2.0f * (INS.q[1] * INS.q[3] - INS.q[0] * INS.q[2])) * 57.295779513f;
+    INS.Yaw = atan2f(2.0f * (INS.q[0] * INS.q[3] + INS.q[1] * INS.q[2]), 2.0f * (INS.q[0] * INS.q[0] + INS.q[1] * INS.q[1]) - 1.0f);
+    INS.Pitch = -atan2f(2.0f * (INS.q[0] * INS.q[1] + INS.q[2] * INS.q[3]), 2.0f * (INS.q[0] * INS.q[0] + INS.q[3] * INS.q[3]) - 1.0f);
+    INS.Roll = asinf(-2.0f * (INS.q[1] * INS.q[3] - INS.q[0] * INS.q[2]));
 }
 
 
@@ -473,5 +474,9 @@ float GetEkfPitch(void){
 }
 float GetEkfRoll(void){
     return INS.Roll;
+}
+
+float GetEkfAccel(int i){
+    return gVec[i];
 }
 /*------------------------------ End of File ------------------------------*/

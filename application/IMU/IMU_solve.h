@@ -36,5 +36,7 @@ extern float GetEkfYaw(void);
 extern float GetEkfPitch(void);
 extern float GetEkfRoll(void);
 
+extern float GetEkfAccel(int i);
+
 #endif /* __IMU_SOLVE_H */
 /*------------------------------ End of File ------------------------------*/
