@@ -3,6 +3,8 @@
  * @file    IMU_solve.c/h
  * @brief   6轴陀螺仪解算部分，通过EKF算法滤除噪声，得到姿态角。
  *          解算得到 姿态角、角速度、加速度
+ * @note    仅在IMU解算任务中使用，不对其他模块外提供接口
+ *          禁止在其他模块中导入该文件
  * @history
  *  Version    Date            Author          Modification
  *  V1.0.0     2025-04-05      Penguin         1. done
@@ -23,33 +25,11 @@
 */
 
 #include "IMU_solve.h"
-#include "kalman_filter.h"
 #include "stdbool.h"
 #include "robot_param.h"
 
 #define TRUE 1
 #define FALSE 0
-
-typedef struct
-{
-    KalmanFilter_t IMU_QuaternionEKF; // 卡尔曼滤波器结构体
-    uint8_t ConvergeFlag;
-    float q[4];        // 四元数估计值
-    float GyroBias[3]; // 陀螺仪零偏估计值
-
-    float Roll;
-    float Pitch;
-    float Yaw;
-
-    float Q1; // 四元数更新过程噪声
-    float Q2; // 陀螺仪零偏过程噪声
-    float R;  // 加速度计量测噪声
-
-    float dt;                     // 姿态更新周期
-    float ChiSquare;              // 卡方检验检测函数值
-    float ChiSquareTestThreshold; // 卡方检验阈值
-    float lambda;                 // 渐消因子
-} INS_t;
 
 // clang-format off
 float IMU_QuaternionEKF_F[36] = {1, 0, 0, 0, 0, 0,
