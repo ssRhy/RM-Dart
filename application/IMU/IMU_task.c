@@ -23,7 +23,6 @@
 
 #include "IMU_task.h"
 
-#include "IMU.h"
 #include "IMU_solve.h"
 #include "ahrs.h"
 #include "bmi088driver.h"
@@ -798,23 +797,23 @@ void DMA2_Stream2_IRQHandler(void)
 /*                GetImuAccel                                     */
 /******************************************************************/
 
-/**
-  * @brief          获取欧拉角
-  * @param[in]      axis:轴id，可配合定义好的轴id宏使用
-  * @retval         (rad) axis轴的角度值
-  */
-inline float GetImuAngle(uint8_t axis) { return INS_angle[2 - axis]; }
-/**
-  * @brief          获取角速度
-  * @param[in]      axis:轴id，可配合定义好的轴id宏使用
-  * @retval         (rad/s) axis轴的角速度
-  */
-inline float GetImuVelocity(uint8_t axis) { return INS_gyro[axis]; }
-/**
-  * @brief          获取角速度
-  * @param[in]      axis:轴id，可配合定义好的轴id宏使用
-  * @retval         (m/s^2) axis轴上的加速度
-  */
-inline float GetImuAccel(uint8_t axis) { return INS_accel[axis]; }
+// /**
+//   * @brief          获取欧拉角
+//   * @param[in]      axis:轴id，可配合定义好的轴id宏使用
+//   * @retval         (rad) axis轴的角度值
+//   */
+// inline float GetImuAngle(uint8_t axis) { return INS_angle[2 - axis]; }
+// /**
+//   * @brief          获取角速度
+//   * @param[in]      axis:轴id，可配合定义好的轴id宏使用
+//   * @retval         (rad/s) axis轴的角速度
+//   */
+// inline float GetImuVelocity(uint8_t axis) { return INS_gyro[axis]; }
+// /**
+//   * @brief          获取角速度
+//   * @param[in]      axis:轴id，可配合定义好的轴id宏使用
+//   * @retval         (m/s^2) axis轴上的加速度
+//   */
+// inline float GetImuAccel(uint8_t axis) { return INS_accel[axis]; }
 
 /*------------------------------ End of File ------------------------------*/

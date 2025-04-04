@@ -26,6 +26,8 @@
 #include "kalman_filter.h"
 #include "stdbool.h"
 #include "robot_param.h"
+#include "IMU.h"
+
 
 #define TRUE 1
 #define FALSE 0
@@ -112,6 +114,9 @@ const float gEstimateKF_H[9] = {1, 0, 0,
                                 0, 1, 0,
                                 0, 0, 1};	// 由于不需要异步量测自适应，这里直接设置矩阵H为常量
 // clang-format on
+
+float gyro[3] = {0.0f};
+float angle[3] = {0.0f};
 
 /**
  * @brief 自定义1/sqrt(x),速度更快
@@ -407,6 +412,11 @@ void IMU_QuaternionEKF_Update(float gx, float gy, float gz, float ax, float ay, 
     */
     INS.dt = dt;
 
+    //记录陀螺仪数据
+    gyro[0] = gx;
+    gyro[1] = gy;
+    gyro[2] = gz;
+
     halfgxdt = 0.5f * (gx - INS.GyroBias[0]) * dt;
     halfgydt = 0.5f * (gy - INS.GyroBias[1]) * dt;
     halfgzdt = 0.5f * (gz - INS.GyroBias[2]) * dt;
@@ -463,7 +473,42 @@ void IMU_QuaternionEKF_Update(float gx, float gy, float gz, float ax, float ay, 
     INS.Yaw = atan2f(2.0f * (INS.q[0] * INS.q[3] + INS.q[1] * INS.q[2]), 2.0f * (INS.q[0] * INS.q[0] + INS.q[1] * INS.q[1]) - 1.0f);
     INS.Pitch = -atan2f(2.0f * (INS.q[0] * INS.q[1] + INS.q[2] * INS.q[3]), 2.0f * (INS.q[0] * INS.q[0] + INS.q[3] * INS.q[3]) - 1.0f);
     INS.Roll = asinf(-2.0f * (INS.q[1] * INS.q[3] - INS.q[0] * INS.q[2]));
+
+    angle[0] = INS.Roll;
+    angle[1] = INS.Pitch;
+    angle[2] = INS.Yaw;
 }
+
+/*******************************************************************************/
+/* API                                                                         */
+/*     GetImuAngle                                                             */
+/*******************************************************************************/
+
+/**
+  * @brief          获取欧拉角
+  * @param[in]      axis:轴id，可配合定义好的轴id宏使用
+  * @retval         (rad) axis轴的角度值
+  */
+float GetImuAngle(uint8_t axis) { 
+    return angle[axis];
+}
+/**
+  * @brief          获取角速度
+  * @param[in]      axis:轴id，可配合定义好的轴id宏使用
+  * @retval         (rad/s) axis轴的角速度
+  */
+float GetImuVelocity(uint8_t axis) { 
+    return gyro[axis];
+ }
+/**
+  * @brief          获取角速度
+  * @param[in]      axis:轴id，可配合定义好的轴id宏使用
+  * @retval         (m/s^2) axis轴上的加速度
+  */
+float GetImuAccel(uint8_t axis) { 
+    return gVec[axis]; 
+}
+
 
 
 float GetEkfYaw(void){

@@ -2,6 +2,7 @@
 #define IMU_H
 
 #include "struct_typedef.h"
+#include "macro_typedef.h"
 
 extern inline float GetImuAngle(uint8_t axis);
 extern inline float GetImuVelocity(uint8_t axis);
