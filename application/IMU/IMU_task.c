@@ -38,7 +38,6 @@
 #include "main.h"
 #include "math.h"
 #include "pid.h"
-#include "quaternion.h"
 #include "robot_param.h"
 #include "usb_debug.h"
 
@@ -144,8 +143,6 @@ fp32 INS_angle_last[3] = {0.0f, 0.0f, 0.0f};
 static Imu_t IMU_DATA = {0.0f};
 
 static fp32 board_rotate_matrix[3][3] = {__BOARD_INSTALL_SPIN_MATRIX};
-static fp32 board_rotate_matrix_T[3][3];
-static Quaternion board_rotate_quaternion_T = {0};
 
 /**
   * @brief          imu任务, 初始化 bmi088, ist8310, 计算欧拉角
@@ -193,14 +190,6 @@ void IMU_task(void const * pvParameters)
 
     imu_start_dma_flag = 1;
 
-#define brm board_rotate_matrix
-#define brmT board_rotate_matrix_T
-    brmT[0][0] = brm[0][0]; brmT[0][1] = brm[1][0]; brmT[0][2] = brm[2][0];
-    brmT[1][0] = brm[0][1]; brmT[1][1] = brm[1][1]; brmT[1][2] = brm[2][1];
-    brmT[2][0] = brm[0][2]; brmT[2][1] = brm[1][2]; brmT[2][2] = brm[2][2];
-#undef brm
-#undef brmT
-    board_rotate_quaternion_T = matrix_to_quaternion(board_rotate_matrix_T);
     gEstimateKF_Init(1, 2000);
     IMU_QuaternionEKF_Init(10, 0.001, 1000000, 0.9996);
 
@@ -264,20 +253,6 @@ static void UpdateImuData(void)
     IMU_DATA.accel[AX_X] = gVec[AX_X];
     IMU_DATA.accel[AX_Y] = gVec[AX_Y];
     IMU_DATA.accel[AX_Z] = gVec[AX_Z];
-
-    Quaternion pose_q;
-    pose_q.w = INS.q[0];
-    pose_q.x = INS.q[1];
-    pose_q.y = INS.q[2];
-    pose_q.z = INS.q[3];
-    Quaternion new_pose = quaternion_multiply(board_rotate_quaternion_T, pose_q);
-
-    // clang-format off
-    // 四元数反解欧拉角
-    IMU_DATA.angle[0] = atan2f(2.0f * (new_pose.w * new_pose.x + new_pose.y * new_pose.z), 2.0f * (new_pose.w * new_pose.w + new_pose.z * new_pose.z) - 1.0f);
-    IMU_DATA.angle[1] = asinf(-2.0f * (new_pose.x * new_pose.z - new_pose.w * new_pose.y));
-    IMU_DATA.angle[2] = atan2f(2.0f * (new_pose.w * new_pose.z + new_pose.x * new_pose.y), 2.0f * (new_pose.w * new_pose.w + new_pose.x * new_pose.x) - 1.0f);
-    // clang-format on
 }
 
 // clang-format off
