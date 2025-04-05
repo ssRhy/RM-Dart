@@ -35,6 +35,26 @@
 #define __HEAT_IMU 1  // 加热IMU(防止Debug时因断点导致pid失效产生过热，烧坏IMU)
 #define __IMU_CONTROL_TEMPERATURE 35 // (度)IMU目标控制温度
 
+// #define __BOARD_INSTALL_SPIN_MATRIX    \
+// {-1.0f, 0.0f, 0.0f},                     \
+// {0.0f, -1.0f, 0.0f},                     \
+// {0.0f, 0.0f, 1.0f}                      \
+
+// #define __BOARD_INSTALL_SPIN_MATRIX    \
+// {0.0f, 1.0f, 0.0f},                     \
+// {-1.0f, 0.0f, 0.0f},                     \
+// {0.0f, 0.0f, 1.0f}                      \
+
+// #define __BOARD_INSTALL_SPIN_MATRIX    \
+// {1.0f, 0.0f, 0.0f},                     \
+// {0.0f, 0.0f, -1.0f},                     \
+// {0.0f, 1.0f, 0.0f}                      \
+
+#define __BOARD_INSTALL_SPIN_MATRIX    \
+{1.0f, 0.0f, 0.0f},                     \
+{0.0f, 1.0f, 0.0f},                     \
+{0.0f, 0.0f, 1.0f} \
+
 // USB通信的部分选项
 #define __USB_SEND_DEBUG 1  // 发送DEBUG数据
 

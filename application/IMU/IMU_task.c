@@ -38,6 +38,7 @@
 #include "main.h"
 #include "math.h"
 #include "pid.h"
+#include "quaternion.h"
 #include "robot_param.h"
 #include "usb_debug.h"
 
@@ -79,6 +80,8 @@ static void imu_temp_control(fp32 temp);
 static void imu_cmd_spi_dma(void);
 
 static void imu_rotate(fp32 gyro[3], fp32 accel[3], fp32 mag[3], bmi088_real_data_t *bmi088, ist8310_real_data_t *ist8310);
+
+static void board_rotate(fp32 gyro[3], fp32 accel[3]);
 
 static void UpdateImuData(void);
 
@@ -140,6 +143,10 @@ fp32 INS_angle_last[3] = {0.0f, 0.0f, 0.0f};
 
 static Imu_t IMU_DATA = {0.0f};
 
+static fp32 board_rotate_matrix[3][3] = {__BOARD_INSTALL_SPIN_MATRIX};
+static fp32 board_rotate_matrix_T[3][3];
+static Quaternion board_rotate_quaternion_T = {0};
+
 /**
   * @brief          imu任务, 初始化 bmi088, ist8310, 计算欧拉角
   * @param[in]      pvParameters: NULL
@@ -165,6 +172,7 @@ void IMU_task(void const * pvParameters)
     BMI088_read(bmi088_real_data.gyro, bmi088_real_data.accel, &bmi088_real_data.temp);
     // rotate
     imu_rotate(INS_gyro, INS_accel, INS_mag, &bmi088_real_data, &ist8310_real_data);
+    board_rotate(INS_gyro, INS_accel);
 
     PID_init(&imu_temp_pid, PID_POSITION, imu_temp_PID, TEMPERATURE_PID_MAX_OUT, TEMPERATURE_PID_MAX_IOUT);
     AHRS_init(INS_quat, INS_accel, INS_mag);
@@ -184,7 +192,15 @@ void IMU_task(void const * pvParameters)
     SPI1_DMA_init((uint32_t)gyro_dma_tx_buf, (uint32_t)gyro_dma_rx_buf, SPI_DMA_GYRO_LENGHT);
 
     imu_start_dma_flag = 1;
-    
+
+#define brm board_rotate_matrix
+#define brmT board_rotate_matrix_T
+    brmT[0][0] = brm[0][0]; brmT[0][1] = brm[1][0]; brmT[0][2] = brm[2][0];
+    brmT[1][0] = brm[0][1]; brmT[1][1] = brm[1][1]; brmT[1][2] = brm[2][1];
+    brmT[2][0] = brm[0][2]; brmT[2][1] = brm[1][2]; brmT[2][2] = brm[2][2];
+#undef brm
+#undef brmT
+    board_rotate_quaternion_T = matrix_to_quaternion(board_rotate_matrix_T);
     gEstimateKF_Init(1, 2000);
     IMU_QuaternionEKF_Init(10, 0.001, 1000000, 0.9996);
 
@@ -219,6 +235,7 @@ void IMU_task(void const * pvParameters)
         
         // rotate
         imu_rotate(INS_gyro, INS_accel, INS_mag, &bmi088_real_data, &ist8310_real_data);
+        board_rotate(INS_gyro, INS_accel);
 
         // 更新加速度
         gEstimateKF_Update(INS_gyro[0],  INS_gyro[1],  INS_gyro[2],
@@ -247,6 +264,20 @@ static void UpdateImuData(void)
     IMU_DATA.accel[AX_X] = gVec[AX_X];
     IMU_DATA.accel[AX_Y] = gVec[AX_Y];
     IMU_DATA.accel[AX_Z] = gVec[AX_Z];
+
+    Quaternion pose_q;
+    pose_q.w = INS.q[0];
+    pose_q.x = INS.q[1];
+    pose_q.y = INS.q[2];
+    pose_q.z = INS.q[3];
+    Quaternion new_pose = quaternion_multiply(board_rotate_quaternion_T, pose_q);
+
+    // clang-format off
+    // 四元数反解欧拉角
+    IMU_DATA.angle[0] = atan2f(2.0f * (new_pose.w * new_pose.x + new_pose.y * new_pose.z), 2.0f * (new_pose.w * new_pose.w + new_pose.z * new_pose.z) - 1.0f);
+    IMU_DATA.angle[1] = asinf(-2.0f * (new_pose.x * new_pose.z - new_pose.w * new_pose.y));
+    IMU_DATA.angle[2] = atan2f(2.0f * (new_pose.w * new_pose.z + new_pose.x * new_pose.y), 2.0f * (new_pose.w * new_pose.w + new_pose.x * new_pose.x) - 1.0f);
+    // clang-format on
 }
 
 // clang-format off
@@ -269,6 +300,29 @@ static void imu_rotate(fp32 gyro[3], fp32 accel[3], fp32 mag[3], bmi088_real_dat
         mag[i] = ist8310->mag[0] * mag_scale_factor[i][0] + ist8310->mag[1] * mag_scale_factor[i][1] + ist8310->mag[2] * mag_scale_factor[i][2];
     }
 }
+
+/**
+ * @brief          旋转陀螺仪,加速度计,因为C板有不同安装方式
+ * @param[in]      imu: 被旋转的imu值
+ * @param[in]      ins: 陀螺仪数据
+ * @param[out]     rotate_matrix: 旋转矩阵
+ * @retval         none
+ */
+static void board_rotate(fp32 gyro[3], fp32 accel[3]){
+    float tmp_gyro[3];
+    float tmp_accel[3];
+    for (uint8_t i = 0; i < 3; i++) 
+    {
+        tmp_gyro[i]  = gyro[0] * board_rotate_matrix[i][0]  + gyro[1] * board_rotate_matrix[i][1]  + gyro[2] * board_rotate_matrix[i][2];
+        tmp_accel[i] = accel[0] * board_rotate_matrix[i][0] + accel[1] * board_rotate_matrix[i][1] + accel[2] * board_rotate_matrix[i][2];
+    }
+    for (uint8_t i = 0; i < 3; i++)
+    {
+        gyro[i]  = tmp_gyro[i];
+        accel[i] = tmp_accel[i];
+    }
+}
+
 
 /**
   * @brief          控制bmi088的温度
