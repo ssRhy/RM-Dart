@@ -35,10 +35,7 @@ typedef struct
     uint8_t ConvergeFlag;
     float q[4];        // 四元数估计值
     float GyroBias[3]; // 陀螺仪零偏估计值
-
-    float Roll;
-    float Pitch;
-    float Yaw;
+    float angle[3]; // 欧拉角估计值
 
     float Q1; // 四元数更新过程噪声
     float Q2; // 陀螺仪零偏过程噪声
@@ -59,9 +56,7 @@ void IMU_QuaternionEKF_Update(float gx, float gy, float gz, float ax, float ay, 
 void gEstimateKF_Init(float process_noise, float measure_noise);
 void gEstimateKF_Update(float gx, float gy, float gz, float ax, float ay, float az, float dt);
 
-extern float GetEkfYaw(void);
-extern float GetEkfPitch(void);
-extern float GetEkfRoll(void);
+extern float GetEkfAngle(int i);
 
 extern float GetEkfAccel(int i);
 
