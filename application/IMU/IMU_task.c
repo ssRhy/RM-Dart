@@ -57,6 +57,22 @@
 
 
 #define IMU_CALI_MAX_COUNT 100
+
+#define RAW_GYRO_X_ADDRESS_OFFSET 1
+#define RAW_GYRO_Y_ADDRESS_OFFSET 0
+#define RAW_GYRO_Z_ADDRESS_OFFSET 2
+
+#define RAW_GYRO_X_DIRECTION (1)
+#define RAW_GYRO_Y_DIRECTION (-1)
+#define RAW_GYRO_Z_DIRECTION (1)
+
+#define RAW_ACCEL_X_ADDRESS_OFFSET 1
+#define RAW_ACCEL_Y_ADDRESS_OFFSET 0
+#define RAW_ACCEL_Z_ADDRESS_OFFSET 2
+
+#define RAW_ACCEL_X_DIRECTION (1)
+#define RAW_ACCEL_Y_DIRECTION (-1)
+#define RAW_ACCEL_Z_DIRECTION (1)
 // clang-format on
 
 /**
@@ -220,12 +236,18 @@ void IMU_task(void const * pvParameters)
         }
 
         // 更新加速度
-        gEstimateKF_Update(bmi088_real_data.gyro[0],  bmi088_real_data.gyro[1],  bmi088_real_data.gyro[2],
-                           bmi088_real_data.accel[0], bmi088_real_data.accel[1], bmi088_real_data.accel[2],
+        gEstimateKF_Update(RAW_GYRO_X_DIRECTION * bmi088_real_data.gyro[RAW_GYRO_X_ADDRESS_OFFSET],
+                           RAW_GYRO_Y_DIRECTION * bmi088_real_data.gyro[RAW_GYRO_Y_ADDRESS_OFFSET],
+                           RAW_GYRO_Z_DIRECTION * bmi088_real_data.gyro[RAW_GYRO_Z_ADDRESS_OFFSET],
+                           RAW_ACCEL_X_DIRECTION * bmi088_real_data.accel[RAW_ACCEL_X_ADDRESS_OFFSET], 
+                           RAW_ACCEL_Y_DIRECTION * bmi088_real_data.accel[RAW_ACCEL_Y_ADDRESS_OFFSET], 
+                           RAW_ACCEL_Z_DIRECTION * bmi088_real_data.accel[RAW_ACCEL_Z_ADDRESS_OFFSET],
                            timing_time);
         // 更新欧拉角
-        IMU_QuaternionEKF_Update(bmi088_real_data.gyro[0], bmi088_real_data.gyro[1], bmi088_real_data.gyro[2],
-                                 gVec[0], gVec[1], gVec[2],
+        IMU_QuaternionEKF_Update(RAW_GYRO_X_DIRECTION * bmi088_real_data.gyro[RAW_GYRO_X_ADDRESS_OFFSET], 
+                                 RAW_GYRO_Y_DIRECTION * bmi088_real_data.gyro[RAW_GYRO_Y_ADDRESS_OFFSET], 
+                                 RAW_GYRO_Z_DIRECTION * bmi088_real_data.gyro[RAW_GYRO_Z_ADDRESS_OFFSET],
+                                 gVec[AX_X], gVec[AX_Y], gVec[AX_Z],
                                  timing_time);
         // clang-format on
 
@@ -240,9 +262,9 @@ static void UpdateImuData(void)
     IMU_DATA.roll  = INS.Roll;
     IMU_DATA.yaw   = INS.Yaw;
 
-    IMU_DATA.roll_vel  = INS_gyro[INS_GYRO_X_ADDRESS_OFFSET];
-    IMU_DATA.pitch_vel = INS_gyro[INS_GYRO_Y_ADDRESS_OFFSET];
-    IMU_DATA.yaw_vel   = INS_gyro[INS_GYRO_Z_ADDRESS_OFFSET];
+    IMU_DATA.roll_vel  = bmi088_real_data.gyro[RAW_GYRO_X_ADDRESS_OFFSET];
+    IMU_DATA.pitch_vel = bmi088_real_data.gyro[RAW_GYRO_Y_ADDRESS_OFFSET];
+    IMU_DATA.yaw_vel   = bmi088_real_data.gyro[RAW_GYRO_Z_ADDRESS_OFFSET];
     
     IMU_DATA.x_accel = gVec[AX_X];
     IMU_DATA.y_accel = gVec[AX_Y];
@@ -554,4 +576,38 @@ float GetYawBias(void)
     return bias_sum / count + __GYRO_BIAS_YAW;
 }
 
+float get_raw_accel(uint8_t axis)
+{
+    switch (axis) {
+        case AX_X: {
+            return RAW_ACCEL_X_DIRECTION * bmi088_real_data.accel[RAW_ACCEL_X_ADDRESS_OFFSET];
+        }
+        case AX_Y: {
+            return RAW_ACCEL_Y_DIRECTION * bmi088_real_data.accel[RAW_ACCEL_Y_ADDRESS_OFFSET];
+        }
+        case AX_Z: {
+            return RAW_ACCEL_Z_DIRECTION * bmi088_real_data.accel[RAW_ACCEL_Z_ADDRESS_OFFSET];
+        }
+        default: {
+            return 0.0f;
+        }
+    }
+}
+float get_raw_gyro(uint8_t axis)
+{
+    switch (axis) {
+        case AX_X: {
+            return RAW_GYRO_X_DIRECTION * bmi088_real_data.gyro[RAW_GYRO_X_ADDRESS_OFFSET];
+        }
+        case AX_Y: {
+            return RAW_GYRO_Y_DIRECTION * bmi088_real_data.gyro[RAW_GYRO_Y_ADDRESS_OFFSET];
+        }
+        case AX_Z: {
+            return RAW_GYRO_Z_DIRECTION * bmi088_real_data.gyro[RAW_GYRO_Z_ADDRESS_OFFSET];
+        }
+        default: {
+            return 0.0f;
+        }
+    }
+}
 /*------------------------------ End of File ------------------------------*/
