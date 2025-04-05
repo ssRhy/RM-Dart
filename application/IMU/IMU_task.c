@@ -73,7 +73,6 @@
 #define RAW_ACCEL_X_DIRECTION (1)
 #define RAW_ACCEL_Y_DIRECTION (-1)
 #define RAW_ACCEL_Z_DIRECTION (1)
-// clang-format on
 
 static void imu_temp_control(fp32 temp);
 
@@ -83,7 +82,6 @@ static void imu_rotate(fp32 gyro[3], fp32 accel[3], fp32 mag[3], bmi088_real_dat
 
 static void UpdateImuData(void);
 
-// clang-format off
 extern SPI_HandleTypeDef hspi1;
 
 
@@ -140,17 +138,7 @@ fp32 INS_angle[3] = {0.0f, 0.0f, 0.0f};      //euler angle, unit rad.欧拉角 �
 fp32 INS_angle_last[3] = {0.0f, 0.0f, 0.0f};
 // clang-format on
 
-static Imu_t IMU_DATA = {
-    .pitch = 0.0f,
-    .roll = 0.0f,
-    .yaw = 0.0f,
-    .pitch_vel = 0.0f,
-    .roll_vel = 0.0f,
-    .yaw_vel = 0.0f,
-    .x_accel = 0.0f,
-    .y_accel = 0.0f,
-    .z_accel = 0.0f,
-};
+static Imu_t IMU_DATA = {0.0f};
 
 /**
   * @brief          imu任务, 初始化 bmi088, ist8310, 计算欧拉角
@@ -248,27 +236,17 @@ void IMU_task(void const * pvParameters)
 
 static void UpdateImuData(void)
 {
-    // clang-format off
-    IMU_DATA.roll  = INS.angle[AX_X];
-    IMU_DATA.pitch = INS.angle[AX_Y];
-    IMU_DATA.yaw   = INS.angle[AX_Z];
+    IMU_DATA.angle[AX_X] = INS.angle[AX_X];
+    IMU_DATA.angle[AX_Y] = INS.angle[AX_Y];
+    IMU_DATA.angle[AX_Z] = INS.angle[AX_Z];
 
-    IMU_DATA.roll_vel  = bmi088_real_data.gyro[RAW_GYRO_X_ADDRESS_OFFSET];
-    IMU_DATA.pitch_vel = bmi088_real_data.gyro[RAW_GYRO_Y_ADDRESS_OFFSET];
-    IMU_DATA.yaw_vel   = bmi088_real_data.gyro[RAW_GYRO_Z_ADDRESS_OFFSET];
-    
-    IMU_DATA.x_accel = gVec[AX_X];
-    IMU_DATA.y_accel = gVec[AX_Y];
-    IMU_DATA.z_accel = gVec[AX_Z];
+    IMU_DATA.gyro[AX_X] = INS_gyro[RAW_GYRO_X_ADDRESS_OFFSET];
+    IMU_DATA.gyro[AX_Y] = INS_gyro[RAW_GYRO_Y_ADDRESS_OFFSET];
+    IMU_DATA.gyro[AX_Z] = INS_gyro[RAW_GYRO_Z_ADDRESS_OFFSET];
 
-    INS_angle[AX_X] = INS.angle[AX_X];
-    INS_angle[AX_Y] = INS.angle[AX_Y];
-    INS_angle[AX_Z] = INS.angle[AX_Z];
-
-    for (uint32_t i = 0; i < 3; i++){
-      INS_accel[i] = gVec[i];
-    }
-    // clang-format on
+    IMU_DATA.accel[AX_X] = gVec[AX_X];
+    IMU_DATA.accel[AX_Y] = gVec[AX_Y];
+    IMU_DATA.accel[AX_Z] = gVec[AX_Z];
 }
 
 // clang-format off
@@ -551,19 +529,19 @@ void DMA2_Stream2_IRQHandler(void)
   * @param[in]      axis:轴id，可配合定义好的轴id宏使用
   * @retval         (rad) axis轴的角度值
   */
-inline float GetImuAngle(uint8_t axis) { return INS_angle[axis]; }
+inline float GetImuAngle(uint8_t axis) { return IMU_DATA.angle[axis]; }
 /**
   * @brief          获取角速度
   * @param[in]      axis:轴id，可配合定义好的轴id宏使用
   * @retval         (rad/s) axis轴的角速度
   */
-inline float GetImuVelocity(uint8_t axis) { return INS_gyro[axis]; }
+inline float GetImuVelocity(uint8_t axis) { return IMU_DATA.gyro[axis]; }
 /**
   * @brief          获取角速度
   * @param[in]      axis:轴id，可配合定义好的轴id宏使用
   * @retval         (m/s^2) axis轴上的加速度
   */
-inline float GetImuAccel(uint8_t axis) { return INS_accel[axis]; }
+inline float GetImuAccel(uint8_t axis) { return IMU_DATA.accel[axis]; }
 /**
   * @brief          获取yaw零飘修正值
   * @retval         (rad/s) yaw零飘修正值
