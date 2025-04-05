@@ -240,9 +240,9 @@ static void UpdateImuData(void)
     IMU_DATA.angle[AX_Y] = INS.angle[AX_Y];
     IMU_DATA.angle[AX_Z] = INS.angle[AX_Z];
 
-    IMU_DATA.gyro[AX_X] = INS_gyro[RAW_GYRO_X_ADDRESS_OFFSET];
-    IMU_DATA.gyro[AX_Y] = INS_gyro[RAW_GYRO_Y_ADDRESS_OFFSET];
-    IMU_DATA.gyro[AX_Z] = INS_gyro[RAW_GYRO_Z_ADDRESS_OFFSET];
+    IMU_DATA.gyro[AX_X] = INS_gyro[AX_X];
+    IMU_DATA.gyro[AX_Y] = INS_gyro[AX_Y];
+    IMU_DATA.gyro[AX_Z] = INS_gyro[AX_Z];
 
     IMU_DATA.accel[AX_X] = gVec[AX_X];
     IMU_DATA.accel[AX_Y] = gVec[AX_Y];
