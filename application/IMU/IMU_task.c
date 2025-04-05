@@ -38,7 +38,6 @@
 #include "main.h"
 #include "math.h"
 #include "pid.h"
-#include "quaternion.h"
 #include "robot_param.h"
 #include "usb_debug.h"
 
