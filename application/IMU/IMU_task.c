@@ -57,21 +57,29 @@
 
 
 #define IMU_CALI_MAX_COUNT 100
+
+#define RAW_GYRO_X_ADDRESS_OFFSET 1
+#define RAW_GYRO_Y_ADDRESS_OFFSET 0
+#define RAW_GYRO_Z_ADDRESS_OFFSET 2
+
+#define RAW_GYRO_X_DIRECTION (1)
+#define RAW_GYRO_Y_DIRECTION (-1)
+#define RAW_GYRO_Z_DIRECTION (1)
+
+#define RAW_ACCEL_X_ADDRESS_OFFSET 1
+#define RAW_ACCEL_Y_ADDRESS_OFFSET 0
+#define RAW_ACCEL_Z_ADDRESS_OFFSET 2
+
+#define RAW_ACCEL_X_DIRECTION (1)
+#define RAW_ACCEL_Y_DIRECTION (-1)
+#define RAW_ACCEL_Z_DIRECTION (1)
 // clang-format on
 
-/**
-  * @brief          控制bmi088的温度
-  * @param[in]      temp:bmi088的温度
-  * @retval         none
-  */
 static void imu_temp_control(fp32 temp);
 
-/**
-  * @brief          根据imu_update_flag的值开启SPI DMA
-  * @param[in]      temp:bmi088的温度
-  * @retval         none
-  */
 static void imu_cmd_spi_dma(void);
+
+static void imu_rotate(fp32 gyro[3], fp32 accel[3], fp32 mag[3], bmi088_real_data_t *bmi088, ist8310_real_data_t *ist8310);
 
 static void UpdateImuData(void);
 
@@ -167,6 +175,8 @@ void IMU_task(void const * pvParameters)
     }
 
     BMI088_read(bmi088_real_data.gyro, bmi088_real_data.accel, &bmi088_real_data.temp);
+    // rotate
+    imu_rotate(INS_gyro, INS_accel, INS_mag, &bmi088_real_data, &ist8310_real_data);
 
     PID_init(&imu_temp_pid, PID_POSITION, imu_temp_PID, TEMPERATURE_PID_MAX_OUT, TEMPERATURE_PID_MAX_IOUT);
     AHRS_init(INS_quat, INS_accel, INS_mag);
@@ -218,13 +228,16 @@ void IMU_task(void const * pvParameters)
             BMI088_temperature_read_over(accel_temp_dma_rx_buf + BMI088_ACCEL_RX_BUF_DATA_OFFSET, &bmi088_real_data.temp);
             imu_temp_control(bmi088_real_data.temp);
         }
+        
+        // rotate
+        imu_rotate(INS_gyro, INS_accel, INS_mag, &bmi088_real_data, &ist8310_real_data);
 
         // 更新加速度
-        gEstimateKF_Update(bmi088_real_data.gyro[0],  bmi088_real_data.gyro[1],  bmi088_real_data.gyro[2],
-                           bmi088_real_data.accel[0], bmi088_real_data.accel[1], bmi088_real_data.accel[2],
+        gEstimateKF_Update(INS_gyro[0],  INS_gyro[1],  INS_gyro[2],
+                           INS_accel[0], INS_accel[1], INS_accel[2],
                            timing_time);
         // 更新欧拉角
-        IMU_QuaternionEKF_Update(bmi088_real_data.gyro[0], bmi088_real_data.gyro[1], bmi088_real_data.gyro[2],
+        IMU_QuaternionEKF_Update(INS_gyro[0], INS_gyro[1], INS_gyro[2],
                                  gVec[0], gVec[1], gVec[2],
                                  timing_time);
         // clang-format on
@@ -236,21 +249,21 @@ void IMU_task(void const * pvParameters)
 static void UpdateImuData(void)
 {
     // clang-format off
-    IMU_DATA.pitch = INS.Pitch;
-    IMU_DATA.roll  = INS.Roll;
-    IMU_DATA.yaw   = INS.Yaw;
+    IMU_DATA.roll  = INS.angle[AX_X];
+    IMU_DATA.pitch = INS.angle[AX_Y];
+    IMU_DATA.yaw   = INS.angle[AX_Z];
 
-    IMU_DATA.roll_vel  = INS_gyro[INS_GYRO_X_ADDRESS_OFFSET];
-    IMU_DATA.pitch_vel = INS_gyro[INS_GYRO_Y_ADDRESS_OFFSET];
-    IMU_DATA.yaw_vel   = INS_gyro[INS_GYRO_Z_ADDRESS_OFFSET];
+    IMU_DATA.roll_vel  = bmi088_real_data.gyro[RAW_GYRO_X_ADDRESS_OFFSET];
+    IMU_DATA.pitch_vel = bmi088_real_data.gyro[RAW_GYRO_Y_ADDRESS_OFFSET];
+    IMU_DATA.yaw_vel   = bmi088_real_data.gyro[RAW_GYRO_Z_ADDRESS_OFFSET];
     
     IMU_DATA.x_accel = gVec[AX_X];
     IMU_DATA.y_accel = gVec[AX_Y];
     IMU_DATA.z_accel = gVec[AX_Z];
 
-    INS_angle[AX_ROLL] = INS.Roll;
-    INS_angle[AX_PITCH] = INS.Pitch;
-    INS_angle[AX_YAW] = INS.Yaw;
+    INS_angle[AX_X] = INS.angle[AX_X];
+    INS_angle[AX_Y] = INS.angle[AX_Y];
+    INS_angle[AX_Z] = INS.angle[AX_Z];
 
     for (uint32_t i = 0; i < 3; i++){
       INS_accel[i] = gVec[i];
@@ -259,6 +272,25 @@ static void UpdateImuData(void)
 }
 
 // clang-format off
+
+/**
+ * @brief          旋转陀螺仪,加速度计和磁力计,因为设备有不同安装方式
+ * @param[out]     gyro: 旋转
+ * @param[out]     accel: 旋转
+ * @param[out]     mag: 旋转
+ * @param[in]      bmi088: 陀螺仪和加速度计数据
+ * @param[in]      ist8310: 磁力计数据
+ * @retval         none
+ */
+static void imu_rotate(fp32 gyro[3], fp32 accel[3], fp32 mag[3], bmi088_real_data_t *bmi088, ist8310_real_data_t *ist8310)
+{
+    for (uint8_t i = 0; i < 3; i++)
+    {
+        gyro[i] = bmi088->gyro[0] * gyro_scale_factor[i][0] + bmi088->gyro[1] * gyro_scale_factor[i][1] + bmi088->gyro[2] * gyro_scale_factor[i][2];
+        accel[i] = bmi088->accel[0] * accel_scale_factor[i][0] + bmi088->accel[1] * accel_scale_factor[i][1] + bmi088->accel[2] * accel_scale_factor[i][2];
+        mag[i] = ist8310->mag[0] * mag_scale_factor[i][0] + ist8310->mag[1] * mag_scale_factor[i][1] + ist8310->mag[2] * mag_scale_factor[i][2];
+    }
+}
 
 /**
   * @brief          控制bmi088的温度
@@ -554,4 +586,38 @@ float GetYawBias(void)
     return bias_sum / count + __GYRO_BIAS_YAW;
 }
 
+float get_raw_accel(uint8_t axis)
+{
+    switch (axis) {
+        case AX_X: {
+            return RAW_ACCEL_X_DIRECTION * bmi088_real_data.accel[RAW_ACCEL_X_ADDRESS_OFFSET];
+        }
+        case AX_Y: {
+            return RAW_ACCEL_Y_DIRECTION * bmi088_real_data.accel[RAW_ACCEL_Y_ADDRESS_OFFSET];
+        }
+        case AX_Z: {
+            return RAW_ACCEL_Z_DIRECTION * bmi088_real_data.accel[RAW_ACCEL_Z_ADDRESS_OFFSET];
+        }
+        default: {
+            return 0.0f;
+        }
+    }
+}
+float get_raw_gyro(uint8_t axis)
+{
+    switch (axis) {
+        case AX_X: {
+            return RAW_GYRO_X_DIRECTION * bmi088_real_data.gyro[RAW_GYRO_X_ADDRESS_OFFSET];
+        }
+        case AX_Y: {
+            return RAW_GYRO_Y_DIRECTION * bmi088_real_data.gyro[RAW_GYRO_Y_ADDRESS_OFFSET];
+        }
+        case AX_Z: {
+            return RAW_GYRO_Z_DIRECTION * bmi088_real_data.gyro[RAW_GYRO_Z_ADDRESS_OFFSET];
+        }
+        default: {
+            return 0.0f;
+        }
+    }
+}
 /*------------------------------ End of File ------------------------------*/
