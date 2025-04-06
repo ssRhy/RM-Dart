@@ -31,8 +31,7 @@ extern void Uart2TaskLoop(void);
 // API
 
 extern bool GetUartOffline(void);
-extern bool GetUartRcToeError(void);
-extern const RC_ctrl_t * GetUartRcPoint(void);
+extern bool GetUartRcOffline(void);
 extern float GetUartGimbalYawMotorPos(void);
 extern bool GetUartGimbalInitJudge(void);
 extern uint32_t GetUartTimeStampForTest(void);

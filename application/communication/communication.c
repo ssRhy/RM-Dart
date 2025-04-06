@@ -182,14 +182,8 @@ void DataRcRenew()
 {
     Send_Data_Rc.time_stamp = HAL_GetTick();
 
-    if (toe_is_error(DBUS_TOE)) {
-        memset(&Send_Data_Rc.data.rc_ctrl, 0, sizeof(RC_ctrl_t));
-        Send_Data_Rc.data.rc_toe_error = true;
-    } else {
-        // Rc_Data.data.rc_ctrl.rc.ch[0] = GenerateSinWave(10,0,4);
-        memcpy(&Send_Data_Rc.data.rc_ctrl, get_remote_control_point(), sizeof(RC_ctrl_t));
-        Send_Data_Rc.data.rc_toe_error = false;
-    }
+    memcpy(&Send_Data_Rc.data.rc_ctrl, get_remote_control_point(), sizeof(RC_ctrl_t));
+    Send_Data_Rc.data.rc_offline = GetRcOffline();
     append_CRC16_check_sum((uint8_t *)(&Send_Data_Rc), sizeof(Data_Rc_s));
 }
 
@@ -232,8 +226,10 @@ void Uart2DataSolve(uint8_t * frame)
             memcpy(&Receive_Data_Rc, frame, sizeof(Data_Rc_s));
             LastReceiveTime.Data_Rc = HAL_GetTick();
 
-            // const RC_ctrl_t * rc_ctrl = get_remote_control_point();
-            // memcpy((RC_ctrl_t *)rc_ctrl, &Rc_Data.data.rc_ctrl, sizeof(RC_ctrl_t));
+#if __CONTROL_LINK_RC == CL_RC_UART2
+            const RC_ctrl_t * rc_ctrl = get_remote_control_point();
+            memcpy((RC_ctrl_t *)rc_ctrl, &Receive_Data_Rc.data.rc_ctrl, sizeof(RC_ctrl_t));
+#endif
         } break;
         case Uart2_Data_Gimbal_ID: {
             memcpy(&Receive_Data_Gimbal, frame, sizeof(Data_Gimbal_s));
@@ -350,7 +346,6 @@ void Uart2TaskLoop(void)
 /* API                                                                         */
 /*     GetUartOffline                                                          */
 /*     GetUartRcToeError                                                       */
-/*     GetUartRcPoint                                                          */
 /*     GetUartGimbalYawMotorPos                                                */
 /*     GetUartGimbalInitJudge                                                  */
 /*******************************************************************************/
@@ -363,19 +358,17 @@ bool GetUartOffline(void)
     return false;
 }
 
-bool GetUartRcToeError(void)
+bool GetUartRcOffline(void)
 {
-    if (HAL_GetTick() - LastReceiveTime.Data_Rc > UART2_OFFLINE_TIME) {
+    if (GetUartOffline()) {
         return true;
     }
-    return Receive_Data_Rc.data.rc_toe_error;
+    return Receive_Data_Rc.data.rc_offline;
 }
-
-const RC_ctrl_t * GetUartRcPoint(void) { return &Receive_Data_Rc.data.rc_ctrl; }
 
 float GetUartGimbalYawMotorPos(void)
 {
-    if (HAL_GetTick() - LastReceiveTime.Data_Gimbal > UART2_OFFLINE_TIME) {
+    if (GetUartOffline()) {
         return 0;
     }
     return Receive_Data_Gimbal.data.yaw_motor_pos;
@@ -383,7 +376,7 @@ float GetUartGimbalYawMotorPos(void)
 
 bool GetUartGimbalInitJudge(void)
 {
-    if (HAL_GetTick() - LastReceiveTime.Data_Gimbal > UART2_OFFLINE_TIME) {
+    if (GetUartOffline()) {
         return false;
     }
     return Receive_Data_Gimbal.data.init_judge;
