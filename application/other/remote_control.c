@@ -44,6 +44,8 @@
 
 // 遥控器掉线时间阈值
 #define RC_LOST_TIME 100  // ms
+// 非dt7遥控器连续断线上线次数（超过认为断连）
+#define SBUS_MAX_LOST_NUN 10
 
 //遥控器出错数据上限
 #define RC_CHANNAL_ERROR_VALUE 700
@@ -79,16 +81,20 @@ static void Et08aSbusToRc(volatile const uint8_t *sbus_buf, RC_ctrl_t *rc_ctrl);
 //remote control data 
 //遥控器控制变量
 RC_ctrl_t rc_ctrl;
-Sbus_t sbus;
+Sbus_t sbus = {.connect_flag = 0xFF};
 
 //接收原始数据，为18个字节，给了36个字节长度，防止DMA传输越界
 static uint8_t sbus_rx_buf[2][SBUS_RX_BUF_NUM];
 
 // 上一次接收数据的时间
 static uint32_t last_receive_time = 0;
-
 // 记录连续接收数据的次数
 static uint32_t receive_count = 0;
+// 记录非dt7的sbus遥控器连续断连次数
+static uint32_t sbus_lost_count = 0;
+
+
+static uint8_t connected_flag;  // 遥控器连接标志位
 
 /**
   * @brief          remote control init
@@ -103,6 +109,13 @@ static uint32_t receive_count = 0;
 void remote_control_init(void)
 {
     RC_Init(sbus_rx_buf[0], sbus_rx_buf[1], SBUS_RX_BUF_NUM);
+#if (__RC_TYPE == RC_AT9S_PRO)
+    connected_flag = AT9S_PRO_RC_CONNECTED_FLAG;
+#elif (__RC_TYPE == RC_HT8A)
+    connected_flag = HT8A_RC_CONNECTED_FLAG;
+#elif (__RC_TYPE == RC_ET08A)
+    connected_flag = ET08A_RC_CONNECTED_FLAG;
+#endif
 }
 /**
   * @brief          get remote control data point
@@ -394,6 +407,14 @@ static void sbus_to_rc(volatile const uint8_t *sbus_buf, RC_ctrl_t *rc_ctrl)
     sbus.ch[13]=((sbus_buf[20]<<9)  + (sbus_buf[19]<<1) + (sbus_buf[18]>>7)) & 0x07ff;\
     sbus.ch[14]=((sbus_buf[21]<<6)  + (sbus_buf[20]>>2)) & 0x07ff;                    \
     sbus.ch[15]=((sbus_buf[22]<<3)  + (sbus_buf[21]>>5)) & 0x07ff;                    \
+    sbus.connect_flag = sbus_buf[23];
+
+#define SBUS_LOST_CHECK()                      \
+    if (sbus.connect_flag == connected_flag) { \
+        sbus_lost_count = 0;                   \
+    } else {                                   \
+        sbus_lost_count++;                     \
+    }
 
 // DT7遥控器特殊通道置零
 #define SPECIAL_CHANNEL_SET_SERO()\
@@ -422,6 +443,7 @@ static void At9sProSbusToRc(volatile const uint8_t *sbus_buf, RC_ctrl_t *rc_ctrl
 
     // SBUS通道解析
     SBUS_DECODE()
+    SBUS_LOST_CHECK()
 
     // 将SBUS通道数据转换为DT7遥控器数据，方便兼容使用
     rc_ctrl->rc.ch[0] =  (sbus.ch[0] - AT9S_PRO_RC_CH_VALUE_OFFSET) / 800.0f * 660;
@@ -454,6 +476,7 @@ static void Ht8aSbusToRc(volatile const uint8_t *sbus_buf, RC_ctrl_t *rc_ctrl)
 
     // SBUS通道解析
     SBUS_DECODE()
+    SBUS_LOST_CHECK()
 
     // 将SBUS通道数据转换为DT7遥控器数据，方便兼容使用
     rc_ctrl->rc.ch[0] =  (sbus.ch[0] - HT8A_RC_CH013_VALUE_OFFSET) / 560.0f * 660;
@@ -485,6 +508,7 @@ static void Et08aSbusToRc(volatile const uint8_t *sbus_buf, RC_ctrl_t *rc_ctrl){
 
     // SBUS通道解析
     SBUS_DECODE()
+    SBUS_LOST_CHECK()
 
     // 将SBUS通道数据转换为DT7遥控器数据，方便兼容使用
     rc_ctrl->rc.ch[0] =  (sbus.ch[0] - ET08A_RC_CH_VALUE_OFFSET) / 671.0f * 660;
@@ -547,7 +571,8 @@ void sbus_to_usart1(uint8_t *sbus)
   */
 inline bool GetRcOffline(void)
 {
-    return !((receive_count > 5) && (HAL_GetTick() - last_receive_time < RC_LOST_TIME));
+    return !((receive_count > 5) && (HAL_GetTick() - last_receive_time < RC_LOST_TIME)) ||
+           (sbus_lost_count > SBUS_MAX_LOST_NUN);
 }
 
 /**

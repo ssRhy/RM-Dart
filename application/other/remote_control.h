@@ -56,6 +56,8 @@
 #define AT9S_PRO_RC_CH_VALUE_OFFSET      ((uint16_t)1000)
 #define AT9S_PRO_RC_CH_VALUE_MAX         ((uint16_t)1800)
 
+#define AT9S_PRO_RC_CONNECTED_FLAG       ((uint8_t)12)
+
 // HT8A 遥控器通道值范围
 #define HT8A_RC_CH013_VALUE_MIN         ((uint16_t)432)
 #define HT8A_RC_CH013_VALUE_OFFSET      ((uint16_t)992)
@@ -69,10 +71,14 @@
 #define HT8A_RC_CH47_VALUE_OFFSET      ((uint16_t)992)
 #define HT8A_RC_CH47_VALUE_MAX         ((uint16_t)1792)
 
+#define HT8A_RC_CONNECTED_FLAG         ((uint8_t)12)
+
 // ET08A 遥控器通道值范围
 #define ET08A_RC_CH_VALUE_MIN         ((uint16_t)353)
 #define ET08A_RC_CH_VALUE_OFFSET      ((uint16_t)1024)
 #define ET08A_RC_CH_VALUE_MAX         ((uint16_t)1694)
+
+#define ET08A_RC_CONNECTED_FLAG       ((uint8_t)0)
 
 
 #define RC_TO_ONE 0.0015151515151515f  // (1/660)遥控器通道值归一化系数
@@ -157,6 +163,7 @@ typedef struct __RC_ctrl
 typedef struct
 {
         uint16_t ch[16];
+        uint8_t connect_flag;
 } __packed__ Sbus_t;
 // clang-format on
 
