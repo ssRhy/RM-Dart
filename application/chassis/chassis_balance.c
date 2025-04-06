@@ -262,7 +262,7 @@ void ChassisInit(void)
  */
 void ChassisHandleException(void)
 {
-    if (toe_is_error(DBUS_TOE)) {
+    if (GetRcOffline()) {
         CHASSIS.error_code |= DBUS_ERROR_OFFSET;
     } else {
         CHASSIS.error_code &= ~DBUS_ERROR_OFFSET;
