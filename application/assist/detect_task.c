@@ -52,7 +52,8 @@
   
 #include "detect_task.h"
 #include "cmsis_os.h"
-
+#include "robot_param.h"
+#include "communication.h"
 
 /**
   * @brief          init error_list, assign  offline_time, online_time, priority.
@@ -191,6 +192,13 @@ void detect_task(void const *pvParameters)
   */
 bool_t toe_is_error(uint8_t toe)
 {
+#if __CONTROL_LINK_RC == CL_RC_UART2
+    if(toe == DBUS_TOE)
+    {
+        return GetUartRcOffline();
+    }
+#endif
+
     return (error_list[toe].error_exist == 1);
 }
 
