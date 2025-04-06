@@ -43,6 +43,10 @@
 // USB通信的部分选项
 #define __USB_SEND_DEBUG 1  // 发送DEBUG数据
 
+#ifndef __VIRTUAL_GIMBAL_FROM
+#define __VIRTUAL_GIMBAL_FROM VG_FROM_NONE // 虚拟云台数据来源（用于云台底盘分离控制）
+#endif
+
 // 本板id
 #ifndef __SELF_BOARD_ID
 #define __SELF_BOARD_ID C_BOARD_DEFAULT

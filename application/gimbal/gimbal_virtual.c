@@ -16,6 +16,7 @@
 */
 #include"gimbal_virtual.h"
 #if (GIMBAL_TYPE == GIMBAL_NONE)
+#include "communication.h"
 
 
 /* ---------------- GetGimbalDeltaYawMid -------------------- */
@@ -27,7 +28,11 @@
  */
 inline float GetGimbalDeltaYawMid(void)
 {
-  return 0.0f ; 
+#if __VIRTUAL_GIMBAL_FROM == VG_FROM_UART2
+  return GetUartGimbalYawMotorPos();
+#else
+  return 0.0f ;
+#endif 
 }
 
 /* ---------------- GetGimbalInitJudgeReturn -------------------- */
@@ -39,7 +44,12 @@ inline float GetGimbalDeltaYawMid(void)
  */
 inline bool GetGimbalInitJudgeReturn(void)
 {
+#if __SELF_BOARD_ID == C_BOARD_BALANCE_CHASSIS
+  // return GetUartGimbalInitJudge();
   return false ;
+#else
+  return false ;
+#endif
 }
 
 /* --------------------- CmdGimbalJointState ------------------- */

@@ -16,6 +16,8 @@
 #define __CONTROL_LINK_RC  CL_RC_DIRECT  // 控制链路选择：RC遥控器
 #define __CONTROL_LINK_KM  CL_KM_RC      // 控制链路选择：键鼠数据
 
+#define __VIRTUAL_GIMBAL_FROM VG_FROM_UART2 // 虚拟云台数据来源（用于云台底盘分离控制）
+
 /*-------------------- Chassis --------------------*/
 // 底盘任务相关宏定义
 #define CHASSIS_TASK_INIT_TIME 357   // 任务开始空闲一段时间

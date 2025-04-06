@@ -83,6 +83,12 @@
 #define CL_KM_RC_VT    0x203  // 同时使用图传链路和遥控器获取键鼠数据（互补操作，遥控器优先）
 #define CL_KM_VT_RC    0x204  // 同时使用图传链路和遥控器获取键鼠数据（互补操作，图传链路优先）
 
+// 虚拟云台数据源
+#define VG_FROM_NONE      0x000 // 无数据源
+#define VG_FROM_UART2     0x001 // uart2串口数据源
+#define VG_FROM_CAN       0x002 // can口数据源
+#define VG_FROM_YAW_MOTOR 0x003 // 直接使用yaw电机数据
+
 // 可用电机类型
 typedef enum __MotorType {
     DJI_M2006 = 0,
