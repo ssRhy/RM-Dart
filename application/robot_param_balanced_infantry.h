@@ -8,10 +8,9 @@
 #include "robot_typedef.h"
 
 #define CHASSIS_TYPE CHASSIS_BALANCE             // 选择底盘类型
-#define GIMBAL_TYPE GIMBAL_NONE                  // 选择云台类型
-#define SHOOT_TYPE SHOOT_NONE                    // 选择发射机构类型
-#define MECHANICAL_ARM_TYPE MECHANICAL_ARM_NONE  // 选择机械臂类型
-#define CONTROL_TYPE CHASSIS_AND_GIMBAL          // 选择控制类型
+
+#define __SELF_BOARD_ID C_BOARD_BALANCE_CHASSIS          // 本板ID
+#define __GYRO_BIAS_YAW  0.003096855f // 陀螺仪零飘，单位rad/s
 
 // clang-format off
 /*-------------------- Chassis --------------------*/
@@ -52,7 +51,7 @@
 // DM控制参数
 #define CALIBRATE_VEL_KP  (4.0f)  // 校准MIT速度控制KP
 #define DEBUG_VEL_KP      (4.0f)  // 调试MIT速度控制KP
-#define ZERO_FORCE_VEL_KP (1.0f)  // 无力MIT速度控制KP
+#define ZERO_FORCE_VEL_KP (4.0f)  // 无力MIT速度控制KP
 
 #define NORMAL_POS_KP (20.0f) // 正常MIT位置控制KP
 #define NORMAL_POS_KD (1.0f)  // 正常MIT位置控制KD
@@ -61,15 +60,15 @@
 #define DEBUG_POS_KD (0.8f) // 调试MIT位置控制KD
 
 //physical parameters ---------------------
-#define LEG_L1 (0.130f)  // (m)腿1长度
-#define LEG_L2 (0.240f)  // (m)腿2长度
+#define LEG_L1 (0.215f)  // (m)腿1长度
+#define LEG_L2 (0.258f)  // (m)腿2长度
 #define LEG_L3 (LEG_L2)  // (m)腿3长度
 #define LEG_L4 (LEG_L1)  // (m)腿4长度
-#define LEG_L5 (0.150f)  // (m)关节间距
+#define LEG_L5 (0.0f)    // (m)关节间距
 
 #define BODY_MASS            (8.5f)      // (kg)机身重量
 #define WHEEL_MASS           (0.65f)      // (kg)轮子重量
-#define WHEEL_RADIUS         (0.106f)    // (m)轮子半径
+#define WHEEL_RADIUS         (0.0625f)    // (m)轮子半径
 #define WHEEL_START_TORQUE   (0.3f)      // (Nm)轮子起动力矩
 #define WHEEL_BASE           (0.51175f)  // (m)驱动轮轴距
 
