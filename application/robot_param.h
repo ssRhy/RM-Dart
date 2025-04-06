@@ -48,6 +48,15 @@
 #define __SELF_BOARD_ID C_BOARD_DEFAULT
 #endif
 
+// 控制链路选择
+#ifndef __CONTROL_LINK_RC
+#define __CONTROL_LINK_RC CL_RC_DIRECT
+#endif
+
+#ifndef __CONTROL_LINK_KM
+#define __CONTROL_LINK_KM CL_KM_RC
+#endif
+
 // 模块检查
 #ifndef CHASSIS_TYPE
 #define CHASSIS_TYPE CHASSIS_NONE

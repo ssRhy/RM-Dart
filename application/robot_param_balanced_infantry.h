@@ -9,10 +9,13 @@
 
 #define CHASSIS_TYPE CHASSIS_BALANCE             // 选择底盘类型
 
-#define __SELF_BOARD_ID C_BOARD_BALANCE_CHASSIS          // 本板ID
-#define __GYRO_BIAS_YAW  0.003096855f // 陀螺仪零飘，单位rad/s
-
 // clang-format off
+#define __SELF_BOARD_ID C_BOARD_BALANCE_CHASSIS // 本板ID
+#define __GYRO_BIAS_YAW  0.003096855f           // 陀螺仪零飘，单位rad/s
+
+#define __CONTROL_LINK_RC  CL_RC_DIRECT  // 控制链路选择：RC遥控器
+#define __CONTROL_LINK_KM  CL_KM_RC      // 控制链路选择：键鼠数据
+
 /*-------------------- Chassis --------------------*/
 // 底盘任务相关宏定义
 #define CHASSIS_TASK_INIT_TIME 357   // 任务开始空闲一段时间

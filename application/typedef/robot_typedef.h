@@ -71,6 +71,18 @@
 #define C_BOARD_MECANUM_HERO             8  // (单板)麦克纳姆轮英雄C板
 #define C_BOARD_OMNI_SENTINEIL           9  // (单板)全向轮哨兵C板
 
+// 控制链路相关
+#define CL_RC_NONE           0x100  // 无遥控器链路
+#define CL_RC_DIRECT         0x101  // 直连遥控器（通过dbus口获取直接的遥控器数据）
+#define CL_RC_CAN            0x102  // 通过CAN口获取遥控器数据
+#define CL_RC_UART2          0x103  // 通过UART2口获取遥控器数据
+
+#define CL_KM_NONE     0x200  // 无键鼠数据
+#define CL_KM_RC       0x201  // 仅通过遥控器获取键鼠数据
+#define CL_KM_VT       0x202  // 仅通过图传链路获取键鼠数据(Video Transmission)
+#define CL_KM_RC_VT    0x203  // 同时使用图传链路和遥控器获取键鼠数据（互补操作，遥控器优先）
+#define CL_KM_VT_RC    0x204  // 同时使用图传链路和遥控器获取键鼠数据（互补操作，图传链路优先）
+
 // 可用电机类型
 typedef enum __MotorType {
     DJI_M2006 = 0,
