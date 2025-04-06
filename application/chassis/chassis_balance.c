@@ -38,6 +38,7 @@
 #include "string.h"
 #include "usb_debug.h"
 #include "user_lib.h"
+#include "IMU.h"
 
 // 一些内部的配置
 #define TAKE_OFF_DETECT 0  // 启用离地检测
@@ -428,21 +429,21 @@ static void UpdateMotorStatus(void)
 static void UpdateBodyStatus(void)
 {
     // 更新陀螺仪反馈数据
-    CHASSIS.fdb.body.roll = CHASSIS.imu->roll;
-    CHASSIS.fdb.body.roll_dot = CHASSIS.imu->roll_vel;
+    CHASSIS.fdb.body.roll = GetImuAngle(AX_ROLL);
+    CHASSIS.fdb.body.roll_dot = GetImuVelocity(AX_ROLL);
 
-    CHASSIS.fdb.body.pitch = CHASSIS.imu->pitch;
-    CHASSIS.fdb.body.pitch_dot = CHASSIS.imu->pitch_vel;
+    CHASSIS.fdb.body.pitch = GetImuAngle(AX_PITCH);
+    CHASSIS.fdb.body.pitch_dot = GetImuVelocity(AX_PITCH);
 
-    CHASSIS.fdb.body.yaw = CHASSIS.imu->yaw;
-    CHASSIS.fdb.body.yaw_dot = CHASSIS.imu->yaw_vel;
+    CHASSIS.fdb.body.yaw = GetImuAngle(AX_YAW);
+    CHASSIS.fdb.body.yaw_dot = GetImuVelocity(AX_YAW);
 
     LowPassFilterCalc(&CHASSIS.lpf.roll, CHASSIS.fdb.body.roll);
 
     // 更新加速度反馈数据，记录下来方便使用
-    float ax = CHASSIS.imu->x_accel;
-    float ay = CHASSIS.imu->y_accel;
-    float az = CHASSIS.imu->z_accel;
+    float ax = GetImuAccel(AX_X);
+    float ay = GetImuAccel(AX_Y);
+    float az = GetImuAccel(AX_Z);
     // 计算几个常用的三角函数值，减少重复计算
     float cos_roll = cosf(CHASSIS.fdb.body.roll);
     float sin_roll = sinf(CHASSIS.fdb.body.roll);
@@ -621,7 +622,7 @@ static void UpdateStepStatus(void)
     CHASSIS.step_time += CHASSIS.duration;
 
     if (CHASSIS.mode == CHASSIS_CUSTOM) {
-        if (GetDt7RcCh(DT7_CH_RH) < -0.9f) {  // 遥控器左侧水平摇杆打到左边切换至跳跃状态
+        if (0 && (GetDt7RcCh(DT7_CH_RH) < -0.9f)) {  // 遥控器左侧水平摇杆打到左边切换至跳跃状态
             CHASSIS.step_time = 0;
             CHASSIS.step = JUMP_STEP_SQUST;
         } else if (CHASSIS.step == JUMP_STEP_SQUST) {  // 跳跃——蹲下蓄力状态
