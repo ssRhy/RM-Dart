@@ -26,13 +26,13 @@
 
 // 底盘的遥控器相关宏定义 ---------------------
 #define CHASSIS_MODE_CHANNEL   0  // 选择底盘状态 开关通道号
-#define CHASSIS_X_CHANNEL      1  // 前后的遥控器通道号码
-#define CHASSIS_Y_CHANNEL      0  // 左右的遥控器通道号码
-#define CHASSIS_WZ_CHANNEL     0  // 旋转的遥控器通道号码
-#define CHASSIS_ANGLE_CHANNEL  2  // 腿摆角的遥控器通道号码
-#define CHASSIS_LENGTH_CHANNEL 3  // 腿长的遥控器通道号码
+#define CHASSIS_X_CHANNEL      3  // 前后的遥控器通道号码
+#define CHASSIS_Y_CHANNEL      2  // 左右的遥控器通道号码
+#define CHASSIS_WZ_CHANNEL     2  // 旋转的遥控器通道号码
+#define CHASSIS_ANGLE_CHANNEL  4  // 腿摆角的遥控器通道号码
+#define CHASSIS_LENGTH_CHANNEL 4  // 腿长的遥控器通道号码
 #define CHASSIS_ROLL_CHANNEL   4  // ROLL角的遥控器通道号码
-#define CHASSIS_RC_DEADLINE    5  // 摇杆死区
+#define CHASSIS_RC_DEADLINE    20 // 摇杆死区
 
 // deadzone parameters ---------------------
 #define WHEEL_DEADZONE (0.01f)  // (m/s)轮子速度死区
@@ -228,6 +228,13 @@
 #define KD_CHASSIS_WHEEL_STOP       (0.1f)
 #define MAX_IOUT_CHASSIS_WHEEL_STOP (0.0f)
 #define MAX_OUT_CHASSIS_WHEEL_STOP  (200.0f)
+
+// 云台跟随用的pid
+#define KP_CHASSIS_FOLLOW_GIMBAL       (5.0f)
+#define KI_CHASSIS_FOLLOW_GIMBAL       (0.0f)
+#define KD_CHASSIS_FOLLOW_GIMBAL       (0.0f)
+#define MAX_IOUT_CHASSIS_FOLLOW_GIMBAL (0.0f)
+#define MAX_OUT_CHASSIS_FOLLOW_GIMBAL  (6.0f)
 
 //LPF parameters ---------------------
 #define LEG_DDL0_LPF_ALPHA           (0.9f)
