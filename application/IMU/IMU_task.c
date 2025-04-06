@@ -575,23 +575,7 @@ inline float GetImuAccel(uint8_t axis) { return IMU_DATA.accel[axis]; }
   * @brief          获取yaw零飘修正值
   * @retval         (rad/s) yaw零飘修正值
   */
-float GetYawBias(void)
-{
-    static float bias_sum = 0;
-    static uint32_t count = 0;
-
-    if (HAL_GetTick() < 1000) {  // 运行时间不到1000ms不够稳定，不进行计算
-        return 0.0f;
-    }
-
-    float bias = (INS_angle[AX_YAW] - INS_angle_last[AX_YAW]) / timing_time;
-    INS_angle_last[AX_YAW] = INS_angle[AX_YAW];
-
-    bias_sum += bias;
-    count++;
-
-    return bias_sum / count + __GYRO_BIAS_YAW;
-}
+float GetYawBias(void) { return IMU_DATA.gyro[AX_Z]; }
 
 float get_raw_accel(uint8_t axis)
 {
