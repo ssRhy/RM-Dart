@@ -32,6 +32,8 @@
 uint32_t music_high_water;
 #endif
 
+#define ABNORMAL_WARNING_INTERVAL 5000  // ms
+
 // 启用遥控器离线报警
 #define ENABLE_ALARM_RC_OFFLINE false
 // 启用电机离线报警
@@ -97,6 +99,9 @@ static uint32_t start_time = 0;
 static uint32_t play_id = 0;  // 0为保留音符，不使用
 
 static uint32_t task_count = 0;
+static uint32_t last_abnormal_warning_time = 0;
+// static uint32_t last_task_time = 0;
+// static uint32_t task_duration = 0;
 
 /**
  * @brief 播放音乐
@@ -183,7 +188,9 @@ static void MusicPlay(void)
             is_play = PLAY_NONE;
         }
     } else {  // 正常状态
-        if (task_count % 5000 == 0) {
+        if (HAL_GetTick() - last_abnormal_warning_time > ABNORMAL_WARNING_INTERVAL) {
+            last_abnormal_warning_time = HAL_GetTick();
+
             if (ENABLE_ALARM_RC_OFFLINE && GetRcOffline()) {  // 检测遥控器是否离线
                 fifo_s_put(&play_list_fifo, PLAY_RC_OFFLINE);
             }
@@ -215,7 +222,7 @@ static void MusicPlay(void)
             default: {
                 if ((!ENABLE_CHECK_REFEREE_OFFLINE) || (!GetRefereeOffline())) {
                     PlayMusic(&MUSICS[hao_yun_lai], 0.1f);
-                }else {
+                } else {
                     buzzer_off();
                 }
             } break;

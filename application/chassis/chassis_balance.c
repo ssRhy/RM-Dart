@@ -38,6 +38,8 @@
 #include "string.h"
 #include "usb_debug.h"
 #include "user_lib.h"
+#include "gimbal.h"
+#include "IMU.h"
 
 // 一些内部的配置
 #define TAKE_OFF_DETECT 0  // 启用离地检测
@@ -216,6 +218,12 @@ void ChassisInit(void)
     PID_init(
         &CHASSIS.pid.wheel_stop[1], PID_POSITION, wheel_stop_pid, MAX_OUT_CHASSIS_WHEEL_STOP,
         MAX_IOUT_CHASSIS_WHEEL_STOP);
+    
+    float chassis_follow_gimbal_pid[3] = {
+        KP_CHASSIS_FOLLOW_GIMBAL, KI_CHASSIS_FOLLOW_GIMBAL, KD_CHASSIS_FOLLOW_GIMBAL};
+    PID_init(
+        &CHASSIS.pid.chassis_follow_gimbal, PID_POSITION, chassis_follow_gimbal_pid,
+        MAX_OUT_CHASSIS_FOLLOW_GIMBAL, MAX_IOUT_CHASSIS_FOLLOW_GIMBAL);
 
     // 初始化低通滤波器
     LowPassFilterInit(&CHASSIS.lpf.leg_l0_accel_filter[0], LEG_DDL0_LPF_ALPHA);
@@ -261,7 +269,7 @@ void ChassisInit(void)
  */
 void ChassisHandleException(void)
 {
-    if (toe_is_error(DBUS_TOE)) {
+    if (GetRcOffline()) {
         CHASSIS.error_code |= DBUS_ERROR_OFFSET;
     } else {
         CHASSIS.error_code &= ~DBUS_ERROR_OFFSET;
@@ -349,9 +357,9 @@ void ChassisSetMode(void)
 
     if (switch_is_up(CHASSIS.rc->rc.s[CHASSIS_MODE_CHANNEL])) {
         // CHASSIS.mode = CHASSIS_FREE;
-        CHASSIS.mode = CHASSIS_CUSTOM;
+        CHASSIS.mode = CHASSIS_SAFE;
     } else if (switch_is_mid(CHASSIS.rc->rc.s[CHASSIS_MODE_CHANNEL])) {
-        CHASSIS.mode = CHASSIS_DEBUG;
+        CHASSIS.mode = CHASSIS_FOLLOW_GIMBAL_YAW;;
     } else if (switch_is_down(CHASSIS.rc->rc.s[CHASSIS_MODE_CHANNEL])) {
         // 在安全模式时，遥控器摇杆打成左下，右上进入脱困模式
         if (CHASSIS.rc->rc.ch[0] > RC_OFF_HOOK_VALUE_HOLE &&
@@ -428,21 +436,21 @@ static void UpdateMotorStatus(void)
 static void UpdateBodyStatus(void)
 {
     // 更新陀螺仪反馈数据
-    CHASSIS.fdb.body.roll = CHASSIS.imu->roll;
-    CHASSIS.fdb.body.roll_dot = CHASSIS.imu->roll_vel;
+    CHASSIS.fdb.body.roll = GetImuAngle(AX_ROLL);
+    CHASSIS.fdb.body.roll_dot = GetImuVelocity(AX_ROLL);
 
-    CHASSIS.fdb.body.pitch = CHASSIS.imu->pitch;
-    CHASSIS.fdb.body.pitch_dot = CHASSIS.imu->pitch_vel;
+    CHASSIS.fdb.body.pitch = GetImuAngle(AX_PITCH);
+    CHASSIS.fdb.body.pitch_dot = GetImuVelocity(AX_PITCH);
 
-    CHASSIS.fdb.body.yaw = CHASSIS.imu->yaw;
-    CHASSIS.fdb.body.yaw_dot = CHASSIS.imu->yaw_vel;
+    CHASSIS.fdb.body.yaw = GetImuAngle(AX_YAW);
+    CHASSIS.fdb.body.yaw_dot = GetImuVelocity(AX_YAW);
 
     LowPassFilterCalc(&CHASSIS.lpf.roll, CHASSIS.fdb.body.roll);
 
     // 更新加速度反馈数据，记录下来方便使用
-    float ax = CHASSIS.imu->x_accel;
-    float ay = CHASSIS.imu->y_accel;
-    float az = CHASSIS.imu->z_accel;
+    float ax = GetImuAccel(AX_X);
+    float ay = GetImuAccel(AX_Y);
+    float az = GetImuAccel(AX_Z);
     // 计算几个常用的三角函数值，减少重复计算
     float cos_roll = cosf(CHASSIS.fdb.body.roll);
     float sin_roll = sinf(CHASSIS.fdb.body.roll);
@@ -621,7 +629,7 @@ static void UpdateStepStatus(void)
     CHASSIS.step_time += CHASSIS.duration;
 
     if (CHASSIS.mode == CHASSIS_CUSTOM) {
-        if (GetDt7RcCh(DT7_CH_RH) < -0.9f) {  // 遥控器左侧水平摇杆打到左边切换至跳跃状态
+        if (0 && (GetDt7RcCh(DT7_CH_RH) < -0.9f)) {  // 遥控器左侧水平摇杆打到左边切换至跳跃状态
             CHASSIS.step_time = 0;
             CHASSIS.step = JUMP_STEP_SQUST;
         } else if (CHASSIS.step == JUMP_STEP_SQUST) {  // 跳跃——蹲下蓄力状态
@@ -722,27 +730,45 @@ void ChassisReference(void)
     v_set.wz = -rc_wz * RC_TO_ONE * MAX_SPEED_VECTOR_WZ;
     switch (CHASSIS.mode) {
         case CHASSIS_FREE: {  // 底盘自由模式下，控制量为底盘坐标系下的速度
+            CHASSIS.ref.speed_vector.vx = v_set.vx;
+            CHASSIS.ref.speed_vector.vy = 0;
+            CHASSIS.ref.speed_vector.wz = v_set.wz;
+            break;
+        }
+        case CHASSIS_CUSTOM: {
+            CHASSIS.ref.speed_vector.vx = v_set.vx;
+            CHASSIS.ref.speed_vector.vy = 0;
+            CHASSIS.ref.speed_vector.wz = v_set.wz;
             break;
         }
         case CHASSIS_FOLLOW_GIMBAL_YAW: {  // 云台跟随模式下，控制量为云台坐标系下的速度，需要进行坐标转换
-            // GimbalSpeedVectorToChassisSpeedVector(&v_set, CHASSIS.dyaw);
-            break;
-        }
+            float delta_yaw = GetGimbalDeltaYawMid();
+            CHASSIS.ref.speed_vector.vx = v_set.vx * cosf(delta_yaw);
+            CHASSIS.ref.speed_vector.vy = 0;
+            if (GetGimbalInitJudgeReturn()) {
+                CHASSIS.ref.speed_vector.wz = 0;
+            } else {
+                CHASSIS.ref.speed_vector.wz =
+                    PID_calc(&CHASSIS.pid.chassis_follow_gimbal, -delta_yaw, 0);
+            }
+        } break;
         case CHASSIS_AUTO: {  // 底盘自动模式，控制量为云台坐标系下的速度，需要进行坐标转换
+            CHASSIS.ref.speed_vector.vx = v_set.vx;
+            CHASSIS.ref.speed_vector.vy = 0;
+            CHASSIS.ref.speed_vector.wz = v_set.wz;
             break;
         }
         case CHASSIS_STAND_UP: {
-            v_set.vx = 0;
-            v_set.vy = 0;
-            v_set.wz = 0;
+            CHASSIS.ref.speed_vector.vx = 0;
+            CHASSIS.ref.speed_vector.vy = 0;
+            CHASSIS.ref.speed_vector.wz = 0;
         } break;
         default:
+            CHASSIS.ref.speed_vector.vx = 0;
+            CHASSIS.ref.speed_vector.vy = 0;
+            CHASSIS.ref.speed_vector.wz = 0;
             break;
     }
-
-    CHASSIS.ref.speed_vector.vx = v_set.vx;
-    CHASSIS.ref.speed_vector.vy = 0;
-    CHASSIS.ref.speed_vector.wz = v_set.wz;
 
     // 计算期望状态
     // clang-format off
@@ -769,10 +795,11 @@ void ChassisReference(void)
             CHASSIS.ref.leg_state[0].theta = rc_angle * RC_TO_ONE * 0.3f;
             CHASSIS.ref.leg_state[1].theta = rc_angle * RC_TO_ONE * 0.3f;
         }
+        case CHASSIS_FOLLOW_GIMBAL_YAW:
         case CHASSIS_CUSTOM:
         case CHASSIS_POS_DEBUG: {
             angle = M_PI_2 + rc_angle * RC_TO_ONE * 0.3f;
-            length = 0.22f + rc_length * RC_TO_ONE * 0.1f;
+            length = 0.24f + rc_length * 0.00000001f;
 
             if (CHASSIS.step == JUMP_STEP_SQUST) {
                 length = MIN_LEG_LENGTH;
@@ -784,7 +811,6 @@ void ChassisReference(void)
         } break;
         case CHASSIS_FREE: {
         } break;
-        case CHASSIS_FOLLOW_GIMBAL_YAW:
         default: {
             angle = M_PI_2;
             length = 0.12f;

@@ -43,9 +43,22 @@
 // USB通信的部分选项
 #define __USB_SEND_DEBUG 1  // 发送DEBUG数据
 
+#ifndef __VIRTUAL_GIMBAL_FROM
+#define __VIRTUAL_GIMBAL_FROM VG_FROM_NONE // 虚拟云台数据来源（用于云台底盘分离控制）
+#endif
+
 // 本板id
 #ifndef __SELF_BOARD_ID
 #define __SELF_BOARD_ID C_BOARD_DEFAULT
+#endif
+
+// 控制链路选择
+#ifndef __CONTROL_LINK_RC
+#define __CONTROL_LINK_RC CL_RC_DIRECT
+#endif
+
+#ifndef __CONTROL_LINK_KM
+#define __CONTROL_LINK_KM CL_KM_RC
 #endif
 
 // 模块检查

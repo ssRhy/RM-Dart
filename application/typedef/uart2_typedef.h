@@ -109,7 +109,7 @@ typedef struct
     struct
     {
         RC_ctrl_t rc_ctrl;
-        bool rc_toe_error;
+        bool rc_offline;
     } __attribute__((packed)) data;
 
     uint16_t crc16;  //crc16校验

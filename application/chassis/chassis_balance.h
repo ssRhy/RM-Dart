@@ -213,6 +213,8 @@ typedef struct
 
     pid_type_def stand_up;
     pid_type_def wheel_stop[2];
+    
+    pid_type_def chassis_follow_gimbal;
 } PID_t;
 
 typedef struct LPF
