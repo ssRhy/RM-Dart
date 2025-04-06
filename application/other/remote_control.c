@@ -92,7 +92,7 @@ static uint32_t last_receive_time = 0;
 // 记录连续接收数据的次数
 static uint32_t receive_count = 0;
 // 记录非dt7的sbus遥控器连续断连次数
-static uint32_t sbus_lost_count = 0;
+static uint32_t sbus_lost_count = SBUS_MAX_LOST_NUN + 5;
 
 
 static uint8_t connected_flag;  // 遥控器连接标志位
