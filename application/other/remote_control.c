@@ -256,7 +256,6 @@ void USART3_IRQHandler(void)
                 
                 //记录数据接收时间
                 last_receive_time = HAL_GetTick();
-                receive_count++;
                 detect_hook(DBUS_TOE);
                 sbus_to_usart1(sbus_rx_buf[0]);
             } 
@@ -275,7 +274,6 @@ void USART3_IRQHandler(void)
                 
                 //记录数据接收时间
                 last_receive_time = HAL_GetTick();
-                receive_count++;
                 detect_hook(DBUS_TOE);
             }
         }
@@ -311,7 +309,6 @@ void USART3_IRQHandler(void)
 
                 //记录数据接收时间
                 last_receive_time = HAL_GetTick();
-                receive_count++;
                 detect_hook(DBUS_TOE);
                 sbus_to_usart1(sbus_rx_buf[1]);
             }
@@ -330,7 +327,6 @@ void USART3_IRQHandler(void)
 
                 //记录数据接收时间
                 last_receive_time = HAL_GetTick();
-                receive_count++;
                 detect_hook(DBUS_TOE);
             }
         }
