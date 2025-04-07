@@ -572,19 +572,22 @@ void sbus_to_usart1(uint8_t *sbus)
   */
 inline bool GetRcOffline(void)
 {
-#if __CONTROL_LINK_RC == CL_RC_DIRECT
-
 #if __RC_TYPE == RC_DT7
-    return !((receive_count > 5) && (HAL_GetTick() - last_receive_time < RC_LOST_TIME))
+#define USE_SBUS_LOST_COUNT 0
 #else
-    return (sbus_lost_count > SBUS_MAX_LOST_NUN);
+#define USE_SBUS_LOST_COUNT 1
 #endif
 
+#if __CONTROL_LINK_RC == CL_RC_DIRECT
+    return !((receive_count > 5) && (HAL_GetTick() - last_receive_time < RC_LOST_TIME)) ||
+           ((sbus_lost_count > SBUS_MAX_LOST_NUN) && USE_SBUS_LOST_COUNT);
 #elif __CONTROL_LINK_RC == CL_RC_UART2
     return GetUartRcOffline();
 #else
     return true;
 #endif
+
+#undef USE_SBUS_LOST_COUNT
 }
 
 /**
