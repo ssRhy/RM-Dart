@@ -22,6 +22,9 @@ bit 8-11: data_type
 #include "CAN_communication.h"
 
 #include "bsp_can.h"
+#include "can_typedef.h"
+#include "string.h"
+#include "user_lib.h"
 
 static CanCtrlData_s CAN_CTRL_DATA = {
     .tx_header.IDE = CAN_ID_STD,
@@ -33,92 +36,66 @@ static CanCtrlData_s CAN_CTRL_DATA = {
 // 板间通信
 
 /**
- * @brief          发送自定义数据
+ * @brief          发送数据
  * @param[in]      hcan CAN句柄
- * @param[in]      data_id 数据包ID
- * @param[in]      target_id 目标板ID
+ * @param[in]      std_id 数据包ID
  * @param[in]      data 包含8个字节的数据的指针
  * @retval         none
  */
-static void SendData(hcan_t * hcan, uint16_t data_id, uint16_t target_id, uint8_t * data)
+static void SendData(uint8_t can, uint16_t std_id, uint8_t * data)
 {
-    CAN_CTRL_DATA.hcan = hcan;
+    if (can == 1)
+        CAN_CTRL_DATA.hcan = &hcan1;
+    else if (can == 2)
+        CAN_CTRL_DATA.hcan = &hcan2;
+    else
+        return;
 
-    CAN_CTRL_DATA.tx_header.StdId = BOARD_DATA_ANY + (data_id << 4) + target_id;
+    CAN_CTRL_DATA.tx_header.StdId = std_id;
 
-    for (size_t i = 0; i < 8; i++) {
-        CAN_CTRL_DATA.tx_data[i] = data[i];
-    }
-
-    CAN_SendTxMessage(&CAN_CTRL_DATA);
-}
-
-/**
- * @brief          发送uint16数据
- * @param[in]      hcan CAN句柄
- * @param[in]      data_id 数据包ID
- * @param[in]      target_id 目标板ID
- * @param[in]      data_1 数据1
- * @param[in]      data_2 数据2
- * @param[in]      data_3 数据3
- * @param[in]      data_4 数据4
- * @retval         none
- */
-static void Uint16SendData(
-    hcan_t * hcan, uint16_t data_id, uint16_t target_id, uint16_t data_1, uint16_t data_2,
-    uint16_t data_3, uint16_t data_4)
-{
-    CAN_CTRL_DATA.hcan = hcan;
-
-    CAN_CTRL_DATA.tx_header.StdId = BOARD_DATA_UINT16 + (data_id << 4) + target_id;
-
-    CAN_CTRL_DATA.tx_data[0] = data_1 >> 8;
-    CAN_CTRL_DATA.tx_data[1] = data_1;
-    CAN_CTRL_DATA.tx_data[2] = data_2 >> 8;
-    CAN_CTRL_DATA.tx_data[3] = data_2;
-    CAN_CTRL_DATA.tx_data[4] = data_3 >> 8;
-    CAN_CTRL_DATA.tx_data[5] = data_3;
-    CAN_CTRL_DATA.tx_data[6] = data_4 >> 8;
-    CAN_CTRL_DATA.tx_data[7] = data_4;
+    memcpy(CAN_CTRL_DATA.tx_data, data, 8);
 
     CAN_SendTxMessage(&CAN_CTRL_DATA);
 }
 
 /*-------------------- Public functions --------------------*/
 
-/**
- * @brief          CAN发送数据到目标板
- * @param[in]      can can口
- * @param[in]      data_id 数据包ID
- * @param[in]      target_id 目标板ID
- * @param[in]      data  包含8个字节的数据的指针
- * @retval         none
- */
-void CanSendDataToBoard(uint8_t can, uint16_t data_id, uint16_t target_id, uint8_t * data)
+void CanSendRcDataToBoard(uint8_t can, uint16_t target_id, uint16_t index)
 {
-    if (can == 1)
-        SendData(&hcan1, data_id, target_id, data);
-    else if (can == 2)
-        SendData(&hcan2, data_id, target_id, data);
+    uint16_t std_id = CAN_STD_ID_PACK_BASE | CAN_STD_ID_Rc << TYPE_ID_OFFSET |
+                      (target_id << TARGET_ID_OFFSET) | index;
+    uint8_t data[8] = {0};
+
+    const RC_ctrl_t * rc_ctrl = get_remote_control_point();
+
+    if (index == 0) {  // 发送遥控器数据
+        uint16_t ch[5];
+        ch[0] = rc_ctrl->rc.ch[0] + RC_CH_VALUE_OFFSET;
+        ch[1] = rc_ctrl->rc.ch[1] + RC_CH_VALUE_OFFSET;
+        ch[2] = rc_ctrl->rc.ch[2] + RC_CH_VALUE_OFFSET;
+        ch[3] = rc_ctrl->rc.ch[3] + RC_CH_VALUE_OFFSET;
+        ch[4] = rc_ctrl->rc.ch[4] + RC_CH_VALUE_OFFSET;
+
+        data[0] = (ch[0] >> 3);                          // ch0 * 8
+        data[1] = ((ch[0] & 0x07) << 5) | (ch[1] >> 6);  // ch0 * 3 + ch1 * 5
+        data[2] = ((ch[1] & 0x3F) << 2) | (ch[2] >> 9);  // ch1 * 6 + ch2 * 2
+        data[3] = ((ch[2] >> 1) & 0xFF);                 // ch2 * 8
+        data[4] = ((ch[2] & 0x01) << 7) | (ch[3] >> 4);  // ch2 * 1 + ch3 * 7
+        data[5] = ((ch[3] & 0x0F) << 4) | (ch[4] >> 7);  // ch3 * 4 + ch4 * 4
+        data[6] = (ch[4] & 0x7F);                        // remaining 1 bit + ch4 * 7
+        data[7] = (rc_ctrl->rc.s[0] & 0x03) << 2 | (rc_ctrl->rc.s[1] & 0x03);
+    } else if (index == 1) {  // 键鼠数据（经过压缩）
+        data[0] = rc_ctrl->mouse.x >> 8;
+        data[1] = (rc_ctrl->mouse.x & 0xFE) | (rc_ctrl->mouse.press_l & 0x01);
+        data[2] = rc_ctrl->mouse.y >> 8;
+        data[3] = (rc_ctrl->mouse.y & 0xFE) | (rc_ctrl->mouse.press_r & 0x01);
+        data[4] = rc_ctrl->mouse.z >> 8;
+        data[5] = rc_ctrl->mouse.z & 0xFF;
+        data[6] = rc_ctrl->key.v >> 8;
+        data[7] = rc_ctrl->key.v & 0xFF;
+    }
+
+    SendData(can, std_id, data);
 }
 
-/**
- * @brief          CAN发送uint16数据到目标板
- * @param[in]      can can口
- * @param[in]      data_id 数据包ID
- * @param[in]      target_id 目标板ID
- * @param[in]      data_1 数据1
- * @param[in]      data_2 数据2
- * @param[in]      data_3 数据3
- * @param[in]      data_4 数据4
- * @retval         none
- */
-void CanSendUint16DataToBoard(
-    uint8_t can, uint16_t data_id, uint16_t target_id, uint16_t data_1, uint16_t data_2,
-    uint16_t data_3, uint16_t data_4)
-{
-    if (can == 1)
-        Uint16SendData(&hcan1, data_id, target_id, data_1, data_2, data_3, data_4);
-    else if (can == 2)
-        Uint16SendData(&hcan2, data_id, target_id, data_1, data_2, data_3, data_4);
-}
+/*------------------------------ End of File ------------------------------*/

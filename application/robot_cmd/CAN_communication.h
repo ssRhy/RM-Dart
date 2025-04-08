@@ -30,11 +30,6 @@ bit 8-11: data_type
 #include "CAN_cmd_SupCap.h"
 #include "CAN_receive.h"
 
-
-extern void CanSendDataToBoard(uint8_t can, uint16_t data_id, uint16_t target_id, uint8_t * data);
-
-extern void CanSendUint16DataToBoard(
-    uint8_t can, uint16_t data_id, uint16_t target_id, uint16_t data_1, uint16_t data_2,
-    uint16_t data_3, uint16_t data_4);
+extern void CanSendRcDataToBoard(uint8_t can, uint16_t target_id, uint16_t index);
 
 #endif  // CAN_COMMUNICATION_H
