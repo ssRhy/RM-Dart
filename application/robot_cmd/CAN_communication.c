@@ -69,6 +69,7 @@ void CanSendRcDataToBoard(uint8_t can, uint16_t target_id, uint16_t index)
     const RC_ctrl_t * rc_ctrl = get_remote_control_point();
 
     if (index == 0) {  // 发送遥控器数据
+        bool offline = GetRcOffline();
         uint16_t ch[5];
         ch[0] = rc_ctrl->rc.ch[0] + RC_CH_VALUE_OFFSET;
         ch[1] = rc_ctrl->rc.ch[1] + RC_CH_VALUE_OFFSET;
@@ -82,7 +83,7 @@ void CanSendRcDataToBoard(uint8_t can, uint16_t target_id, uint16_t index)
         data[3] = ((ch[2] >> 1) & 0xFF);                 // ch2 * 8
         data[4] = ((ch[2] & 0x01) << 7) | (ch[3] >> 4);  // ch2 * 1 + ch3 * 7
         data[5] = ((ch[3] & 0x0F) << 4) | (ch[4] >> 7);  // ch3 * 4 + ch4 * 4
-        data[6] = (ch[4] & 0x7F);                        // remaining 1 bit + ch4 * 7
+        data[6] = (offline << 7) | (ch[4] & 0x7F);       // offline * 1 + ch4 * 7
         data[7] = (rc_ctrl->rc.s[0] & 0x03) << 2 | (rc_ctrl->rc.s[1] & 0x03);
     } else if (index == 1) {  // 键鼠数据（经过压缩）
         data[0] = rc_ctrl->mouse.x >> 8;

@@ -81,5 +81,7 @@ extern void GetSupCapFdbData(SupCapMeasure_s * p_sup_cap);
 
 extern void GetSupCapMeasure(SupCap_s * p_sup_cap);
 
+extern bool GetCanRcOffline(void);
+
 #endif
 /*------------------------------ End of File ------------------------------*/
