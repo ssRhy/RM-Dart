@@ -92,7 +92,7 @@ typedef struct
                 uint8_t data[8];
             } __packed__ raw;
         } km;
-
+        RC_ctrl_t rc_unpacked;  // 遥控器数据
     } rc_data;
 
     struct

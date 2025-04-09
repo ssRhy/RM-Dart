@@ -59,7 +59,6 @@ static CanBoardCommunicate_t RECEIVE_CBC = {
     // 板间通信数据缓存区
     .rc_data.rc.packed.offline = true,
 };
-static RC_ctrl_t CAN_RC_CTRL;
 
 static uint32_t LAST_RECEIVE_TIME = 0;  // 上次接收时间
 
@@ -230,29 +229,29 @@ static void DecodeStdIdData(hcan_t * CAN, CAN_RxHeaderTypeDef * rx_header, uint8
                 case 0: {  // 遥控器数据
                     memcpy(&RECEIVE_CBC.rc_data.rc.raw.data, rx_data, 8);
 
-                    CAN_RC_CTRL.rc.ch[0] = RECEIVE_CBC.rc_data.rc.packed.ch0;
-                    CAN_RC_CTRL.rc.ch[1] = RECEIVE_CBC.rc_data.rc.packed.ch1;
-                    CAN_RC_CTRL.rc.ch[2] = RECEIVE_CBC.rc_data.rc.packed.ch2;
-                    CAN_RC_CTRL.rc.ch[3] = RECEIVE_CBC.rc_data.rc.packed.ch3;
-                    CAN_RC_CTRL.rc.ch[4] = RECEIVE_CBC.rc_data.rc.packed.ch4;
-                    CAN_RC_CTRL.rc.s[0] = RECEIVE_CBC.rc_data.rc.packed.s0;
-                    CAN_RC_CTRL.rc.s[1] = RECEIVE_CBC.rc_data.rc.packed.s1;
+                    RECEIVE_CBC.rc_data.rc_unpacked.rc.ch[0] = RECEIVE_CBC.rc_data.rc.packed.ch0;
+                    RECEIVE_CBC.rc_data.rc_unpacked.rc.ch[1] = RECEIVE_CBC.rc_data.rc.packed.ch1;
+                    RECEIVE_CBC.rc_data.rc_unpacked.rc.ch[2] = RECEIVE_CBC.rc_data.rc.packed.ch2;
+                    RECEIVE_CBC.rc_data.rc_unpacked.rc.ch[3] = RECEIVE_CBC.rc_data.rc.packed.ch3;
+                    RECEIVE_CBC.rc_data.rc_unpacked.rc.ch[4] = RECEIVE_CBC.rc_data.rc.packed.ch4;
+                    RECEIVE_CBC.rc_data.rc_unpacked.rc.s[0] = RECEIVE_CBC.rc_data.rc.packed.s0;
+                    RECEIVE_CBC.rc_data.rc_unpacked.rc.s[1] = RECEIVE_CBC.rc_data.rc.packed.s1;
 
-                    CAN_RC_CTRL.rc.ch[0] -= RC_CH_VALUE_OFFSET;
-                    CAN_RC_CTRL.rc.ch[1] -= RC_CH_VALUE_OFFSET;
-                    CAN_RC_CTRL.rc.ch[2] -= RC_CH_VALUE_OFFSET;
-                    CAN_RC_CTRL.rc.ch[3] -= RC_CH_VALUE_OFFSET;
-                    CAN_RC_CTRL.rc.ch[4] -= RC_CH_VALUE_OFFSET;
+                    RECEIVE_CBC.rc_data.rc_unpacked.rc.ch[0] -= RC_CH_VALUE_OFFSET;
+                    RECEIVE_CBC.rc_data.rc_unpacked.rc.ch[1] -= RC_CH_VALUE_OFFSET;
+                    RECEIVE_CBC.rc_data.rc_unpacked.rc.ch[2] -= RC_CH_VALUE_OFFSET;
+                    RECEIVE_CBC.rc_data.rc_unpacked.rc.ch[3] -= RC_CH_VALUE_OFFSET;
+                    RECEIVE_CBC.rc_data.rc_unpacked.rc.ch[4] -= RC_CH_VALUE_OFFSET;
                 } break;
                 case 1: {  // 键鼠数据
                     memcpy(&RECEIVE_CBC.rc_data.km.raw.data, rx_data, 8);
 
-                    CAN_RC_CTRL.mouse.x = RECEIVE_CBC.rc_data.km.packed.mouse_x << 1;
-                    CAN_RC_CTRL.mouse.y = RECEIVE_CBC.rc_data.km.packed.mouse_y << 1;
-                    CAN_RC_CTRL.mouse.z = RECEIVE_CBC.rc_data.km.packed.mouse_z;
-                    CAN_RC_CTRL.mouse.press_l = RECEIVE_CBC.rc_data.km.packed.mouse_press_l;
-                    CAN_RC_CTRL.mouse.press_r = RECEIVE_CBC.rc_data.km.packed.mouse_press_r;
-                    CAN_RC_CTRL.key.v = RECEIVE_CBC.rc_data.km.packed.key;
+                    RECEIVE_CBC.rc_data.rc_unpacked.mouse.x = RECEIVE_CBC.rc_data.km.packed.mouse_x << 1;
+                    RECEIVE_CBC.rc_data.rc_unpacked.mouse.y = RECEIVE_CBC.rc_data.km.packed.mouse_y << 1;
+                    RECEIVE_CBC.rc_data.rc_unpacked.mouse.z = RECEIVE_CBC.rc_data.km.packed.mouse_z;
+                    RECEIVE_CBC.rc_data.rc_unpacked.mouse.press_l = RECEIVE_CBC.rc_data.km.packed.mouse_press_l;
+                    RECEIVE_CBC.rc_data.rc_unpacked.mouse.press_r = RECEIVE_CBC.rc_data.km.packed.mouse_press_r;
+                    RECEIVE_CBC.rc_data.rc_unpacked.key.v = RECEIVE_CBC.rc_data.km.packed.key;
                 } break;
                 default:
                     break;
@@ -260,7 +259,7 @@ static void DecodeStdIdData(hcan_t * CAN, CAN_RxHeaderTypeDef * rx_header, uint8
 
 #if __CONTROL_LINK_RC == CL_RC_CAN
             const RC_ctrl_t * rc_ctrl = get_remote_control_point();
-            memcpy((RC_ctrl_t *)rc_ctrl, &CAN_RC_CTRL, sizeof(RC_ctrl_t));
+            memcpy((RC_ctrl_t *)rc_ctrl, &RECEIVE_CBC.rc_data.rc_unpacked, sizeof(RC_ctrl_t));
 #endif
         } break;
         default:
