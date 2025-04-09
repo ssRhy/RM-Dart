@@ -28,6 +28,7 @@
 #include "SupCap.h"
 #include "motor.h"
 #include "stm32f4xx_hal.h"
+#include "remote_control.h"
 
 #ifndef CAN_N
 #define CAN_N
@@ -80,4 +81,13 @@ extern void GetSupCapFdbData(SupCapMeasure_s * p_sup_cap);
 
 extern void GetSupCapMeasure(SupCap_s * p_sup_cap);
 
+extern bool GetBoardCanOffline(void);
+
+extern bool GetCanRcOffline(void);
+
+extern float GetCanGimbalYawMotorPos(void);
+
+extern bool GetCanGimbalInitJudge(void);
+
 #endif
+/*------------------------------ End of File ------------------------------*/

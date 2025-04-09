@@ -26,6 +26,7 @@
 #include "CAN_receive.h"
 
 #include "bsp_can.h"
+#include "can_typedef.h"
 #include "cmsis_os.h"
 #include "detect_task.h"
 #include "robot_param.h"
@@ -34,6 +35,8 @@
 #include "user_lib.h"
 
 #define DATA_NUM 10
+
+#define CAN_OFFLINE_TIME 100  // ms
 
 // 接收数据
 static DjiMotorMeasure_t CAN1_DJI_MEASURE[11];
@@ -50,8 +53,14 @@ static LkMeasure_s CAN2_LK_MEASURE[LK_NUM];
 
 static SupCapMeasure_s SUP_CAP_MEASURE;
 
-static uint8_t OTHER_BOARD_DATA_ANY[DATA_NUM][8];
+// static uint8_t OTHER_BOARD_DATA_ANY[DATA_NUM][8];
 static uint16_t OTHER_BOARD_DATA_UINT16[DATA_NUM][4];
+static CanBoardCommunicate_t RECEIVE_CBC = {
+    // 板间通信数据缓存区
+    .rc_data.rc.packed.offline = true,
+};
+
+static uint32_t LAST_RECEIVE_TIME = 0;  // 上次接收时间
 
 /*-------------------- Decode --------------------*/
 
@@ -203,19 +212,67 @@ static void DecodeStdIdData(hcan_t * CAN, CAN_RxHeaderTypeDef * rx_header, uint8
 
     //板间通信数据解码
     // clang-format off
-    uint16_t data_type =  rx_header->StdId & 0xF00;
-    uint16_t data_id   = (rx_header->StdId & 0x0F0) >> 4;
-    uint16_t target_id =  rx_header->StdId & 0x00F;
+    uint16_t base_id   =  rx_header->StdId & 0x600;
+    uint16_t type_id   = (rx_header->StdId >> TYPE_ID_OFFSET) & 0x07;
+    uint16_t target_id = (rx_header->StdId >> TARGET_ID_OFFSET) & 0x07;
+    uint16_t index_id  =  rx_header->StdId & 0x007;
     // clang-format on
+    if (base_id != CAN_STD_ID_PACK_BASE && base_id != CAN_STD_ID_ANY_BASE) return;
     if (target_id != __SELF_BOARD_ID) return;
+    LAST_RECEIVE_TIME = HAL_GetTick();  // 更新最后接收时间
 
-    if (data_type == BOARD_DATA_UINT16) {
-        OTHER_BOARD_DATA_UINT16[data_id][0] = (rx_data[0] << 8) | rx_data[1];
-        OTHER_BOARD_DATA_UINT16[data_id][1] = (rx_data[2] << 8) | rx_data[3];
-        OTHER_BOARD_DATA_UINT16[data_id][2] = (rx_data[4] << 8) | rx_data[5];
-        OTHER_BOARD_DATA_UINT16[data_id][3] = (rx_data[6] << 8) | rx_data[7];
-    } else if (data_type == BOARD_DATA_ANY) {
-        memcpy(OTHER_BOARD_DATA_ANY[data_id], rx_data, 8);
+    switch (type_id) {
+        case CAN_STD_ID_Test: {
+        } break;
+
+        case CAN_STD_ID_Rc: {
+            switch (index_id) {
+                case 0: {  // 遥控器数据
+                    memcpy(&RECEIVE_CBC.rc_data.rc.raw.data, rx_data, 8);
+
+                    RECEIVE_CBC.rc_data.rc_unpacked.rc.ch[0] = RECEIVE_CBC.rc_data.rc.packed.ch0;
+                    RECEIVE_CBC.rc_data.rc_unpacked.rc.ch[1] = RECEIVE_CBC.rc_data.rc.packed.ch1;
+                    RECEIVE_CBC.rc_data.rc_unpacked.rc.ch[2] = RECEIVE_CBC.rc_data.rc.packed.ch2;
+                    RECEIVE_CBC.rc_data.rc_unpacked.rc.ch[3] = RECEIVE_CBC.rc_data.rc.packed.ch3;
+                    RECEIVE_CBC.rc_data.rc_unpacked.rc.ch[4] = RECEIVE_CBC.rc_data.rc.packed.ch4;
+                    RECEIVE_CBC.rc_data.rc_unpacked.rc.s[0] = RECEIVE_CBC.rc_data.rc.packed.s0;
+                    RECEIVE_CBC.rc_data.rc_unpacked.rc.s[1] = RECEIVE_CBC.rc_data.rc.packed.s1;
+
+                    RECEIVE_CBC.rc_data.rc_unpacked.rc.ch[0] -= RC_CH_VALUE_OFFSET;
+                    RECEIVE_CBC.rc_data.rc_unpacked.rc.ch[1] -= RC_CH_VALUE_OFFSET;
+                    RECEIVE_CBC.rc_data.rc_unpacked.rc.ch[2] -= RC_CH_VALUE_OFFSET;
+                    RECEIVE_CBC.rc_data.rc_unpacked.rc.ch[3] -= RC_CH_VALUE_OFFSET;
+                    RECEIVE_CBC.rc_data.rc_unpacked.rc.ch[4] -= RC_CH_VALUE_OFFSET;
+                } break;
+                case 1: {  // 键鼠数据
+                    memcpy(&RECEIVE_CBC.rc_data.km.raw.data, rx_data, 8);
+
+                    RECEIVE_CBC.rc_data.rc_unpacked.mouse.x = RECEIVE_CBC.rc_data.km.packed.mouse_x
+                                                              << 1;
+                    RECEIVE_CBC.rc_data.rc_unpacked.mouse.y = RECEIVE_CBC.rc_data.km.packed.mouse_y
+                                                              << 1;
+                    RECEIVE_CBC.rc_data.rc_unpacked.mouse.z = RECEIVE_CBC.rc_data.km.packed.mouse_z;
+                    RECEIVE_CBC.rc_data.rc_unpacked.mouse.press_l =
+                        RECEIVE_CBC.rc_data.km.packed.mouse_press_l;
+                    RECEIVE_CBC.rc_data.rc_unpacked.mouse.press_r =
+                        RECEIVE_CBC.rc_data.km.packed.mouse_press_r;
+                    RECEIVE_CBC.rc_data.rc_unpacked.key.v = RECEIVE_CBC.rc_data.km.packed.key;
+                } break;
+                default:
+                    break;
+            }
+
+#if __CONTROL_LINK_RC == CL_RC_CAN
+            const RC_ctrl_t * rc_ctrl = get_remote_control_point();
+            memcpy((RC_ctrl_t *)rc_ctrl, &RECEIVE_CBC.rc_data.rc_unpacked, sizeof(RC_ctrl_t));
+#endif
+        } break;
+
+        case CAN_STD_ID_Gimbal: {
+            memcpy(&RECEIVE_CBC.gimbal_data.gimbal.raw.data, rx_data, 8);
+        } break;
+        default:
+            break;
     }
 }
 
@@ -485,4 +542,31 @@ void GetSupCapMeasure(SupCap_s * p_sup_cap)
     p_sup_cap->fdb.power_target = SUP_CAP_MEASURE.power_target;
 }
 
+bool GetBoardCanOffline(void)
+{
+    if (HAL_GetTick() - LAST_RECEIVE_TIME > CAN_OFFLINE_TIME) return true;
+    return false;
+}
+
+bool GetCanRcOffline(void)
+{
+    if (GetBoardCanOffline()) return true;
+    return RECEIVE_CBC.rc_data.rc.packed.offline;
+}
+
+float GetCanGimbalYawMotorPos(void)
+{
+    if (GetBoardCanOffline()) {
+        return 0;
+    }
+    return RECEIVE_CBC.gimbal_data.gimbal.packed_data.yaw;
+}
+
+bool GetCanGimbalInitJudge(void)
+{
+    if (GetBoardCanOffline()) {
+        return false;
+    }
+    return RECEIVE_CBC.gimbal_data.gimbal.packed_data.init_judge;
+}
 /************************ END OF FILE ************************/
