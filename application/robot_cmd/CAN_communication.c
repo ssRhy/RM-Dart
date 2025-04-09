@@ -66,41 +66,12 @@ void CanSendRcDataToBoard(uint8_t can, uint16_t target_id, uint16_t index)
 {
     uint16_t std_id = CAN_STD_ID_PACK_BASE | CAN_STD_ID_Rc << TYPE_ID_OFFSET |
                       (target_id << TARGET_ID_OFFSET) | index;
-    // uint8_t data[8] = {0};
 
-    // const RC_ctrl_t * rc_ctrl = get_remote_control_point();
+    const RC_ctrl_t * rc_ctrl = get_remote_control_point();
 
     if (index == 0) {  // 发送遥控器数据
-        static RC_ctrl_t rc_test;
-        static bool offline;
-        RC_ctrl_t * rc_ctrl = &rc_test;
-        rc_test.rc.ch[0] +=1;
-        rc_test.rc.ch[1] +=2;
-        rc_test.rc.ch[2] +=3;
-        rc_test.rc.ch[3] +=2;
-        rc_test.rc.ch[4] +=1;
-        rc_test.rc.ch[0] = loop_fp32_constrain(rc_test.rc.ch[0],-660,660);
-        rc_test.rc.ch[1] = loop_fp32_constrain(rc_test.rc.ch[1],-660,660);
-        rc_test.rc.ch[2] = loop_fp32_constrain(rc_test.rc.ch[2],-660,660);
-        rc_test.rc.ch[3] = loop_fp32_constrain(rc_test.rc.ch[3],-660,660);
-        rc_test.rc.ch[4] = loop_fp32_constrain(rc_test.rc.ch[4],-660,660);
-        rc_test.rc.s[0]++;
-        rc_test.rc.s[1]++;
-        offline = !offline;  // TEST:反转离线状态
 
-
-
-
-
-
-
-
-
-
-
-
-
-        // bool offline = GetRcOffline();
+        bool offline = GetRcOffline();
         uint16_t ch[5];
         ch[0] = rc_ctrl->rc.ch[0] + RC_CH_VALUE_OFFSET;
         ch[1] = rc_ctrl->rc.ch[1] + RC_CH_VALUE_OFFSET;
@@ -116,32 +87,10 @@ void CanSendRcDataToBoard(uint8_t can, uint16_t target_id, uint16_t index)
         SEND_CBC.rc_data.rc.packed.s0 = rc_ctrl->rc.s[0];
         SEND_CBC.rc_data.rc.packed.s1 = rc_ctrl->rc.s[1];
         SEND_CBC.rc_data.rc.packed.offline = offline;
-        
+
         SendData(can, std_id, SEND_CBC.rc_data.rc.raw.data);
-} else if (index == 1) {  // 键鼠数据（经过压缩）
-        static RC_ctrl_t rc_test;
-        RC_ctrl_t * rc_ctrl = &rc_test;
-        rc_ctrl->mouse.x += 111;
-        rc_ctrl->mouse.y += 111;
-        rc_ctrl->mouse.z += 111;
-        rc_ctrl->mouse.press_l = !rc_ctrl->mouse.press_l;
-        rc_ctrl->mouse.press_r = !rc_ctrl->mouse.press_r;
-        rc_ctrl->key.v += 111;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    } else if (index == 1) {  // 键鼠数据（经过压缩）
 
         SEND_CBC.rc_data.km.packed.mouse_x = rc_ctrl->mouse.x >> 1;
         SEND_CBC.rc_data.km.packed.mouse_y = rc_ctrl->mouse.y >> 1;
@@ -149,10 +98,9 @@ void CanSendRcDataToBoard(uint8_t can, uint16_t target_id, uint16_t index)
         SEND_CBC.rc_data.km.packed.mouse_press_l = rc_ctrl->mouse.press_l;
         SEND_CBC.rc_data.km.packed.mouse_press_r = rc_ctrl->mouse.press_r;
         SEND_CBC.rc_data.km.packed.key = rc_ctrl->key.v;
-        
+
         SendData(can, std_id, SEND_CBC.rc_data.km.raw.data);
     }
-
 }
 
 /*------------------------------ End of File ------------------------------*/
