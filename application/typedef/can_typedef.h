@@ -54,5 +54,65 @@
 //     } __attribute__((packed)) data;
 // } Data_Test_u;
 
+typedef struct
+{
+    struct
+    {
+        union {
+            struct
+            {
+                uint16_t ch0 : 11;
+                uint16_t ch1 : 11;
+                uint16_t ch2 : 11;
+                uint16_t ch3 : 11;
+                uint16_t ch4 : 11;
+                uint8_t s0 : 2;
+                uint8_t s1 : 2;
+                bool offline : 1;
+                uint8_t reserved : 4;
+            } __packed__ packed;
+            struct
+            {
+                uint8_t data[8];
+            } __packed__ raw;
+        } rc;
+
+        union {
+            struct
+            {
+                int16_t mouse_x : 15;
+                uint16_t mouse_press_l : 1;
+                int16_t mouse_y : 15;
+                uint16_t mouse_press_r : 1;
+                int16_t mouse_z;
+                int16_t key;
+            } __packed__ packed;
+            struct
+            {
+                uint8_t data[8];
+            } __packed__ raw;
+        } km;
+
+    } rc_data;
+
+    struct
+    {
+        union {
+            struct
+            {
+                float yaw;
+                bool offline;
+                bool init_judge;
+                uint16_t reserved;
+            } __packed__ packed_data;
+            struct
+            {
+                uint8_t data[8];
+            } __packed__ raw;
+        } gimbal;
+
+    } gimbal_data;
+} CanBoardCommunicate_t;
+
 #endif
 /*------------------------------ End of File ------------------------------*/

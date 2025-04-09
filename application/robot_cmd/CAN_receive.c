@@ -55,9 +55,13 @@ static SupCapMeasure_s SUP_CAP_MEASURE;
 
 // static uint8_t OTHER_BOARD_DATA_ANY[DATA_NUM][8];
 static uint16_t OTHER_BOARD_DATA_UINT16[DATA_NUM][4];
+static CanBoardCommunicate_t RECEIVE_CBC = {
+    // 板间通信数据缓存区
+    .rc_data.rc.packed.offline = true,
+};
 static RC_ctrl_t CAN_RC_CTRL;
 
-static bool CAN_RC_OFFLINE = true;
+// static bool CAN_RC_OFFLINE = true;
 
 static uint32_t LAST_RECEIVE_TIME = 0;  // 上次接收时间
 
@@ -224,19 +228,27 @@ static void DecodeStdIdData(hcan_t * CAN, CAN_RxHeaderTypeDef * rx_header, uint8
         case CAN_STD_ID_Test: {
         } break;
         case CAN_STD_ID_Rc: {
-
             switch (index_id) {
                 case 0: {  // 遥控器数据
-                    CAN_RC_CTRL.rc.ch[0] = (rx_data[0] << 3) | ((rx_data[1] >> 5) & 0x07);
-                    CAN_RC_CTRL.rc.ch[1] = ((rx_data[1] & 0x1F) << 6) | ((rx_data[2] >> 2) & 0x3F);
-                    CAN_RC_CTRL.rc.ch[2] =
-                        ((rx_data[2] & 0x03) << 9) | (rx_data[3] << 1) | ((rx_data[4] >> 7) & 0x01);
-                    CAN_RC_CTRL.rc.ch[3] = ((rx_data[4] & 0x7F) << 4) | ((rx_data[5] >> 4) & 0x0F);
-                    CAN_RC_CTRL.rc.ch[4] = ((rx_data[5] & 0x0F) << 7) | (rx_data[6] & 0x7F);
-                    CAN_RC_CTRL.rc.s[0] = (rx_data[7] >> 2) & 0x03;
-                    CAN_RC_CTRL.rc.s[1] = rx_data[7] & 0x03;
+                    // CAN_RC_CTRL.rc.ch[0] = (rx_data[0] << 3) | ((rx_data[1] >> 5) & 0x07);
+                    // CAN_RC_CTRL.rc.ch[1] = ((rx_data[1] & 0x1F) << 6) | ((rx_data[2] >> 2) & 0x3F);
+                    // CAN_RC_CTRL.rc.ch[2] =
+                    //     ((rx_data[2] & 0x03) << 9) | (rx_data[3] << 1) | ((rx_data[4] >> 7) & 0x01);
+                    // CAN_RC_CTRL.rc.ch[3] = ((rx_data[4] & 0x7F) << 4) | ((rx_data[5] >> 4) & 0x0F);
+                    // CAN_RC_CTRL.rc.ch[4] = ((rx_data[5] & 0x0F) << 7) | (rx_data[6] & 0x7F);
+                    // CAN_RC_CTRL.rc.s[0] = (rx_data[7] >> 2) & 0x03;
+                    // CAN_RC_CTRL.rc.s[1] = rx_data[7] & 0x03;
 
-                    CAN_RC_OFFLINE = (rx_data[6] >> 7) & 0x01;  // 离线标志位
+                    // CAN_RC_OFFLINE = (rx_data[6] >> 7) & 0x01;  // 离线标志位
+
+                    memcpy(&RECEIVE_CBC.rc_data.rc.raw.data, rx_data, 8);
+                    CAN_RC_CTRL.rc.ch[0] = RECEIVE_CBC.rc_data.rc.packed.ch0;
+                    CAN_RC_CTRL.rc.ch[1] = RECEIVE_CBC.rc_data.rc.packed.ch1;
+                    CAN_RC_CTRL.rc.ch[2] = RECEIVE_CBC.rc_data.rc.packed.ch2;
+                    CAN_RC_CTRL.rc.ch[3] = RECEIVE_CBC.rc_data.rc.packed.ch3;
+                    CAN_RC_CTRL.rc.ch[4] = RECEIVE_CBC.rc_data.rc.packed.ch4;
+                    CAN_RC_CTRL.rc.s[0] = RECEIVE_CBC.rc_data.rc.packed.s0;
+                    CAN_RC_CTRL.rc.s[1] = RECEIVE_CBC.rc_data.rc.packed.s1;
 
                     CAN_RC_CTRL.rc.ch[0] -= RC_CH_VALUE_OFFSET;
                     CAN_RC_CTRL.rc.ch[1] -= RC_CH_VALUE_OFFSET;
@@ -245,12 +257,20 @@ static void DecodeStdIdData(hcan_t * CAN, CAN_RxHeaderTypeDef * rx_header, uint8
                     CAN_RC_CTRL.rc.ch[4] -= RC_CH_VALUE_OFFSET;
                 } break;
                 case 1: {  // 键鼠数据
-                    CAN_RC_CTRL.mouse.x = (rx_data[0] << 8) | (rx_data[1] & 0xFE);
-                    CAN_RC_CTRL.mouse.y = (rx_data[2] << 8) | (rx_data[3] & 0xFE);
-                    CAN_RC_CTRL.mouse.z = (rx_data[2] << 8) | (rx_data[3]);
-                    CAN_RC_CTRL.mouse.press_l = rx_data[1] & 0x01;
-                    CAN_RC_CTRL.mouse.press_r = rx_data[3] & 0x01;
-                    CAN_RC_CTRL.key.v = (rx_data[6] << 8) | (rx_data[7]);
+                    // CAN_RC_CTRL.mouse.x = (rx_data[0] << 8) | (rx_data[1] & 0xFE);
+                    // CAN_RC_CTRL.mouse.y = (rx_data[2] << 8) | (rx_data[3] & 0xFE);
+                    // CAN_RC_CTRL.mouse.z = (rx_data[2] << 8) | (rx_data[3]);
+                    // CAN_RC_CTRL.mouse.press_l = rx_data[1] & 0x01;
+                    // CAN_RC_CTRL.mouse.press_r = rx_data[3] & 0x01;
+                    // CAN_RC_CTRL.key.v = (rx_data[6] << 8) | (rx_data[7]);
+
+                    memcpy(&RECEIVE_CBC.rc_data.km.raw.data, rx_data, 8);
+                    CAN_RC_CTRL.mouse.x = RECEIVE_CBC.rc_data.km.packed.mouse_x << 1;
+                    CAN_RC_CTRL.mouse.y = RECEIVE_CBC.rc_data.km.packed.mouse_y << 1;
+                    CAN_RC_CTRL.mouse.z = RECEIVE_CBC.rc_data.km.packed.mouse_z;
+                    CAN_RC_CTRL.mouse.press_l = RECEIVE_CBC.rc_data.km.packed.mouse_press_l;
+                    CAN_RC_CTRL.mouse.press_r = RECEIVE_CBC.rc_data.km.packed.mouse_press_r;
+                    CAN_RC_CTRL.key.v = RECEIVE_CBC.rc_data.km.packed.key;
                 } break;
                 default:
                     break;
@@ -534,8 +554,8 @@ void GetSupCapMeasure(SupCap_s * p_sup_cap)
 
 bool GetCanRcOffline(void)
 {
-    if (HAL_GetTick() - LAST_RECEIVE_TIME > CAN_OFFLINE_TIME) CAN_RC_OFFLINE = true;
-    return CAN_RC_OFFLINE;
+    if (HAL_GetTick() - LAST_RECEIVE_TIME > CAN_OFFLINE_TIME)  return true;
+    return RECEIVE_CBC.rc_data.rc.packed.offline;
 }
 
 /************************ END OF FILE ************************/
