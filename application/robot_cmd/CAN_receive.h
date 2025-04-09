@@ -81,7 +81,13 @@ extern void GetSupCapFdbData(SupCapMeasure_s * p_sup_cap);
 
 extern void GetSupCapMeasure(SupCap_s * p_sup_cap);
 
+extern bool GetBoardCanOffline(void);
+
 extern bool GetCanRcOffline(void);
+
+extern float GetCanGimbalYawMotorPos(void);
+
+extern bool GetCanGimbalInitJudge(void);
 
 #endif
 /*------------------------------ End of File ------------------------------*/

@@ -224,6 +224,7 @@ static void DecodeStdIdData(hcan_t * CAN, CAN_RxHeaderTypeDef * rx_header, uint8
     switch (type_id) {
         case CAN_STD_ID_Test: {
         } break;
+
         case CAN_STD_ID_Rc: {
             switch (index_id) {
                 case 0: {  // 遥控器数据
@@ -246,11 +247,15 @@ static void DecodeStdIdData(hcan_t * CAN, CAN_RxHeaderTypeDef * rx_header, uint8
                 case 1: {  // 键鼠数据
                     memcpy(&RECEIVE_CBC.rc_data.km.raw.data, rx_data, 8);
 
-                    RECEIVE_CBC.rc_data.rc_unpacked.mouse.x = RECEIVE_CBC.rc_data.km.packed.mouse_x << 1;
-                    RECEIVE_CBC.rc_data.rc_unpacked.mouse.y = RECEIVE_CBC.rc_data.km.packed.mouse_y << 1;
+                    RECEIVE_CBC.rc_data.rc_unpacked.mouse.x = RECEIVE_CBC.rc_data.km.packed.mouse_x
+                                                              << 1;
+                    RECEIVE_CBC.rc_data.rc_unpacked.mouse.y = RECEIVE_CBC.rc_data.km.packed.mouse_y
+                                                              << 1;
                     RECEIVE_CBC.rc_data.rc_unpacked.mouse.z = RECEIVE_CBC.rc_data.km.packed.mouse_z;
-                    RECEIVE_CBC.rc_data.rc_unpacked.mouse.press_l = RECEIVE_CBC.rc_data.km.packed.mouse_press_l;
-                    RECEIVE_CBC.rc_data.rc_unpacked.mouse.press_r = RECEIVE_CBC.rc_data.km.packed.mouse_press_r;
+                    RECEIVE_CBC.rc_data.rc_unpacked.mouse.press_l =
+                        RECEIVE_CBC.rc_data.km.packed.mouse_press_l;
+                    RECEIVE_CBC.rc_data.rc_unpacked.mouse.press_r =
+                        RECEIVE_CBC.rc_data.km.packed.mouse_press_r;
                     RECEIVE_CBC.rc_data.rc_unpacked.key.v = RECEIVE_CBC.rc_data.km.packed.key;
                 } break;
                 default:
@@ -261,6 +266,10 @@ static void DecodeStdIdData(hcan_t * CAN, CAN_RxHeaderTypeDef * rx_header, uint8
             const RC_ctrl_t * rc_ctrl = get_remote_control_point();
             memcpy((RC_ctrl_t *)rc_ctrl, &RECEIVE_CBC.rc_data.rc_unpacked, sizeof(RC_ctrl_t));
 #endif
+        } break;
+
+        case CAN_STD_ID_Gimbal: {
+            memcpy(&RECEIVE_CBC.gimbal_data.gimbal.raw.data, rx_data, 8);
         } break;
         default:
             break;
@@ -533,10 +542,31 @@ void GetSupCapMeasure(SupCap_s * p_sup_cap)
     p_sup_cap->fdb.power_target = SUP_CAP_MEASURE.power_target;
 }
 
-bool GetCanRcOffline(void)
+bool GetBoardCanOffline(void)
 {
     if (HAL_GetTick() - LAST_RECEIVE_TIME > CAN_OFFLINE_TIME) return true;
+    return false;
+}
+
+bool GetCanRcOffline(void)
+{
+    if (GetBoardCanOffline()) return true;
     return RECEIVE_CBC.rc_data.rc.packed.offline;
 }
 
+float GetCanGimbalYawMotorPos(void)
+{
+    if (GetBoardCanOffline()) {
+        return 0;
+    }
+    return RECEIVE_CBC.gimbal_data.gimbal.packed_data.yaw;
+}
+
+bool GetCanGimbalInitJudge(void)
+{
+    if (GetBoardCanOffline()) {
+        return false;
+    }
+    return RECEIVE_CBC.gimbal_data.gimbal.packed_data.init_judge;
+}
 /************************ END OF FILE ************************/

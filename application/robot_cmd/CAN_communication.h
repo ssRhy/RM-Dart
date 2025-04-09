@@ -32,4 +32,6 @@ bit 8-11: data_type
 
 extern void CanSendRcDataToBoard(uint8_t can, uint16_t target_id, uint16_t index);
 
+extern void CanSendGimbalDataToBoard(uint8_t can, uint16_t target_id, uint16_t index);
+
 #endif  // CAN_COMMUNICATION_H
