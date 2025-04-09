@@ -109,18 +109,9 @@ void CanSendGimbalDataToBoard(uint8_t can, uint16_t target_id, uint16_t index)
     uint16_t std_id = CAN_STD_ID_PACK_BASE | CAN_STD_ID_Gimbal << TYPE_ID_OFFSET |
                       (target_id << TARGET_ID_OFFSET) | index;
 
-    // float delta_yaw_mid = GetGimbalDeltaYawMid();
-    // bool yaw_motor_offline = true;
-    // bool init_judge = GetGimbalInitJudgeReturn();
-
-    // 测试数据
-    static float delta_yaw_mid = 0;
-    static bool yaw_motor_offline = true;
-    static bool init_judge = false;
-    delta_yaw_mid = loop_fp32_constrain(delta_yaw_mid + 0.05f, -3.14f, 3.14f);
-    yaw_motor_offline = !yaw_motor_offline;
-    init_judge = !init_judge;
-    // 测试数据 结尾
+    float delta_yaw_mid = GetGimbalDeltaYawMid();
+    bool yaw_motor_offline = true;
+    bool init_judge = GetGimbalInitJudgeReturn();
 
     SEND_CBC.gimbal_data.gimbal.packed_data.yaw = delta_yaw_mid;
     SEND_CBC.gimbal_data.gimbal.packed_data.offline = yaw_motor_offline;
