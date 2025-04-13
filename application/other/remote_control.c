@@ -95,7 +95,9 @@ static uint32_t receive_count = 0;
 static uint32_t sbus_lost_count = SBUS_MAX_LOST_NUN + 5;
 
 
+#if (__RC_TYPE != RC_DT7)
 static uint8_t connected_flag;  // 遥控器连接标志位
+#endif  // __RC_TYPE != RC_DT7
 
 /**
   * @brief          remote control init
