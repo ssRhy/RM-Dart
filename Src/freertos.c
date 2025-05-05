@@ -89,7 +89,9 @@ osThreadId referee_usart_task_handle;
 
 osThreadId usb_task_handle;
 
+#if (__CONTROL_LINK_PS2 == CL_PS2_DIRECT)
 osThreadId ps2_task_handle;
+#endif
 
 // osThreadId usb_send_task_handle;
 
@@ -250,8 +252,10 @@ void MX_FREERTOS_Init(void) {
     osThreadDef(USB_Task, usb_task, osPriorityNormal, 0, 128);
     usb_task_handle = osThreadCreate(osThread(USB_Task), NULL);
 
+#if (__CONTROL_LINK_PS2 == CL_PS2_DIRECT)
     osThreadDef(PS2_Task, ps2_task, osPriorityNormal, 0, 128);
     ps2_task_handle = osThreadCreate(osThread(PS2_Task), NULL);
+#endif
 
     osThreadDef(BATTERY_VOLTAGE, battery_voltage_task, osPriorityNormal, 0, 128);
     battery_voltage_handle = osThreadCreate(osThread(BATTERY_VOLTAGE), NULL);
