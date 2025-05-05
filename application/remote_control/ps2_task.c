@@ -1,4 +1,22 @@
+/**
+  ****************************(C) COPYRIGHT 2025 PolarBear****************************
+  * @file       ps2_task.c/h
+  * @brief      主要负责和ps2手柄进行通信，接收数据
+  * @note       
+  * @history
+  *  Version    Date            Author          Modification
+  *  V1.0.0     May-05-2025     Penguin         1. done
+  *
+  @verbatim
+  ==============================================================================
+
+  ==============================================================================
+  @endverbatim
+  ****************************(C) COPYRIGHT 2025 PolarBear****************************
+*/
 #include "ps2_task.h"
+
+#include <stdbool.h>
 
 #include "bsp_delay.h"
 #include "bsp_spi.h"
@@ -56,4 +74,88 @@ void ps2_task(void const * pvParameters)
 #endif
     }
 }
+
+/******************************************************************/
+/* API                                                            */
+/*----------------------------------------------------------------*/
+/* function:      GetPs2Axis                                      */
+/*                GetPs2Key                                       */
+/******************************************************************/
+
+float GetPs2Axis(Ps2Key_e key)
+{
+    switch (key) {
+        case PS2_LX:
+            return (ps2_data.ps2.val.lx - 128) / 128.0f;
+
+        case PS2_LY:
+            return (ps2_data.ps2.val.ly - 128) / 128.0f;
+
+        case PS2_RX:
+            return (ps2_data.ps2.val.rx - 128) / 128.0f;
+
+        case PS2_RY:
+            return (ps2_data.ps2.val.ry - 128) / 128.0f;
+
+        default:
+            return 0.0f;
+    }
+}
+
+bool GetPs2Key(Ps2Key_e key)
+{
+    switch (key) {
+        case PS2_L1:
+            return ps2_data.ps2.val.l1;
+
+        case PS2_L2:
+            return ps2_data.ps2.val.l2;
+
+        case PS2_L3:
+            return ps2_data.ps2.val.l3;
+
+        case PS2_R1:
+            return ps2_data.ps2.val.r1;
+
+        case PS2_R2:
+            return ps2_data.ps2.val.r2;
+
+        case PS2_R3:
+            return ps2_data.ps2.val.r3;
+
+        case PS2_SELECT:
+            return ps2_data.ps2.val.select;
+
+        case PS2_START:
+            return ps2_data.ps2.val.start;
+
+        case PS2_UP:
+            return ps2_data.ps2.val.up;
+
+        case PS2_DOWN:
+            return ps2_data.ps2.val.down;
+
+        case PS2_LEFT:
+            return ps2_data.ps2.val.left;
+
+        case PS2_RIGHT:
+            return ps2_data.ps2.val.right;
+
+        case PS2_TRIANGLE:
+            return ps2_data.ps2.val.triangle;
+
+        case PS2_CIRCLE:
+            return ps2_data.ps2.val.circle;
+
+        case PS2_CROSS:
+            return ps2_data.ps2.val.cross;
+
+        case PS2_SQUARE:
+            return ps2_data.ps2.val.square;
+
+        default:
+            return false;
+    }
+}
+
 /*------------------------------ End of File ------------------------------*/
