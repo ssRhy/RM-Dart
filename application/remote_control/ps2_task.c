@@ -45,17 +45,20 @@ void Spi2RequestPs2Data(uint8_t * pRxData)
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);  //CS_L
     delay_us(10);
 
-    HAL_SPI_TransmitReceive(&hspi2, &cmd[0], &pRxData[0], 1, 100);  // 发送0x01，请求接受数据
-    delay_us(10);
-    HAL_SPI_TransmitReceive(
-        &hspi2, &cmd[1], &pRxData[1], 1, 100);  // 发送0x42，接受0x01（PS2表示开始通信）
-    delay_us(10);
-    HAL_SPI_TransmitReceive(
-        &hspi2, &cmd[2], &pRxData[2], 1, 100);  // 发送0x00，接受ID（红绿灯模式）
+    // 发送0x01，请求接受数据
+    HAL_SPI_TransmitReceive(&hspi2, &cmd[0], &pRxData[0], 1, 100);
     delay_us(10);
 
-    for (uint8_t i = 3; i < 9; i++) {
-        HAL_SPI_TransmitReceive(&hspi2, &cmd[2], &pRxData[i], 1, 100);  // 接受数据
+    // 发送0x42，接受0x01（PS2表示开始通信）
+    HAL_SPI_TransmitReceive(&hspi2, &cmd[1], &pRxData[1], 1, 100);
+    delay_us(10);
+
+    // 发送0x00，接受ID（红绿灯模式）
+    HAL_SPI_TransmitReceive(&hspi2, &cmd[2], &pRxData[2], 1, 100);
+    delay_us(10);
+
+    for (uint8_t i = 3; i < 9; i++) {  // 接受数据
+        HAL_SPI_TransmitReceive(&hspi2, &cmd[2], &pRxData[i], 1, 100);
         delay_us(10);
     }
 
