@@ -43,6 +43,7 @@ void Spi2RequestPs2Data(uint8_t * pRxData)
     uint8_t cmd[3] = {0x01, 0x42, 0x00};  // 请求接受数据
 
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);  //CS_L
+    delay_us(10);
 
     HAL_SPI_TransmitReceive(&hspi2, &cmd[0], &pRxData[0], 1, 100);  // 发送0x01，请求接受数据
     delay_us(10);
