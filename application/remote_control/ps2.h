@@ -1,6 +1,8 @@
 #ifndef PS2_H__
 #define PS2_H__
 
+#include <stdbool.h>
+
 typedef enum {
     PS2_SELECT = 0,
     PS2_L3,
