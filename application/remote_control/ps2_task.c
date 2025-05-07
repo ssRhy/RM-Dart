@@ -67,6 +67,8 @@ void Spi2RequestPs2Data(uint8_t * pRxData)
 
 void ps2_task(void const * pvParameters)
 {
+    vTaskDelay(10);
+    
     while (1) {
         Spi2RequestPs2Data(ps2_data.ps2.raw.data);  // SPI请求数据
 
