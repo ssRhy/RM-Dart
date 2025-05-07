@@ -95,12 +95,34 @@ void Spi2RequestPs2Data(uint8_t * pRxData)
   */
 void Ps2Decode(void)
 {
-    for (uint8_t i = 0; i < 16; i++) {
-        ps2.button[i] = !((ps2.ps2_data.raw.data[3 + i / 8] >> (i % 8)) & 0x01);  // 按键状态
-    }
+    switch (ps2.mode) {
+        case PS2_MODE_ANALOG:
+        case PS2_MODE_VIBRATION: {
+            for (uint8_t i = 0; i < 16; i++) {
+                ps2.button[i] = !((ps2.ps2_data.raw.data[3 + i / 8] >> (i % 8)) & 0x01);
+            }
+            for (uint8_t i = 0; i < 4; i++) {
+                ps2.joystick[i] = (float)(ps2.ps2_data.raw.data[i + 5] - 128) / 128.0f;
+            }
+        } break;
 
-    for (uint8_t i = 0; i < 4; i++) {
-        ps2.joystick[i] = (float)(ps2.ps2_data.raw.data[i + 5] - 128) / 128.0f;
+        case PS2_MODE_DIGITAL: {
+            for (uint8_t i = 0; i < 16; i++) {
+                ps2.button[i] = !((ps2.ps2_data.raw.data[3 + i / 8] >> (i % 8)) & 0x01);
+            }
+            for (uint8_t i = 0; i < 4; i++) {
+                ps2.joystick[i] = 0.0f;
+            }
+        } break;
+
+        default: {
+            for (uint8_t i = 0; i < 4; i++) {
+                ps2.joystick[i] = 0.0f;
+            }
+            for (uint8_t i = 0; i < 16; i++) {
+                ps2.button[i] = false;
+            }
+        }
     }
 }
 
