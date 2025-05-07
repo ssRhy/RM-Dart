@@ -13,12 +13,9 @@
 
 typedef struct
 {
-    uint16_t last_mode;  // 上次模式
     uint16_t mode;       // 模式
 
-    bool last_button[16];    //上次按键
     bool button[16];         //按键
-    float last_joystick[4];  //上次摇杆
     float joystick[4];       //摇杆
 
     union {
