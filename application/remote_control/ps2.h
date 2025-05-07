@@ -48,6 +48,7 @@ typedef struct
 } Ps2Buttons_t;
 
 extern Ps2Status_e GetPs2Status(void);
+extern uint32_t GetPs2IdleTime(void);
 extern float GetPs2Joystick(Ps2Joystick_e joystick);
 extern bool GetPs2Button(Ps2Button_e button);
 

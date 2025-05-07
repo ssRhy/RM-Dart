@@ -13,10 +13,12 @@
 
 typedef struct
 {
-    uint16_t mode;       // 模式
+    uint16_t mode;  // 模式
 
-    bool button[16];         //按键
-    float joystick[4];       //摇杆
+    bool button[16];    //按键
+    float joystick[4];  //摇杆
+
+    uint32_t last_operate_time;  // 上次操作时间
 
     union {
         struct
@@ -53,6 +55,8 @@ typedef struct
             uint8_t data[9];  //数据
         } __packed__ raw;
     } ps2_data;
+
+    uint8_t last_raw[9];
 } Ps2_s;
 
 #endif  // PS2_TYPEDEF_H__

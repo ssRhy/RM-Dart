@@ -18,6 +18,7 @@
 #include "ps2_task.h"
 
 #include <stdbool.h>
+#include <string.h>
 
 #include "bsp_delay.h"
 #include "bsp_spi.h"
@@ -26,7 +27,7 @@
 #include "ps2_typedef.h"
 #include "stm32f4xx_hal.h"
 
-#define PS2_TASK_TIME_MS 5  // ms
+#define PS2_TASK_TIME_MS 10  // ms
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
 uint32_t ps2_high_water;
@@ -133,8 +134,17 @@ void ps2_task(void const * pvParameters)
     vTaskDelay(10);
 
     while (1) {
+        memcpy(ps2.last_raw, ps2.ps2_data.raw.data, 9);  // 转移数据
+
         Spi2RequestPs2Data(ps2.ps2_data.raw.data);  // SPI请求数据
         Ps2Decode();
+
+        for (uint8_t i = 0; i < 9; i++) { //判断数据变化
+            if (ps2.ps2_data.raw.data[i] != ps2.last_raw[i]) {
+                ps2.last_operate_time = HAL_GetTick();  // 更新上次操作时间
+                break;
+            }
+        }
 
         // 系统延时
         vTaskDelay(PS2_TASK_TIME_MS);
@@ -149,6 +159,7 @@ void ps2_task(void const * pvParameters)
 /* API                                                            */
 /*----------------------------------------------------------------*/
 /* function:      GetPs2Status                                    */
+/*                GetIdleTime                                     */
 /*                GetPs2Joystick                                  */
 /*                GetPs2Button                                    */
 /******************************************************************/
@@ -172,6 +183,8 @@ Ps2Status_e GetPs2Status(void)
         }
     }
 }
+
+uint32_t GetPs2IdleTime(void) { return HAL_GetTick() - ps2.last_operate_time; }
 
 float GetPs2Joystick(Ps2Joystick_e joystick) { return ps2.joystick[joystick]; }
 
