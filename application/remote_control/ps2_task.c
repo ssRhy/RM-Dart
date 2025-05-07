@@ -6,6 +6,7 @@
   * @history
   *  Version    Date            Author          Modification
   *  V1.0.0     May-05-2025     Penguin         1. done
+  *  V1.0.1     May-07-2025     Penguin         1. 添加了手柄数据解码
   *
   @verbatim
   ==============================================================================
