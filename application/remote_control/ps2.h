@@ -34,6 +34,18 @@ typedef enum {
     PS2_CONFIG,     // 配置中
 } Ps2Status_e;
 
+typedef struct
+{
+    struct
+    {
+        bool last;
+        bool now;
+        bool up_edge;    // 按键上升沿
+        bool down_edge;  // 按键下降沿
+    } button[16];
+} Ps2Buttons_t;
+
+extern Ps2Status_e GetPs2Status(void);
 extern float GetPs2Joystick(Ps2Joystick_e joystick);
 extern bool GetPs2Button(Ps2Button_e button);
 

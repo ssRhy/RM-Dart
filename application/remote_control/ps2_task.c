@@ -153,7 +153,7 @@ void ps2_task(void const * pvParameters)
 /*                GetPs2Button                                    */
 /******************************************************************/
 
-Ps2Status_e GetPs2Status()
+Ps2Status_e GetPs2Status(void)
 {
     switch (ps2.mode) {
         case PS2_MODE_CONFIG: {
