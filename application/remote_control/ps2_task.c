@@ -148,9 +148,30 @@ void ps2_task(void const * pvParameters)
 /******************************************************************/
 /* API                                                            */
 /*----------------------------------------------------------------*/
-/* function:      GetPs2Joystick                                  */
+/* function:      GetPs2Status                                    */
+/*                GetPs2Joystick                                  */
 /*                GetPs2Key                                       */
 /******************************************************************/
+
+Ps2Status_e GetPs2Status()
+{
+    switch (ps2.mode) {
+        case PS2_MODE_CONFIG: {
+            return PS2_CONFIG;
+        }
+
+        case PS2_MODE_DIGITAL:
+        case PS2_MODE_ANALOG:
+        case PS2_MODE_VIBRATION: {
+            return PS2_OK;
+        }
+
+        case PS2_MODE_ERROR:
+        default: {
+            return PS2_ERROR;
+        }
+    }
+}
 
 float GetPs2Joystick(Ps2Joystick_e joystick) { return ps2.joystick[joystick]; }
 

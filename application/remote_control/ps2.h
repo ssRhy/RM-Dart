@@ -28,6 +28,12 @@ typedef enum {
 
 } Ps2Joystick_e;
 
+typedef enum {
+    PS2_ERROR = 0,  // 工作异常
+    PS2_OK,         // 工作正常
+    PS2_CONFIG,     // 配置中
+} Ps2Status_e;
+
 extern float GetPs2Joystick(Ps2Joystick_e joystick);
 extern bool GetPs2Key(Ps2Key_e key);
 
