@@ -26,7 +26,7 @@
 #include "ps2_typedef.h"
 #include "stm32f4xx_hal.h"
 
-#define PS2_TASK_TIME_MS 10  // ms
+#define PS2_TASK_TIME_MS 5  // ms
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
 uint32_t ps2_high_water;
@@ -102,9 +102,10 @@ void Ps2Decode(void)
             for (uint8_t i = 0; i < 16; i++) {
                 ps2.button[i] = !((ps2.ps2_data.raw.data[3 + i / 8] >> (i % 8)) & 0x01);
             }
-            for (uint8_t i = 0; i < 4; i++) {
-                ps2.joystick[i] = (float)(ps2.ps2_data.raw.data[i + 5] - 128) / 128.0f;
-            }
+            ps2.joystick[0] = (float)(ps2.ps2_data.raw.data[5] - 128) / 128.0f;
+            ps2.joystick[1] = (float)(ps2.ps2_data.raw.data[6] - 127) / 128.0f;
+            ps2.joystick[2] = (float)(ps2.ps2_data.raw.data[7] - 128) / 128.0f;
+            ps2.joystick[3] = (float)(ps2.ps2_data.raw.data[8] - 127) / 128.0f;
         } break;
 
         case PS2_MODE_DIGITAL: {
