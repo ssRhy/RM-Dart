@@ -62,11 +62,11 @@ void Spi2RequestPs2Data(uint8_t * pRxData)
     HAL_SPI_TransmitReceive(&hspi2, &cmd[0], &pRxData[0], 1, 100);
     delay_us(10);
 
-    // 发送0x42，接受0x01（PS2表示开始通信）
+    // 发送0x42，接收手柄模式（PS2表示开始通信）
     HAL_SPI_TransmitReceive(&hspi2, &cmd[1], &pRxData[1], 1, 100);
     delay_us(10);
 
-    // 发送0x00，接受ID（红绿灯模式）
+    // 发送0x00，接受0x5A（红绿灯模式）
     HAL_SPI_TransmitReceive(&hspi2, &cmd[2], &pRxData[2], 1, 100);
     delay_us(10);
 
