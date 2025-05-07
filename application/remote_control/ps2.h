@@ -18,7 +18,7 @@ typedef enum {
     PS2_CIRCLE,
     PS2_CROSS,
     PS2_SQUARE
-} Ps2Key_e;
+} Ps2Button_e;
 
 typedef enum {
     PS2_RX = 0,  // 右正
@@ -35,7 +35,7 @@ typedef enum {
 } Ps2Status_e;
 
 extern float GetPs2Joystick(Ps2Joystick_e joystick);
-extern bool GetPs2Key(Ps2Key_e key);
+extern bool GetPs2Button(Ps2Button_e button);
 
 #endif  // PS2_H__
 /*------------------------------ End of File ------------------------------*/

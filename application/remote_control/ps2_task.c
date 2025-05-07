@@ -150,7 +150,7 @@ void ps2_task(void const * pvParameters)
 /*----------------------------------------------------------------*/
 /* function:      GetPs2Status                                    */
 /*                GetPs2Joystick                                  */
-/*                GetPs2Key                                       */
+/*                GetPs2Button                                    */
 /******************************************************************/
 
 Ps2Status_e GetPs2Status()
@@ -175,6 +175,6 @@ Ps2Status_e GetPs2Status()
 
 float GetPs2Joystick(Ps2Joystick_e joystick) { return ps2.joystick[joystick]; }
 
-bool GetPs2Key(Ps2Key_e key) { return ps2.button[key]; }
+bool GetPs2Button(Ps2Button_e button) { return ps2.button[button]; }
 
 /*------------------------------ End of File ------------------------------*/
