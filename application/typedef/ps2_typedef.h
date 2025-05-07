@@ -1,6 +1,9 @@
 #ifndef PS2_TYPEDEF_H__
 #define PS2_TYPEDEF_H__
 
+#include "attribute_typedef.h"
+
+#define PS2_MODE_ERROR     0x00 // 异常模式，手柄工作异常
 #define PS2_MODE_DIGITAL   0x41 // 数字模式，只返回按键信息，摇杆无效
 #define PS2_MODE_ANALOG    0x73 // 模拟模式，包含按键和摇杆数据
 #define PS2_MODE_VIBRATION 0x79 // 模拟模式，加入了手柄马达的控制
@@ -9,10 +12,17 @@
 
 typedef struct
 {
+    uint16_t mode;  // 模式
+    bool button[16];
+    float joystick[4];
+
     union 
     {
         struct{
-            uint8_t reserved[2];
+            uint8_t id;
+            uint8_t mode;
+            uint8_t flag;
+            
             uint8_t select:1;
             uint8_t l3:1;
             uint8_t r3:1;
@@ -35,13 +45,13 @@ typedef struct
             uint8_t ry;
             uint8_t lx;
             uint8_t ly;
-        }val;
+        }__packed__ val;
         struct
         {
             uint8_t data[9];  //数据
-        }raw;
-    }ps2;
-} Ps2Data_t;
+        }__packed__ raw;
+    }ps2_data;
+} Ps2_s;
 
 #endif  // PS2_TYPEDEF_H__
 /*------------------------------ End of File ------------------------------*/

@@ -31,7 +31,19 @@
 uint32_t ps2_high_water;
 #endif
 
-Ps2Data_t ps2_data;  // PS2数据结构体
+// PS2数据结构体
+Ps2_s ps2 = {
+    .mode = PS2_MODE_ERROR,
+    // clang-format off
+    .button = {false, false, false, false, false, false, false, false,
+               false, false, false, false, false, false, false, false},
+    // clang-format on
+    .joystick = {0.0f, 0.0f, 0.0f, 0.0f},
+    .ps2_data =
+        {
+            .raw.data = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+        },
+};
 
 /**
   * @brief          使用Spi2请求ps2的数据
@@ -63,14 +75,42 @@ void Spi2RequestPs2Data(uint8_t * pRxData)
     }
 
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);  //CS_H
+
+    // 更新模式
+    switch (pRxData[1]) {
+        case PS2_MODE_DIGITAL:
+        case PS2_MODE_ANALOG:
+        case PS2_MODE_VIBRATION:
+        case PS2_MODE_CONFIG:
+            ps2.mode = pRxData[1];
+            break;
+        default:
+            ps2.mode = PS2_MODE_ERROR;
+    }
+}
+
+/**
+  * @brief          对ps2的数据进行解码
+  * @retval         
+  */
+void Ps2Decode(void)
+{
+    for (uint8_t i = 0; i < 16; i++) {
+        ps2.button[i] = !((ps2.ps2_data.raw.data[3 + i / 8] >> (i % 8)) & 0x01);  // 按键状态
+    }
+
+    for (uint8_t i = 0; i < 4; i++) {
+        ps2.joystick[i] = (float)(ps2.ps2_data.raw.data[i + 5] - 128) / 128.0f;
+    }
 }
 
 void ps2_task(void const * pvParameters)
 {
     vTaskDelay(10);
-    
+
     while (1) {
-        Spi2RequestPs2Data(ps2_data.ps2.raw.data);  // SPI请求数据
+        Spi2RequestPs2Data(ps2.ps2_data.raw.data);  // SPI请求数据
+        Ps2Decode();
 
         // 系统延时
         vTaskDelay(PS2_TASK_TIME_MS);
@@ -84,84 +124,12 @@ void ps2_task(void const * pvParameters)
 /******************************************************************/
 /* API                                                            */
 /*----------------------------------------------------------------*/
-/* function:      GetPs2Axis                                      */
+/* function:      GetPs2Joystick                                  */
 /*                GetPs2Key                                       */
 /******************************************************************/
 
-float GetPs2Axis(Ps2Key_e key)
-{
-    switch (key) {
-        case PS2_LX:
-            return (ps2_data.ps2.val.lx - 128) / 128.0f;
+float GetPs2Joystick(Ps2Joystick_e joystick) { return ps2.joystick[joystick]; }
 
-        case PS2_LY:
-            return (ps2_data.ps2.val.ly - 128) / 128.0f;
-
-        case PS2_RX:
-            return (ps2_data.ps2.val.rx - 128) / 128.0f;
-
-        case PS2_RY:
-            return (ps2_data.ps2.val.ry - 128) / 128.0f;
-
-        default:
-            return 0.0f;
-    }
-}
-
-bool GetPs2Key(Ps2Key_e key)
-{
-    switch (key) {
-        case PS2_L1:
-            return ps2_data.ps2.val.l1;
-
-        case PS2_L2:
-            return ps2_data.ps2.val.l2;
-
-        case PS2_L3:
-            return ps2_data.ps2.val.l3;
-
-        case PS2_R1:
-            return ps2_data.ps2.val.r1;
-
-        case PS2_R2:
-            return ps2_data.ps2.val.r2;
-
-        case PS2_R3:
-            return ps2_data.ps2.val.r3;
-
-        case PS2_SELECT:
-            return ps2_data.ps2.val.select;
-
-        case PS2_START:
-            return ps2_data.ps2.val.start;
-
-        case PS2_UP:
-            return ps2_data.ps2.val.up;
-
-        case PS2_DOWN:
-            return ps2_data.ps2.val.down;
-
-        case PS2_LEFT:
-            return ps2_data.ps2.val.left;
-
-        case PS2_RIGHT:
-            return ps2_data.ps2.val.right;
-
-        case PS2_TRIANGLE:
-            return ps2_data.ps2.val.triangle;
-
-        case PS2_CIRCLE:
-            return ps2_data.ps2.val.circle;
-
-        case PS2_CROSS:
-            return ps2_data.ps2.val.cross;
-
-        case PS2_SQUARE:
-            return ps2_data.ps2.val.square;
-
-        default:
-            return false;
-    }
-}
+bool GetPs2Key(Ps2Key_e key) { return ps2.button[key]; }
 
 /*------------------------------ End of File ------------------------------*/
