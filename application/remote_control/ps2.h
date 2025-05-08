@@ -3,6 +3,9 @@
 
 #include <stdbool.h>
 
+#define PS2_BUTTON_FALL(button) (button.now < button.last)
+#define PS2_BUTTON_RISE(button) (button.now > button.last)
+
 typedef enum {
     PS2_SELECT = 0,
     PS2_LSTICK,
@@ -36,17 +39,10 @@ typedef enum {
     PS2_CONFIG,     // 配置中
 } Ps2Status_e;
 
-typedef enum {
-    PS2_EDGE_FALL = -1,  // 下降沿
-    PS2_EDGE_NONE = 0,   // 正常状态
-    PS2_EDGE_RISE = 1,   // 上升沿
-} Ps2Edge_e;
-
 typedef struct
 {
     bool last;
     bool now;
-    Ps2Edge_e edge;  // 按键上升下降沿
 } Ps2Button_t;
 
 typedef struct

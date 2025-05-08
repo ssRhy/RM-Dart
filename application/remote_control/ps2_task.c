@@ -196,8 +196,6 @@ void UpdatePs2Button(Ps2Button_t * p_ps2_button, Ps2Button_e button)
 {
     p_ps2_button->last = p_ps2_button->now;  // 转移按键状态
     p_ps2_button->now = ps2.button[button];  // 更新按键状态
-
-    p_ps2_button->edge = (Ps2Edge_e)(p_ps2_button->now - p_ps2_button->last);  // 判断按键变化
 }
 
 void UpdatePs2Buttons(Ps2Buttons_t * p_ps2_buttons)
@@ -205,9 +203,6 @@ void UpdatePs2Buttons(Ps2Buttons_t * p_ps2_buttons)
     for (uint8_t i = 0; i < 16; i++) {
         p_ps2_buttons->button[i].last = p_ps2_buttons->button[i].now;  // 转移按键状态
         p_ps2_buttons->button[i].now = ps2.button[i];                  // 更新按键状态
-
-        p_ps2_buttons->button[i].edge = (Ps2Edge_e)(p_ps2_buttons->button[i].now -
-                                                    p_ps2_buttons->button[i].last);  // 判断按键变化
     }
 }
 
