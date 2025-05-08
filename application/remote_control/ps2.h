@@ -5,8 +5,8 @@
 
 typedef enum {
     PS2_SELECT = 0,
-    PS2_L3,
-    PS2_R3,
+    PS2_LSTICK,
+    PS2_RSTICK,
     PS2_START,
     PS2_UP,
     PS2_RIGHT,
