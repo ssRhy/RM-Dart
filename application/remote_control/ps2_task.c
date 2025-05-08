@@ -7,9 +7,26 @@
   *  Version    Date            Author          Modification
   *  V1.0.0     May-05-2025     Penguin         1. done
   *  V1.0.1     May-07-2025     Penguin         1. 添加了手柄数据解码
+  *  V1.0.2     May-08-2025     Penguin         1. 增加了API
+  *                                             2. 完善了文档说明
   *
   @verbatim
   ==============================================================================
+  本文件中创建一个ps2_task任务，定时请求ps2手柄的数据，并进行解码
+  其中
+      Spi2RequestPs2Data 函数用于请求ps2手柄的数据
+      Ps2Decode 函数用于解码手柄数据
+      ps2_task 函数为ps2手柄任务函数，其中完成
+          - 请求数据
+          - 解码数据
+          - 记录手柄数据变化的时间
+  API
+      GetPs2Status 获取手柄工作状态
+      GetPs2IdleTime 获取手柄空闲时间
+      GetPs2Joystick 获取手柄摇杆数据
+      GetPs2Button 获取手柄按键数据
+      UpdatePs2Button 更新手柄按键数据
+      UpdatePs2Buttons 更新手柄按键数据组
 
   ==============================================================================
   @endverbatim
@@ -159,7 +176,7 @@ void ps2_task(void const * pvParameters)
 /* API                                                            */
 /*----------------------------------------------------------------*/
 /* function:      GetPs2Status                                    */
-/*                GetIdleTime                                     */
+/*                GetPs2IdleTime                                  */
 /*                GetPs2Joystick                                  */
 /*                GetPs2Button                                    */
 /*                UpdatePs2Button                                 */
