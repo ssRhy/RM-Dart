@@ -36,21 +36,31 @@ typedef enum {
     PS2_CONFIG,     // 配置中
 } Ps2Status_e;
 
+typedef enum {
+    PS2_EDGE_FALL = -1,  // 下降沿
+    PS2_EDGE_NONE = 0,   // 正常状态
+    PS2_EDGE_RISE = 1,   // 上升沿
+} Ps2Edge_e;
+
 typedef struct
 {
-    struct
-    {
-        bool last;
-        bool now;
-        bool up_edge;    // 按键上升沿
-        bool down_edge;  // 按键下降沿
-    } button[16];
+    bool last;
+    bool now;
+    Ps2Edge_e edge;  // 按键上升下降沿
+} Ps2Button_t;
+
+typedef struct
+{
+    Ps2Button_t button[16];
 } Ps2Buttons_t;
 
 extern Ps2Status_e GetPs2Status(void);
 extern uint32_t GetPs2IdleTime(void);
 extern float GetPs2Joystick(Ps2Joystick_e joystick);
 extern bool GetPs2Button(Ps2Button_e button);
+
+extern void UpdatePs2Button(Ps2Button_t * p_ps2_button, Ps2Button_e button);
+extern void UpdatePs2Buttons(Ps2Buttons_t * p_ps2_buttons);
 
 #endif  // PS2_H__
 /*------------------------------ End of File ------------------------------*/

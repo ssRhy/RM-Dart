@@ -139,7 +139,7 @@ void ps2_task(void const * pvParameters)
         Spi2RequestPs2Data(ps2.ps2_data.raw.data);  // SPI请求数据
         Ps2Decode();
 
-        for (uint8_t i = 0; i < 9; i++) { //判断数据变化
+        for (uint8_t i = 0; i < 9; i++) {  //判断数据变化
             if (ps2.ps2_data.raw.data[i] != ps2.last_raw[i]) {
                 ps2.last_operate_time = HAL_GetTick();  // 更新上次操作时间
                 break;
@@ -162,6 +162,8 @@ void ps2_task(void const * pvParameters)
 /*                GetIdleTime                                     */
 /*                GetPs2Joystick                                  */
 /*                GetPs2Button                                    */
+/*                UpdatePs2Button                                 */
+/*                UpdatePs2Buttons                                */
 /******************************************************************/
 
 Ps2Status_e GetPs2Status(void)
@@ -189,5 +191,24 @@ uint32_t GetPs2IdleTime(void) { return HAL_GetTick() - ps2.last_operate_time; }
 float GetPs2Joystick(Ps2Joystick_e joystick) { return ps2.joystick[joystick]; }
 
 bool GetPs2Button(Ps2Button_e button) { return ps2.button[button]; }
+
+void UpdatePs2Button(Ps2Button_t * p_ps2_button, Ps2Button_e button)
+{
+    p_ps2_button->last = p_ps2_button->now;  // 转移按键状态
+    p_ps2_button->now = ps2.button[button];  // 更新按键状态
+
+    p_ps2_button->edge = (Ps2Edge_e)(p_ps2_button->now - p_ps2_button->last);  // 判断按键变化
+}
+
+void UpdatePs2Buttons(Ps2Buttons_t * p_ps2_buttons)
+{
+    for (uint8_t i = 0; i < 16; i++) {
+        p_ps2_buttons->button[i].last = p_ps2_buttons->button[i].now;  // 转移按键状态
+        p_ps2_buttons->button[i].now = ps2.button[i];                  // 更新按键状态
+
+        p_ps2_buttons->button[i].edge = (Ps2Edge_e)(p_ps2_buttons->button[i].now -
+                                                    p_ps2_buttons->button[i].last);  // 判断按键变化
+    }
+}
 
 /*------------------------------ End of File ------------------------------*/
