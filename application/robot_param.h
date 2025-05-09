@@ -61,6 +61,10 @@
 #define __CONTROL_LINK_KM CL_KM_RC
 #endif
 
+#ifndef __CONTROL_LINK_PS2
+#define __CONTROL_LINK_PS2 CL_PS2_NONE
+#endif
+
 // 模块检查
 #ifndef CHASSIS_TYPE
 #define CHASSIS_TYPE CHASSIS_NONE
