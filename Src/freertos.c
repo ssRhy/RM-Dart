@@ -23,10 +23,10 @@
 #include "task.h"
 #include "main.h"
 #include "cmsis_os.h"
-#include "robot_param.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "robot_param.h"
 
 #include "chassis_task.h"
 #include "detect_task.h"
@@ -43,6 +43,7 @@
 #include "develop_task.h"
 #include "custom_controller_task.h"
 #include "communication_task.h"
+#include "ps2_task.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -87,6 +88,10 @@ osThreadId oled_handle;
 osThreadId referee_usart_task_handle;
 
 osThreadId usb_task_handle;
+
+#if (__CONTROL_LINK_PS2 == CL_PS2_DIRECT)
+osThreadId ps2_task_handle;
+#endif
 
 // osThreadId usb_send_task_handle;
 
@@ -246,6 +251,11 @@ void MX_FREERTOS_Init(void) {
 
     osThreadDef(USB_Task, usb_task, osPriorityNormal, 0, 128);
     usb_task_handle = osThreadCreate(osThread(USB_Task), NULL);
+
+#if (__CONTROL_LINK_PS2 == CL_PS2_DIRECT)
+    osThreadDef(PS2_Task, ps2_task, osPriorityNormal, 0, 128);
+    ps2_task_handle = osThreadCreate(osThread(PS2_Task), NULL);
+#endif
 
     osThreadDef(BATTERY_VOLTAGE, battery_voltage_task, osPriorityNormal, 0, 128);
     battery_voltage_handle = osThreadCreate(osThread(BATTERY_VOLTAGE), NULL);

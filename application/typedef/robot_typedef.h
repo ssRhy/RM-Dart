@@ -83,6 +83,11 @@
 #define CL_KM_RC_VT    0x203  // 同时使用图传链路和遥控器获取键鼠数据（互补操作，遥控器优先）
 #define CL_KM_VT_RC    0x204  // 同时使用图传链路和遥控器获取键鼠数据（互补操作，图传链路优先）
 
+#define CL_PS2_NONE     0x300  // 无PS2链路
+#define CL_PS2_DIRECT   0x301  // PS2直接连接（通过 8pin 自定义io口获取直接的PS2数据）
+#define CL_PS2_CAN      0x302  // 通过CAN口获取PS2数据
+#define CL_PS2_UART2    0x303  // 通过UART2口获取PS2数据
+
 // 虚拟云台数据源
 #define VG_FROM_NONE      0x000 // 无数据源
 #define VG_FROM_UART2     0x001 // uart2串口数据源
