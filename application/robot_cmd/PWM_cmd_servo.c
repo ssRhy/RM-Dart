@@ -5,6 +5,7 @@
   * @history
   *  Version    Date            Author          Modification
   *  V2.0.0     2025/2/11       YZX             1. 完成。
+  *  V2.0.1     2025/11/3       CJH             1. 修复逻辑bug
   *
   @verbatim
   ==============================================================================
@@ -31,7 +32,7 @@
    */
 void PwmCmdServo(uint8_t pump_id, uint16_t pwm)
 {
-    if (pwm > SERVO_MIN_PWM) {
+    if (pwm > SERVO_MAX_PWM) {
         pwm = SERVO_MAX_PWM;
     } else if (pwm < SERVO_MIN_PWM) {
         pwm = SERVO_MIN_PWM;
