@@ -31,7 +31,7 @@
    */
 void PwmCmdServo(uint8_t pump_id, uint16_t pwm)
 {
-    if (pwm > SERVO_MIN_PWM) {
+    if (pwm > SERVO_MAX_PWM) {
         pwm = SERVO_MAX_PWM;
     } else if (pwm < SERVO_MIN_PWM) {
         pwm = SERVO_MIN_PWM;
