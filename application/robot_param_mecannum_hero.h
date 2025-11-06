@@ -17,7 +17,7 @@
 
 /*-------------------- Chassis --------------------*/
 //physical parameters ---------------------
-#define WHEEL_RADIUS 0.08f                 //(m)轮子直径
+#define WHEEL_RADIUS 0.08f                 //(m)轮子半径
 #define WHEEL_CENTER_DISTANCE 0.31340867f  //(m)轮子到车的距离（0.22 + 0.21）
 
 //motor parameters ---------------------
