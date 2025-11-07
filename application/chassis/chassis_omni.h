@@ -6,6 +6,9 @@
   * @history
   *  Version    Date            Author          Modification
   *  V1.0.0   2025.03.03      Harry_Wong        1.重新构建全向轮底盘代码，完成基础控制
+  *  V1.1.0   2025.11.05       CJH              1. 完成底盘与云台协同控制
+  *                                             2. 完成底盘键鼠控制
+  *                                             3. 修正全向轮解算的错误
   *
   @verbatim
   ==============================================================================
@@ -36,6 +39,7 @@ typedef enum {
     CHASSIS_LOCK,      //底盘锁定，所有轮子速度设定为0
     CHASSIS_SINGLE,    //只有底盘的模式
     CHASSIS_FOLLOW,    //云台跟随模式
+    CHASSIS_SPIN,
 } ChassisMode_e;
 
 /**
@@ -79,6 +83,14 @@ typedef struct
     fp32 set[4];
 
     fp32 yaw_delta;
+
+    uint16_t x_time;
+    uint16_t y_time;
+    uint8_t spin_flag;
+    uint8_t shift_flag;
+
+    uint8_t sc_flag;
+    uint32_t f_flag;
 } Chassis_s;
 
 
