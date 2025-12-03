@@ -18,6 +18,8 @@
 #define SHOOT_TYPE SHOOT_FRIC_TRIGGER            // 选择发射机构类型
 #define CONTROL_TYPE CHASSIS_AND_GIMBAL          // 选择控制类型
 #define MECHANICAL_ARM_TYPE MECHANICAL_ARM_NONE  //选择机械臂类型
+#define DART_TYPE DART_CHASSIS  
+
 
 /*-------------------- Chassis --------------------*/
 //physical parameters ---------------------

@@ -9,6 +9,10 @@
 #define CHASSIS_STEERING_WHEEL  3  // 舵轮底盘
 #define CHASSIS_BALANCE         4  // 平衡底盘
 
+//飞镖底盘硬件类型
+#define CHASSIS_DART 5
+
+
 // 可用云台硬件类型
 #define GIMBAL_NONE                0  // 无云台
 #define GIMBAL_YAW_PITCH_DIRECT    1  // yaw-pitch电机直连云台

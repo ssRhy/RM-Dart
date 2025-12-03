@@ -25,6 +25,7 @@
 //导入具体的机器人参数配置文件
 #include "robot_param_omni_infantry.h"
 
+
 // 选择机器人的各种类型
 #define __RC_TYPE RC_ET08A         // 遥控器类型
 #define __DEVELOP 1                // 开发模式
@@ -84,6 +85,10 @@
 
 #ifndef CUSTOM_CONTROLLER_TYPE
 #define CUSTOM_CONTROLLER_TYPE CUSTOM_CONTROLLER_NONE
+#endif
+
+#ifndef DART_TYPE
+#define DART_TYPE DART_NONE
 #endif
 
 #endif /* ROBOT_PARAM_H */
