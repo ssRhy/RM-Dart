@@ -1,8 +1,8 @@
 #include "robot_param.h"
 
 #if (DART_TYPE == DART_CHASSIS)
-#ifndef DART_SHOOT_H
-#define DART_SHOOT_H
+#ifndef DART_CHASSIS_H
+#define DART_CHASSIS_H
 
 #include "motor.h"
 #include "pid.h"
@@ -39,5 +39,5 @@ extern void DartConsole(void);
 extern void DartSendCmd(void);
 
 #endif /* DART_CHASSIS */
-#endif /* DART_SHOOT_H */
+#endif /* DART_CHASSIS_H */
 

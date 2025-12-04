@@ -1,4 +1,4 @@
-#include "dart_shoot.h"
+#include "dart_chassis.h"
 #include "dart_param.h"
 #if (DART_TYPE == DART_CHASSIS)
 
@@ -6,7 +6,7 @@ Dart_s dart;
 
 void DartInit(void)
 {
-    MotorInit(&dart.motor[0],1, MOTOR_0_CAN, MOTOR_0_TYPE,MOTOR_0_DIRECTION,19, 0);//
+    MotorInit(&dart.motor[0],DART_CHASSIS_ID, MOTOR_DART_CAN, DART_CHASSIS_TYPE,MOTOR_DART_DIRECTION,MOTOR_DART_REDUCTION, MOTOR_DART_MODE);//底盘摩擦轮初始化
 
     dart.timer = 0; // 计时器重置
     
@@ -41,7 +41,7 @@ void DartConsole(void)
 
 void DartSendCmd(void)
 {
-     CanCmdDjiMotor(DART_CAN, DART_STD_ID , dart.motor[0].set.curr, 0, 0, 0);
+     CanCmdDjiMotor(MOTOR_DART_CAN, DART_STD_ID , dart.motor[0].set.curr, 0, 0, 0);
     
     dart.timer++;
 }
