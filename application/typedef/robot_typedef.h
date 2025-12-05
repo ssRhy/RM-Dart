@@ -8,9 +8,11 @@
 #define CHASSIS_OMNI_WHEEL      2  // 全向轮底盘
 #define CHASSIS_STEERING_WHEEL  3  // 舵轮底盘
 #define CHASSIS_BALANCE         4  // 平衡底盘
+#define CHASSIS_DART            5  //飞镖底盘
 
-//飞镖底盘硬件类型
-#define CHASSIS_DART 5
+//可用飞镖硬件类型
+#define DART_FEED 1 //飞镖供弹机构
+#define DART_TRANS 2 //飞镖传输机构
 
 
 // 可用云台硬件类型
@@ -21,6 +23,7 @@
 #define SHOOT_NONE               0  // 无发射机构
 #define SHOOT_FRIC_TRIGGER       1  // 摩擦轮+拨弹盘发射机构
 #define SHOOT_PNEUMATIC_TRIGGER  2  // 气动+拨弹盘发射机构
+#define SHOOT_DART_FRIC          3  // 飞镖发射机构
 
 // 可用机械臂硬件类型
 #define MECHANICAL_ARM_NONE              0  // 无机械臂

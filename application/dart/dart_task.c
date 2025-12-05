@@ -3,7 +3,7 @@
 #include "cmsis_os.h"
 #include "dart_chassis.h"
 #include "dart_param.h"
-
+#include "dart_shoot.h"
 #if INCLUDE_uxTaskGetStackHighWaterMark
 uint32_t dart_high_water;
 #endif
@@ -35,6 +35,7 @@ void Dart_task(void const * pvParameters)
      DartInit();
   
     while (1) {
+      //底盘部分
           // 更新状态量
           DartObserver();
           // 处理异常
@@ -47,7 +48,8 @@ void Dart_task(void const * pvParameters)
           DartConsole();
           // 发送控制量
           DartSendCmd();
-  
+    
+
           // 系统延时
           vTaskDelay(DART_CONTROL_TIME);
   
@@ -102,6 +104,48 @@ __weak void DartSendCmd(void)
   }
   
 __weak void DartConsole(void)
+  {
+      /* 
+       NOTE : 在其他文件中定义具体内容
+      */
+  }
+_weak void DartShootObserver(void)
+  {
+      /* 
+       NOTE : 在其他文件中定义具体内容
+      */
+  }
+_weak void DartShootConsole(void)
+  {
+      /* 
+       NOTE : 在其他文件中定义具体内容
+      */
+  }
+_weak void DartShootSendCmd(void)
+  {
+      /* 
+       NOTE : 在其他文件中定义具体内容
+      */
+  }
+_weak void DartShootReference(void)
+  {
+      /* 
+       NOTE : 在其他文件中定义具体内容
+      */
+  }
+__weak void DartShootConsole(void)
+  {
+      /* 
+       NOTE : 在其他文件中定义具体内容
+      */
+  }
+__weak void DartShootSendCmd(void)
+  {
+      /* 
+       NOTE : 在其他文件中定义具体内容
+      */
+  }
+_weak void DartShootHandleException(void)
   {
       /* 
        NOTE : 在其他文件中定义具体内容

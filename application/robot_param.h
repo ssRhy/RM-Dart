@@ -23,7 +23,8 @@
 #include "struct_typedef.h"
 
 //导入具体的机器人参数配置文件
-#include "robot_param_omni_infantry.h"
+//#include "robot_param_omni_infantry.h"
+#include "dart_param.h"
 
 
 // 选择机器人的各种类型
@@ -87,8 +88,6 @@
 #define CUSTOM_CONTROLLER_TYPE CUSTOM_CONTROLLER_NONE
 #endif
 
-#ifndef DART_TYPE
-#define DART_TYPE DART_NONE
-#endif
+
 
 #endif /* ROBOT_PARAM_H */

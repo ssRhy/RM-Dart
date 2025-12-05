@@ -1,6 +1,5 @@
 #include "robot_param.h"
-
-#if (DART_TYPE == DART_CHASSIS)
+#if (CHASSIS_TYPE == CHASSIS_DART)
 #ifndef DART_CHASSIS_H
 #define DART_CHASSIS_H
 
@@ -20,7 +19,7 @@
 
 typedef struct
 {
-    Motor_s motor[1];  
+    Motor_s chassis_motor[1];  
     uint32_t timer;    
     
     // PID控制器
@@ -28,15 +27,20 @@ typedef struct
     
     // 目标速度
     fp32 speed_ref;
-} Dart_s;
+} Dart_down;
 
 
-extern void DartInit(void);
-extern void DartObserver(void);
-extern void DartSetMode(void);
-extern void DartReference(void);
-extern void DartConsole(void);
-extern void DartSendCmd(void);
+extern void ChassisInit(void);
+
+extern void ChassisSetMode(void);
+
+extern void ChassisObserver(void);
+
+extern void ChassisReference(void);
+
+extern void ChassisConsole(void);
+
+extern void ChassisSendCmd(void);
 
 #endif /* DART_CHASSIS */
 #endif /* DART_CHASSIS_H */
