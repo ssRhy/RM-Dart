@@ -23,12 +23,18 @@ typedef struct
     uint32_t timer;    
     
     // PID控制器
-    pid_type_def pid;
+    pid_type_def feed_speed_pid;  // 速度PID
+    pid_type_def feed_angel_pid;  // 角度PID
     
-    // 目标速度
-    fp32 speed_ref;
+    // 反馈值
+    fp32 feed_speed_fdb;  // 速度反馈
+    fp32 feed_angel_fdb;  // 角度反馈
+    
+    // 目标值
+    fp32 feed_speed_ref;  // 速度参考
+    fp32 feed_angel_ref;  // 角度参考
 } Dart_feed;
 
 
 #endif /* DART_FEED_H */
-#endif /* DART_FEED_H */
+#endif /* DART_FEED */

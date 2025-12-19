@@ -26,7 +26,11 @@ typedef struct
     pid_type_def pid;
     
     // 目标速度
-    fp32 speed_ref;
+    fp32 trans_speed_ref;  // 速度参考
+    fp32 trans_angel_ref;  // 角度参考
+    // 反馈值
+    fp32 trans_speed_fdb;  // 速度反馈
+    fp32 trans_angel_fdb;  // 角度反馈
 } Dart_trans;
 
 

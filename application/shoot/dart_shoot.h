@@ -21,11 +21,13 @@
 typedef struct feedback
 {
     fp32 shoot_speed_fdb[6]; // 飞镖发射速度反馈
+    fp32 shoot_angel_fdb[6]; // 飞镖发射角度反馈
 } Dart_fdb;
 
 typedef struct reference
 {
     fp32 shoot_speed_ref[6]; // 飞镖发射速度参考
+    fp32 shoot_angel_ref[6]; // 飞镖发射角度参考
 } Dart_ref;
 
 typedef enum{
@@ -47,7 +49,8 @@ typedef struct
     Motor_s shoot_motor[6];  
     uint32_t timer;    
     // PID控制器
-    pid_type_def pid[6];
+    pid_type_def speed_pid[6];
+    pid_type_def angel_pid[6];
 
     Dart_fdb FDB;//反馈值feedback
 
@@ -56,12 +59,12 @@ typedef struct
     DartState_e state;
     
     DartMode_e mode;
-} Dart_up;
+} Dart_shoot;
 
 
 extern void ShootInit(void);
 extern void ShootObserver(void);
-extern void hootSetMode(void);
+extern void ShootSetMode(void);
 extern void ShootReference(void);
 extern void ShootConsole(void);
 extern void ShootSendCmd(void);

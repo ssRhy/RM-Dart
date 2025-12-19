@@ -19,19 +19,23 @@ void DartInit(void)
 void DartObserver(void)
 {
     GetMotorMeasure(&dart.trans_motor);
+    dart.trans_speed_fdb = dart.trans_motor.fdb.vel;
 
 }
 
 void DartReference(void)
 {
     // 设置目标速度
-    dart.speed_ref = DART_TRANS_SPEED;
+    dart.trans_speed_ref = DART_TRANS_SPEED;
 }
 
 void DartConsole(void)
 {
+    fp32 delta;
+    delta = theta_format(dart.trans_angel_ref - dart.trans_angel_fdb);
+    dart.trans_speed_ref = PID_calc(&dart.pid, 0, delta);
     // 使用PID计算电流输出
-    dart.trans_motor.set.curr = PID_calc(&dart.pid, dart.trans_motor.fdb.vel, dart.speed_ref);
+    dart.trans_motor.set.curr = PID_calc(&dart.pid, dart.trans_speed_fdb, dart.trans_speed_ref);
 
 }
 

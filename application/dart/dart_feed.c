@@ -12,27 +12,37 @@ void DartInit(void)
     
     // PID参数初始化
     const fp32 pid_speed[3] = {DART_FEED_SPEED_PID_KP, DART_FEED_SPEED_PID_KI, DART_FEED_SPEED_PID_KD}; // 速度环PID参数
+    const fp32 pid_angel[3] = {DART_FEED_ANGEL_PID_KP, DART_FEED_ANGEL_PID_KI, DART_FEED_ANGEL_PID_KD}; // 角度环PID参数
 
-    PID_init(&dart.pid, PID_POSITION, pid_speed, DART_FEED_PID_MAX_OUT,DART_FEED_PID_MAX_IOUT);
+    PID_init(&dart.feed_speed_pid, PID_POSITION, pid_speed, DART_FEED_SPEED_PID_MAX_OUT, DART_FEED_SPEED_PID_MAX_IOUT); // 初始化速度PID
+    PID_init(&dart.feed_angel_pid, PID_POSITION, pid_angel, DART_FEED_ANGEL_PID_MAX_OUT, DART_FEED_ANGEL_PID_MAX_IOUT); // 初始化角度PID
 }
 
 void DartObserver(void)
 {
     GetMotorMeasure(&dart.feed_motor);
-
+    
+    // 更新反馈值
+    dart.feed_speed_fdb = dart.feed_motor.fdb.vel;  // 速度反馈
+    dart.feed_angel_fdb = dart.feed_motor.fdb.vel;  // 角度反馈
 }
 
 void DartReference(void)
 {
     // 设置目标速度
-    dart.speed_ref = DART_FEED_SPEED;
+    dart.feed_speed_ref = DART_FEED_SPEED;
 }
 
 void DartConsole(void)
 {
-    // 使用PID计算电流输出
-    dart.feed_motor.set.curr = PID_calc(&dart.pid, dart.feed_motor.fdb.vel, dart.speed_ref);
-
+    fp32 delta;
+    
+    // 角度环控制
+    delta = theta_format(dart.feed_angel_ref - dart.feed_angel_fdb);
+    dart.feed_speed_ref = PID_calc(&dart.feed_angel_pid, 0, delta);
+    
+    // 速度环控制
+    dart.feed_motor.set.curr = PID_calc(&dart.feed_speed_pid, dart.feed_speed_fdb, dart.feed_speed_ref);
 }
 
 void DartSendCmd(void)
@@ -41,8 +51,5 @@ void DartSendCmd(void)
     
     dart.timer++;
 }
-
-
-
 
 #endif
