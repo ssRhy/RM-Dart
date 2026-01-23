@@ -25,7 +25,7 @@
 #define DART_SHOOT_MOTOR_TYPE DJI_M3508   // 发射飞镖电机类型
 
 #define DART_FEED_MOTOR_ID 1                 // 飞镖供弹电机ID
-#define DART_TRANS_MOTOR_ID 2               // 飞镖传送电机ID
+#define DART_TRANS_MOTOR_ID 1               // 飞镖传送电机ID
 #define DART_CHASSIS_MOTOR_ID 1            // 飞镖底盘电机ID
 
 //飞镖电机标准ID

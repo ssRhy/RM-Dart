@@ -109,43 +109,8 @@ __weak void DartConsole(void)
        NOTE : 在其他文件中定义具体内容
       */
   }
-_weak void DartShootObserver(void)
-  {
-      /* 
-       NOTE : 在其他文件中定义具体内容
-      */
-  }
-_weak void DartShootConsole(void)
-  {
-      /* 
-       NOTE : 在其他文件中定义具体内容
-      */
-  }
-_weak void DartShootSendCmd(void)
-  {
-      /* 
-       NOTE : 在其他文件中定义具体内容
-      */
-  }
-_weak void DartShootReference(void)
-  {
-      /* 
-       NOTE : 在其他文件中定义具体内容
-      */
-  }
-__weak void DartShootConsole(void)
-  {
-      /* 
-       NOTE : 在其他文件中定义具体内容
-      */
-  }
+
 __weak void DartShootSendCmd(void)
-  {
-      /* 
-       NOTE : 在其他文件中定义具体内容
-      */
-  }
-_weak void DartShootHandleException(void)
   {
       /* 
        NOTE : 在其他文件中定义具体内容
