@@ -28,8 +28,12 @@
 #include "stdbool.h"
 #include "robot_param.h"
 
+
 #define TRUE 1
 #define FALSE 0
+
+// Define the missing gyro bias for yaw axis (in radians per second)
+#define __GYRO_BIAS_YAW 0.0f
 
 /*******************************************************************************/
 /* 欧拉角解算需要用到的变量                                                      */

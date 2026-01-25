@@ -8,6 +8,7 @@
 #define CHASSIS_OMNI_WHEEL      2  // 全向轮底盘
 #define CHASSIS_STEERING_WHEEL  3  // 舵轮底盘
 #define CHASSIS_BALANCE         4  // 平衡底盘
+#define DART_CHASSIS         5  // 飞镖底盘
 
 // 可用云台硬件类型
 #define GIMBAL_NONE                0  // 无云台

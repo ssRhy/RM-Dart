@@ -1,0 +1,58 @@
+#include "dart.h"
+#if (CHASSIS_TYPE == DART_CHASSIS)
+
+#include "string.h"
+#include "motor.h"
+#include "CAN_cmd_dji.h"
+#include "CAN_receive.h"
+#include "robot_param_dart.h"
+
+
+Dart_s motor_dart;
+
+
+void DartInit(void)
+{
+    MotorInit(&motor_dart.motor[0],MOTOR_DART_CAN, DART_TRANS_MOTOR_ID, MOTOR_TRANS_TYPE,MOTOR_DART_DIRECTION, MOTOR_DART_REDUCTION, MOTOR_DART_MODE);//暂时没有使用robot_param_dart.h参数
+
+    motor_dart.timer = 0; // 计时器重置
+    
+    // PID参数初始化
+    const fp32 pid_speed[3] = {DART_SPEED_PID_KP, DART_SPEED_PID_KI, DART_SPEED_PID_KD}; // 速度环PID参数
+
+    PID_init(&motor_dart.pid[0], PID_POSITION, pid_speed, DART_PID_MAX_OUT, DART_PID_MAX_IOUT);
+}
+
+void DartObserver(void)
+{
+    GetMotorMeasure(&motor_dart.motor[0]);
+    
+}
+
+void DartSetMode(void)
+{
+   //none
+}
+
+void DartReference(void)
+{
+    // 设置目标速度
+    motor_dart.speed_ref = DART_SPEED;
+}
+
+void DartConsole(void)
+{
+    // 使用PID计算电流输出
+    motor_dart.motor[0].set.curr = PID_calc(&motor_dart.pid[0], motor_dart.motor[0].fdb.vel, motor_dart.speed_ref);
+}
+
+void DartSendCmd(void)
+{
+     CanCmdDjiMotor(MOTOR_DART_CAN, DART_TRANS_STD_ID , motor_dart.motor[0].set.curr, 0, 0, 0);
+    
+    motor_dart.timer++;
+}
+
+#endif
+
+

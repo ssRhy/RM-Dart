@@ -17,7 +17,6 @@
   */
 
 #include "shoot_task.h"
-
 #include "attribute_typedef.h"
 #include "cmsis_os.h"
 #include "shoot_fric_trigger.h"

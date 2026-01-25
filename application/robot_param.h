@@ -23,7 +23,8 @@
 #include "struct_typedef.h"
 
 //导入具体的机器人参数配置文件
-#include "robot_param_omni_infantry.h"
+// #include "robot_param_omni_infantry.h"
+#include "robot_param_dart.h"  // 使用飞镖配置
 
 // 选择机器人的各种类型
 #define __RC_TYPE RC_ET08A         // 遥控器类型
@@ -84,6 +85,14 @@
 
 #ifndef CUSTOM_CONTROLLER_TYPE
 #define CUSTOM_CONTROLLER_TYPE CUSTOM_CONTROLLER_NONE
+#endif
+
+// 可用飞镖硬件类型
+#define DART_NONE 0  // 无飞镖
+#define DART_TYPE DJI_M3508  // 飞镖电机类型
+
+#ifndef DART_TYPE
+#define DART_TYPE DART_NONE
 #endif
 
 #endif /* ROBOT_PARAM_H */

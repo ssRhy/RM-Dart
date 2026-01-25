@@ -44,6 +44,7 @@
 #include "custom_controller_task.h"
 #include "communication_task.h"
 #include "ps2_task.h"
+#include "dart_task.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -91,6 +92,10 @@ osThreadId usb_task_handle;
 
 #if (__CONTROL_LINK_PS2 == CL_PS2_DIRECT)
 osThreadId ps2_task_handle;
+#endif
+
+#if (CHASSIS_TYPE == DART_CHASSIS)
+osThreadId dartTaskHandle;
 #endif
 
 // osThreadId usb_send_task_handle;
@@ -255,6 +260,11 @@ void MX_FREERTOS_Init(void) {
 #if (__CONTROL_LINK_PS2 == CL_PS2_DIRECT)
     osThreadDef(PS2_Task, ps2_task, osPriorityNormal, 0, 128);
     ps2_task_handle = osThreadCreate(osThread(PS2_Task), NULL);
+#endif
+
+#if (CHASSIS_TYPE == DART_CHASSIS)
+    osThreadDef(dartTask, dart_task, osPriorityNormal, 0, 512);
+    dartTaskHandle = osThreadCreate(osThread(dartTask), NULL);
 #endif
 
     osThreadDef(BATTERY_VOLTAGE, battery_voltage_task, osPriorityNormal, 0, 128);
