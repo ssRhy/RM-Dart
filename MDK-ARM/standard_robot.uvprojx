@@ -3616,16 +3616,6 @@
               <FileType>1</FileType>
               <FilePath>..\application\other\voltage_task.c</FilePath>
             </File>
-            <File>
-              <FileName>dart_trans.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\application\dart\dart_trans.c</FilePath>
-            </File>
-            <File>
-              <FileName>dart_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\application\dart\dart_task.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
@@ -3730,6 +3720,31 @@
               <FileName>shoot_fric_trigger.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\application\shoot\shoot_fric_trigger.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>New Group</GroupName>
+          <Files>
+            <File>
+              <FileName>dart_feed.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\dart\dart_feed.c</FilePath>
+            </File>
+            <File>
+              <FileName>dart_task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\dart\dart_task.c</FilePath>
+            </File>
+            <File>
+              <FileName>dart_trans.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\dart\dart_trans.c</FilePath>
+            </File>
+            <File>
+              <FileName>dart_chasis.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\dart\dart_chasis.c</FilePath>
             </File>
           </Files>
         </Group>

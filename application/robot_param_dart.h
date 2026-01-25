@@ -49,6 +49,12 @@
 
 #define DART_ANGEL_PID_MAX_OUT (300.0f)
 #define DART_ANGEL_PID_MAX_IOUT (30.0f)
+//飞镖速度限制
+#define DART_SPEED (3.0f)
+//飞镖电机标准ID
+#define DART_TRANS_STD_ID (0x200)
+//飞镖电机CAN总线
+#define DART_CAN (1)
 
 //电机rpm 变化成 旋转速度的比例
 #define MOTOR_RPM_TO_SPEED          0.00290888208665721596153948461415f
@@ -58,16 +64,44 @@
 #define ECD_RANGE                   8191
 
 
-//飞镖速度限制
-#define DART_SPEED (0.8f)
-//飞镖电机标准ID
-#define DART_TRANS_STD_ID (0x200)
-//飞镖电机CAN总线
-#define DART_CAN (1)
 
 //飞镖模式切换时间(ms)
-#define CHANGE_TIME (5000)
+#define CHANGE_TIME (1500)
 //停止速度
-#define STOP_SPEED (0.0f)
+#define STOP_SPEED (0.0f) 
+
+// Feed motor PID parameters
+#define FEED_ANGEL_PID_KP (30.0f)
+#define FEED_ANGEL_PID_KI (0.05f)
+#define FEED_ANGEL_PID_KD (0.05f)
+#define FEED_ANGEL_PID_MAX_OUT (300.0f)
+#define FEED_ANGEL_PID_MAX_IOUT (30.0f)
+#define FEED_SPEED_PID_KP (120.0f)
+#define FEED_SPEED_PID_KI (1.0f)
+#define FEED_SPEED_PID_KD (1.0f)
+#define FEED_PID_MAX_OUT (10000.0f)
+#define FEED_PID_MAX_IOUT (1000.0f)
+// Feed motor CAN parameters
+#define FEED_STD_ID (0x200)
+#define FEED_CAN (1)
+
+
+// Chassis motor PID parameters
+#define CHASSIS_ANGEL_PID_KP (30.0f)
+#define CHASSIS_ANGEL_PID_KI (0.05f)
+#define CHASSIS_ANGEL_PID_KD (0.05f)
+#define CHASSIS_ANGEL_PID_MAX_OUT (300.0f)
+#define CHASSIS_ANGEL_PID_MAX_IOUT (30.0f)
+
+#define CHASSIS_SPEED_PID_KP (120.0f)
+#define CHASSIS_SPEED_PID_KI (1.0f)
+#define CHASSIS_SPEED_PID_KD (1.0f)
+#define CHASSIS_PID_MAX_OUT (10000.0f)
+#define CHASSIS_PID_MAX_IOUT (1000.0f)
+
+// Chassis motor CAN parameters
+#define CHASSIS_STD_ID (0x1FF)
+#define CHASSIS_CAN (1)
 
 #endif /* ROBOT_PARAM_DART_H */
+

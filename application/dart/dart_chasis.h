@@ -1,7 +1,7 @@
 /**
   ****************************(C) COPYRIGHT 2024 Polarbear****************************
-  * @file       dart_trans.c/h
-  * @brief      电机飞镖机构控制器。
+  * @file       dart_chasis.c/h
+  * @brief      飞镖底盘控制器。
   * @note       包括初始化，目标量更新、状态量更新、控制量计算与直接控制量的发送
   * @history
   *  Version    Date            Author          Modification
@@ -18,8 +18,9 @@
 #include "robot_param.h"
 
 #if (CHASSIS_TYPE == DART_CHASSIS)
-#ifndef DART_TRANS_H
-#define DART_TRANS_H
+#ifndef DART_CHASSIS_H
+#define DART_CHASSIS_H
+#include "struct_typedef.h"
 #include "motor.h"
 #include "pid.h"
 #include "remote_control.h"
@@ -35,39 +36,39 @@
 
 
 
-// 飞镖模式枚举
+// 底盘模式枚举
 typedef enum {
-    MOTOR_ANGEL = 0,
-    MOTOR_STOP,
-} DartMode_e;
+    CHASSIS_MOTOR_ANGEL = 0,
+    CHASSIS_MOTOR_STOP,
+} ChassisMode_e;
 
 typedef struct {
     fp32 motor_speed_fdb;       // 电机速度反馈
     fp32 motor_angle_fdb;       // 电机角度反馈
     fp32 motor_current_fdb;     // 电机电流反馈
-} DartFdb_t;
+} ChassisFdb_t;
 
 typedef struct {
     fp32 motor_speed_ref;   // 电机速度期望
     fp32 motor_angle_ref;   // 电机角度期望
     fp32 motor_current_ref; // 电机电流期望
-} DartRef_t;
+} ChassisRef_t;
 
-// Dart模块主结构体
+// 底盘模块主结构体
 typedef struct
 {
-    Motor_s dart_motor;     // 电机数组
+    Motor_s chassis_motor;     // 底盘电机
     
     /*-------------------- Values --------------------*/
-    DartRef_t motor_ref;             // 期望值
-    DartFdb_t motor_fdb;             // 反馈值
-    DartMode_e mode;                 // 当前飞镖模式
+    ChassisRef_t motor_ref;             // 期望值
+    ChassisFdb_t motor_fdb;             // 反馈值
+    ChassisMode_e mode;                 // 当前底盘模式
     /*-------------------- Controllers --------------------*/
     pid_type_def motor_speed_pid;   // 速度PID控制器
     pid_type_def motor_angle_pid;   // 角度PID控制器
     
     /*-------------------- Status --------------------*/
-    fp32 last_motor_angle;      // 上次电机角度记录
+    fp32 last_angle;      // 上次电机角度记录
 
     uint32_t time;
     uint32_t last_time;
@@ -75,14 +76,14 @@ typedef struct
 
     int16_t last_ecd; //     上一个ecd
     int16_t ecd_count;//     ecd计数
-} Dart_s;
+} Chassis_s;
 
-extern void DartTransInit(void);
-extern void DartTransSetMode(void);
-extern void DartTransObserver(void);
-extern void DartTransReference(void);
-extern void DartTransConsole(void);
-extern void DartTransSendCmd(void);
+extern void ChassisInit(void);
+extern void ChassisSetMode(void);
+extern void ChassisObserver(void);
+extern void ChassisReference(void);
+extern void ChassisConsole(void);
+extern void ChassisSendCmd(void);
 
-#endif  // DART_TRANS_H
+#endif  // DART_CHASSIS_H
 #endif  // CHASSIS_TYPE == DART_CHASSIS

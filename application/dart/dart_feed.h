@@ -18,8 +18,8 @@
 #include "robot_param.h"
 
 #if (CHASSIS_TYPE == DART_CHASSIS)
-#ifndef DART_TRANS_H
-#define DART_TRANS_H
+#ifndef DART_FEED_H
+#define DART_FEED_H
 #include "motor.h"
 #include "pid.h"
 #include "remote_control.h"
@@ -35,39 +35,39 @@
 
 
 
-// 飞镖模式枚举
+// 供弹模式枚举
 typedef enum {
-    MOTOR_ANGEL = 0,
-    MOTOR_STOP,
-} DartMode_e;
+    FEED_MOTOR_ANGEL = 0,
+    FEED_MOTOR_STOP,
+} FeedMode_e;
 
 typedef struct {
     fp32 motor_speed_fdb;       // 电机速度反馈
     fp32 motor_angle_fdb;       // 电机角度反馈
     fp32 motor_current_fdb;     // 电机电流反馈
-} DartFdb_t;
+} FeedFdb_t;
 
 typedef struct {
     fp32 motor_speed_ref;   // 电机速度期望
     fp32 motor_angle_ref;   // 电机角度期望
     fp32 motor_current_ref; // 电机电流期望
-} DartRef_t;
+} FeedRef_t;
 
-// Dart模块主结构体
+// Feed模块主结构体
 typedef struct
 {
-    Motor_s dart_motor;     // 电机数组
+    Motor_s feed_motor;     // 电机数组
     
     /*-------------------- Values --------------------*/
-    DartRef_t motor_ref;             // 期望值
-    DartFdb_t motor_fdb;             // 反馈值
-    DartMode_e mode;                 // 当前飞镖模式
+    FeedRef_t motor_ref;             // 期望值
+    FeedFdb_t motor_fdb;             // 反馈值
+    FeedMode_e mode;                 // 当前飞镖模式
     /*-------------------- Controllers --------------------*/
     pid_type_def motor_speed_pid;   // 速度PID控制器
     pid_type_def motor_angle_pid;   // 角度PID控制器
     
     /*-------------------- Status --------------------*/
-    fp32 last_motor_angle;      // 上次电机角度记录
+    fp32 last_angle;      // 上次电机角度记录
 
     uint32_t time;
     uint32_t last_time;
@@ -75,14 +75,14 @@ typedef struct
 
     int16_t last_ecd; //     上一个ecd
     int16_t ecd_count;//     ecd计数
-} Dart_s;
+} Feed_s;
 
-extern void DartTransInit(void);
-extern void DartTransSetMode(void);
-extern void DartTransObserver(void);
-extern void DartTransReference(void);
-extern void DartTransConsole(void);
-extern void DartTransSendCmd(void);
+extern void DartFeedInit(void);
+extern void DartFeedSetMode(void);
+extern void DartFeedObserver(void);
+extern void DartFeedReference(void);
+extern void DartFeedConsole(void);
+extern void DartFeedSendCmd(void);
 
-#endif  // DART_TRANS_H
+#endif  // DART_FEED_H
 #endif  // CHASSIS_TYPE == DART_CHASSIS
