@@ -23,7 +23,7 @@
     1.在usb_task.h中添加新的数据包结构体，如：
     typedef struct{
     ...; // 数据包内容
-    }__attribute__((packed)) ReceivedPacketxxx_s;
+    }ReceivedPacketxxx_s;
 
     2.在usb_task.c中定义接收数据包的header，如：
     #define EXPECTED_INPUT_xxx_HEDER 0xxxx

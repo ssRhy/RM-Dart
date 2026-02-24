@@ -667,6 +667,8 @@ static void GetCmdData(void)
 
     ROBOT_CMD_DATA.shoot.fire = RECEIVE_ROBOT_CMD_DATA.data.shoot.fire;
     ROBOT_CMD_DATA.shoot.fric_on = RECEIVE_ROBOT_CMD_DATA.data.shoot.fric_on;
+
+    ROBOT_CMD_DATA.dart.dart_on = RECEIVE_ROBOT_CMD_DATA.data.dart.dart_on;
 }
 
 static void GetVirtualRcCtrlData(void)
@@ -782,5 +784,16 @@ inline bool GetScCmdFire(void)
 inline bool GetScCmdFricOn(void)
 {
     return ROBOT_CMD_DATA.shoot.fric_on;
+}
+
+
+/**
+ * @brief 获取上位机控制指令：启动飞镖
+ * @param void
+ * @return bool 是否启动飞镖
+ */
+inline bool GetScCmdDartOn(void)
+{
+    return ROBOT_CMD_DATA.dart.dart_on;
 }
 /*------------------------------ End of File ------------------------------*/
