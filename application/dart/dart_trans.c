@@ -175,7 +175,7 @@ void DartTransConsole(void)
  */
 void DartTransSendCmd(void) 
 {
-    CanCmdDjiMotor(DART_CAN,DART_TRANS_STD_ID, dart.dart_motor.set.curr, 0, 0, 0);
+    //CanCmdDjiMotor(DART_CAN,DART_TRANS_STD_ID, dart.dart_motor.set.curr, 0, 0, 0);
     //CanCmdDjiMotor(DART_CAN,DART_TRANS_STD_ID, 0, 0, 0, 0);
 
     ModifyDebugDataPackage(1, dart.motor_ref.motor_angle_ref, "ref");

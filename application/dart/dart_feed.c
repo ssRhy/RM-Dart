@@ -176,7 +176,7 @@ void DartFeedConsole(void)
 void DartFeedSendCmd(void) 
 {
     // CanCmdDjiMotor(FEED_CAN,FEED_STD_ID, 0, feed.feed_motor.set.curr, 0, 0);
-    CanCmdDjiMotor(FEED_CAN,FEED_STD_ID, 0, 0, 0, 0);
+    //CanCmdDjiMotor(FEED_CAN,FEED_STD_ID, 0, 0, 0, 0);
 
     ModifyDebugDataPackage(1, feed.motor_ref.motor_angle_ref, "ref");
     ModifyDebugDataPackage(2, feed.motor_fdb.motor_angle_fdb, "fdb");

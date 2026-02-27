@@ -177,8 +177,8 @@ void ChassisConsole(void)
  */
 void ChassisSendCmd(void) 
 {
-    // CanCmdDjiMotor(CHASSIS_CAN,CHASSIS_STD_ID, chassis.chassis_motor.set.curr, 0, 0, 0);
-    CanCmdDjiMotor(CHASSIS_CAN,CHASSIS_STD_ID, 0, 0, 0, 0);
+    //CanCmdDjiMotor(CHASSIS_CAN,CHASSIS_STD_ID, chassis.chassis_motor.set.curr, 0, 0, 0);
+    //CanCmdDjiMotor(CHASSIS_CAN,CHASSIS_STD_ID, 0, 0, 0, 0);
 
     ModifyDebugDataPackage(1, chassis.motor_ref.motor_angle_ref, "ref");
     ModifyDebugDataPackage(2, chassis.motor_fdb.motor_angle_fdb, "fdb");
