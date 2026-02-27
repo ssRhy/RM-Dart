@@ -37,38 +37,42 @@
 
 // 飞镖模式枚举
 typedef enum {
-    SHOOT_MOTOR_ANGEL = 0,
+    SHOOT_MOTOR_FIRE,
     SHOOT_MOTOR_STOP,
 } ShootMode_e;
 
 typedef struct {
-    fp32 motor_speed_fdb;       // 电机速度反馈
-    fp32 motor_angle_fdb;       // 电机角度反馈
-    fp32 motor_current_fdb;     // 电机电流反馈
+    fp32 motor_speed_fdb_front;       // 电机速度反馈
+    fp32 motor_speed_fdb_mid;       // 电机速度反馈
+    fp32 motor_speed_fdb_rear;       // 电机速度反馈
 } ShootFdb_t;
 
 typedef struct {
-    fp32 motor_speed_ref;   // 电机速度期望
-    fp32 motor_angle_ref;   // 电机角度期望
-    fp32 motor_current_ref; // 电机电流期望
+    fp32 motor_speed_ref_front;   // 电机速度期望
+    fp32 motor_speed_ref_mid;   // 电机速度期望
+    fp32 motor_speed_ref_rear;   // 电机速度期望
 } ShootRef_t;
 
 // Dart模块主结构体
 typedef struct
 {
-    Motor_s shoot_motor_L;     // 电机数组
+    Motor_s shoot_motor_front[2];     // 电机数组
+    Motor_s shoot_motor_mid[2];
+    Motor_s shoot_motor_rear[2];
    
     
     /*-------------------- Values --------------------*/
     ShootRef_t motor_ref;             // 期望值
-    ShootFdb_t motor_fdb;             // 反馈值
+               
+    ShootFdb_t motor_fdb;            // 反馈值
     ShootMode_e mode;                 // 当前飞镖模式
     /*-------------------- Controllers --------------------*/
-    pid_type_def motor_speed_pid;   // 速度PID控制器
-    pid_type_def motor_angle_pid;   // 角度PID控制器
+    pid_type_def motor_speed_pid_front;   // 速度PID控制器
+    pid_type_def motor_speed_pid_mid;   // 速度PID控制器
+    pid_type_def motor_speed_pid_rear;   // 速度PID控制器
+    
     
     /*-------------------- Status --------------------*/
-    fp32 last_motor_angle;      // 上次电机角度记录
 
     uint32_t time;
     uint32_t last_time;

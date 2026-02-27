@@ -110,26 +110,39 @@
 
 // 射击电机 CAN 总线及标准帧 ID
 #define SHOOT_CAN           (1)
-#define SHOOT_STD_ID        (0x200)
+#define SHOOT_STD_ID_1        (0x200)
+#define SHOOT_STD_ID_2        (0x1FF)
 
 // 摩擦轮速度设定（rad/s，与 MOTOR_RPM_TO_SPEED 对应）
-#define SHOOT_READY_SPEED   (100.0f)    // 待机预热转速
-//#define SHOOT_LAUNCH_SPEED  (50.0f)    // 发射全速转速
+#define SHOOT_READY_SPEED_FRONT (100.0f)
+#define SHOOT_READY_SPEED_MID (70.0f)
+#define SHOOT_READY_SPEED_REAR (70.0f)
 
 // 发射持续时间（ms）：摩擦轮维持全速的时长
 #define SHOOT_LAUNCH_TIME   (300)
 
 // 摩擦轮速度环 PID
-#define SHOOT_SPEED_PID_KP  (150.0f)
-#define SHOOT_SPEED_PID_KI  (1.0f)
-#define SHOOT_SPEED_PID_KD  (0.0f)
-#define SHOOT_PID_MAX_OUT   (16000.0f)
-#define SHOOT_PID_MAX_IOUT  (2000.0f)
+#define SHOOT_FRONT_PID_KP  (150.0f)
+#define SHOOT_FRONT_PID_KI  (1.0f)
+#define SHOOT_FRONT_PID_KD  (0.0f)
 
-// #define SHOOT_ANGEL_PID_KP (60.0f)
-// #define SHOOT_ANGEL_PID_KI (0.05f)
-// #define SHOOT_ANGEL_PID_KD (0.05f)
-// #define SHOOT_ANGEL_PID_MAX_OUT (300.0f)
-// #define SHOOT_ANGEL_PID_MAX_IOUT (30.0f)
+#define SHOOT_MID_PID_KP  (150.0f)
+#define SHOOT_MID_PID_KI  (1.0f)
+#define SHOOT_MID_PID_KD  (0.0f)
+
+#define SHOOT_REAR_PID_KP  (150.0f)
+#define SHOOT_REAR_PID_KI  (1.0f)
+#define SHOOT_REAR_PID_KD  (0.0f)
+
+#define SHOOT_FRONT_PID_MAX_OUT (16000.0f)
+#define SHOOT_FRONT_PID_MAX_IOUT (2000.0f)
+
+#define SHOOT_MID_PID_MAX_OUT (16000.0f)
+#define SHOOT_MID_PID_MAX_IOUT (2000.0f)
+
+#define SHOOT_REAR_PID_MAX_OUT (16000.0f)
+#define SHOOT_REAR_PID_MAX_IOUT (2000.0f)
+
+
 
 #endif /* ROBOT_PARAM_DART_H */

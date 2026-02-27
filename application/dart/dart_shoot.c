@@ -35,12 +35,21 @@ static Shoot_s shoot = {
  */
 void DartShootInit(void) 
 { 
-    MotorInit(&shoot.shoot_motor_L,1, 1,DJI_M3508, 1, 1.0f, 0);
+    MotorInit(&shoot.shoot_motor_front[0],1, 1,DJI_M3508, 1, 1.0f, 0);
+    MotorInit(&shoot.shoot_motor_front[1],2, 1,DJI_M3508, 1, 1.0f, 0);
+    MotorInit(&shoot.shoot_motor_mid[0],3, 1,DJI_M3508, 1, 1.0f, 0);
+    MotorInit(&shoot.shoot_motor_mid[1],4, 1,DJI_M3508, 1, 1.0f, 0);
+    MotorInit(&shoot.shoot_motor_rear[0],5, 1,DJI_M3508, 1, 1.0f, 0);
+    MotorInit(&shoot.shoot_motor_rear[1],6, 1,DJI_M3508, 1, 1.0f, 0);
+    const fp32 pid_speed_front[3] = {SHOOT_FRONT_PID_KP, SHOOT_FRONT_PID_KI, SHOOT_FRONT_PID_KD}; 
+    const fp32 pid_speed_mid[3] = {SHOOT_MID_PID_KP, SHOOT_MID_PID_KI, SHOOT_MID_PID_KD}; 
+    const fp32 pid_speed_rear[3] = {SHOOT_REAR_PID_KP, SHOOT_REAR_PID_KI, SHOOT_REAR_PID_KD}; 
 
-    const fp32 pid_speed[3] = {SHOOT_SPEED_PID_KP, SHOOT_SPEED_PID_KI, SHOOT_SPEED_PID_KD}; 
+    PID_init(&shoot.motor_speed_pid_front, PID_POSITION, pid_speed_front, SHOOT_FRONT_PID_MAX_OUT, SHOOT_FRONT_PID_MAX_IOUT); 
+    PID_init(&shoot.motor_speed_pid_mid, PID_POSITION, pid_speed_mid, SHOOT_MID_PID_MAX_OUT, SHOOT_MID_PID_MAX_IOUT);   
+    PID_init(&shoot.motor_speed_pid_rear, PID_POSITION, pid_speed_rear, SHOOT_REAR_PID_MAX_OUT, SHOOT_REAR_PID_MAX_IOUT);   
+}  
 
-    PID_init(&shoot.motor_speed_pid, PID_POSITION, pid_speed, SHOOT_PID_MAX_OUT, SHOOT_PID_MAX_IOUT);   
-}
 
 /*-------------------- Set mode --------------------*/
 
@@ -63,9 +72,23 @@ void DartShootSetMode(void)
  */
 void DartShootObserver(void) 
 {
-    GetMotorMeasure(&shoot.shoot_motor_L);//获取电机反馈值
+    GetMotorMeasure(&shoot.shoot_motor_front[0]);//获取电机反馈值
+    GetMotorMeasure(&shoot.shoot_motor_front[1]);//获取电机反馈值
 
-    shoot.motor_fdb.motor_speed_fdb = shoot.shoot_motor_L.fdb.vel;//电机速度反馈赋值
+    GetMotorMeasure(&shoot.shoot_motor_mid[0]);//获取电机反馈值
+    GetMotorMeasure(&shoot.shoot_motor_mid[1]);//获取电机反馈值
+
+    GetMotorMeasure(&shoot.shoot_motor_rear[0]);//获取电机反馈值
+    GetMotorMeasure(&shoot.shoot_motor_rear[1]);//获取电机反馈值
+
+    
+
+    shoot.motor_fdb.motor_speed_fdb_front = shoot.shoot_motor_front[0].fdb.vel;//电机速度反馈赋值
+    shoot.motor_fdb.motor_speed_fdb_front = shoot.shoot_motor_front[1].fdb.vel;
+    shoot.motor_fdb.motor_speed_fdb_mid = shoot.shoot_motor_mid[0].fdb.vel;//电机速度反馈赋值
+    shoot.motor_fdb.motor_speed_fdb_mid = shoot.shoot_motor_mid[1].fdb.vel;
+    shoot.motor_fdb.motor_speed_fdb_rear = shoot.shoot_motor_rear[0].fdb.vel;//电机速度反馈赋值
+    shoot.motor_fdb.motor_speed_fdb_rear = shoot.shoot_motor_rear[1].fdb.vel;
 }
 
 /*-------------------- Reference --------------------*/
@@ -77,7 +100,9 @@ void DartShootObserver(void)
  */
 void DartShootReference(void) 
 {
-    shoot.motor_ref.motor_speed_ref = SHOOT_READY_SPEED;
+    shoot.motor_ref.motor_speed_ref_front = SHOOT_READY_SPEED_FRONT;
+    shoot.motor_ref.motor_speed_ref_mid = SHOOT_READY_SPEED_MID;
+    shoot.motor_ref.motor_speed_ref_rear = SHOOT_READY_SPEED_REAR;
 }
 
 /*-------------------- Console --------------------*/
@@ -89,7 +114,12 @@ void DartShootReference(void)
  */
 void DartShootConsole(void) 
 {
-    shoot.shoot_motor_L.set.curr = PID_calc(&shoot.motor_speed_pid, shoot.motor_fdb.motor_speed_fdb, shoot.motor_ref.motor_speed_ref);
+    shoot.shoot_motor_front[0].set.curr = PID_calc(&shoot.motor_speed_pid_front, shoot.motor_fdb.motor_speed_fdb_front, shoot.motor_ref.motor_speed_ref_front);
+    shoot.shoot_motor_front[1].set.curr = PID_calc(&shoot.motor_speed_pid_front, shoot.motor_fdb.motor_speed_fdb_front, shoot.motor_ref.motor_speed_ref_front);
+    shoot.shoot_motor_mid[0].set.curr = PID_calc(&shoot.motor_speed_pid_mid, shoot.motor_fdb.motor_speed_fdb_mid, shoot.motor_ref.motor_speed_ref_mid);
+    shoot.shoot_motor_mid[1].set.curr = PID_calc(&shoot.motor_speed_pid_mid, shoot.motor_fdb.motor_speed_fdb_mid, shoot.motor_ref.motor_speed_ref_mid);
+    shoot.shoot_motor_rear[0].set.curr = PID_calc(&shoot.motor_speed_pid_rear, shoot.motor_fdb.motor_speed_fdb_rear, shoot.motor_ref.motor_speed_ref_rear);
+    shoot.shoot_motor_rear[1].set.curr = PID_calc(&shoot.motor_speed_pid_rear, shoot.motor_fdb.motor_speed_fdb_rear, shoot.motor_ref.motor_speed_ref_rear);
 }
 
 /*-------------------- Send cmd --------------------*/
@@ -101,11 +131,8 @@ void DartShootConsole(void)
  */
 void DartShootSendCmd(void) 
 {
-    CanCmdDjiMotor(SHOOT_CAN,SHOOT_STD_ID, shoot.shoot_motor_L.set.curr, 0, 0, 0);
-    //CanCmdDjiMotor(DART_CAN,DART_TRANS_STD_ID, 0, 0, 0, 0);
-
-    ModifyDebugDataPackage(1, shoot.motor_ref.motor_speed_ref, "ref");
-    ModifyDebugDataPackage(2, shoot.motor_fdb.motor_speed_fdb, "fdb");
+    CanCmdDjiMotor(SHOOT_CAN,SHOOT_STD_ID_1, -shoot.shoot_motor_front[0].set.curr, shoot.shoot_motor_front[1].set.curr, -shoot.shoot_motor_mid[0].set.curr, shoot.shoot_motor_mid[1].set.curr);
+    CanCmdDjiMotor(SHOOT_CAN, SHOOT_STD_ID_2, -shoot.shoot_motor_rear[0].set.curr, shoot.shoot_motor_rear[1].set.curr, 0, 0);
 }
 
 #endif  // CHASSIS_TYPE == DART_CHASSIS
