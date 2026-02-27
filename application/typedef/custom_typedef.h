@@ -57,6 +57,11 @@ typedef struct
         bool fric_on;
     } shoot;
 
+    struct
+    {
+        bool dart_on;
+    } dart;
+
 } RobotCmdData_t;
 
 #endif  // __CUSTOM_TYPEDEF_H

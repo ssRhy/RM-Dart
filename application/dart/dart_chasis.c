@@ -39,7 +39,7 @@ static fp32 chassis_delta;
  */
 void ChassisInit(void) 
 { 
-    MotorInit(&chassis.chassis_motor,1, 1,DJI_M6020, -1, 1.0f, 0);
+    MotorInit(&chassis.chassis_motor,4, 1,DJI_M6020, -1, 1.0f, 0);
 
     const fp32 pid_angel[3] = {CHASSIS_ANGEL_PID_KP, CHASSIS_ANGEL_PID_KI, CHASSIS_ANGEL_PID_KD}; 
     const fp32 pid_speed[3] = {CHASSIS_SPEED_PID_KP, CHASSIS_SPEED_PID_KI, CHASSIS_SPEED_PID_KD}; 
@@ -177,7 +177,8 @@ void ChassisConsole(void)
  */
 void ChassisSendCmd(void) 
 {
-    CanCmdDjiMotor(CHASSIS_CAN,CHASSIS_STD_ID, chassis.chassis_motor.set.curr, 0, 0, 0);
+    // CanCmdDjiMotor(CHASSIS_CAN,CHASSIS_STD_ID, chassis.chassis_motor.set.curr, 0, 0, 0);
+    CanCmdDjiMotor(CHASSIS_CAN,CHASSIS_STD_ID, 0, 0, 0, 0);
 
     ModifyDebugDataPackage(1, chassis.motor_ref.motor_angle_ref, "ref");
     ModifyDebugDataPackage(2, chassis.motor_fdb.motor_angle_fdb, "fdb");

@@ -148,7 +148,7 @@ void DartShootConsole(void)
 void DartShootSendCmd(void)
 {
     // CanCmdDjiMotor(SHOOT_CAN, SHOOT_STD_ID,shoot.shoot_motor_L.set.curr,shoot.shoot_motor_R.set.curr,0, 0);
-    CanCmdDjiMotor(SHOOT_CAN, SHOOT_STD_ID,300,300,0, 0);
+    CanCmdDjiMotor(SHOOT_CAN, SHOOT_STD_ID,50,0,0, 0);
     // ModifyDebugDataPackage(5, shoot.REF.shoot_speed_ref_L, "shoot_l_ref");
     // ModifyDebugDataPackage(6, shoot.FDB.shoot_speed_fdb_L, "shoot_l_fdb");
     // ModifyDebugDataPackage(7, shoot.REF.shoot_speed_ref_R, "shoot_r_ref");

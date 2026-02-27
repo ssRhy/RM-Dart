@@ -37,7 +37,7 @@ static fp32 feed_delta;
  */
 void DartFeedInit(void) 
 { 
-    MotorInit(&feed.feed_motor,2, 1,DJI_M2006, -1, 1.0f, 0);
+    MotorInit(&feed.feed_motor,3, 1,DJI_M2006, -1, 1.0f, 0);
 
     const fp32 pid_angel[3] = {FEED_ANGEL_PID_KP, FEED_ANGEL_PID_KI, FEED_ANGEL_PID_KD}; 
     const fp32 pid_speed[3] = {FEED_SPEED_PID_KP, FEED_SPEED_PID_KI, FEED_SPEED_PID_KD}; 
@@ -175,7 +175,8 @@ void DartFeedConsole(void)
  */
 void DartFeedSendCmd(void) 
 {
-    CanCmdDjiMotor(FEED_CAN,FEED_STD_ID, 0, feed.feed_motor.set.curr, 0, 0);
+    // CanCmdDjiMotor(FEED_CAN,FEED_STD_ID, 0, feed.feed_motor.set.curr, 0, 0);
+    CanCmdDjiMotor(FEED_CAN,FEED_STD_ID, 0, 0, 0, 0);
 
     ModifyDebugDataPackage(1, feed.motor_ref.motor_angle_ref, "ref");
     ModifyDebugDataPackage(2, feed.motor_fdb.motor_angle_fdb, "fdb");

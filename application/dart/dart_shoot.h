@@ -15,11 +15,13 @@
   @endverbatim
   ****************************(C) COPYRIGHT 2024 Polarbear****************************
 */
+
+#ifndef DART_SHOOT_H
+#define DART_SHOOT_H
 #include "robot_param.h"
 
 #if (CHASSIS_TYPE == DART_CHASSIS)
-#ifndef DART_SHOOT_H
-#define DART_SHOOT_H
+
 #include "motor.h"
 #include "pid.h"
 #include "remote_control.h"

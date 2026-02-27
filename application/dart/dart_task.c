@@ -22,6 +22,7 @@
 #include "dart_trans.h"
 #include "dart_feed.h"
 #include "dart_chasis.h"
+#include "dart_shoot.h"
   
   #ifndef DART_TASK_INIT_TIME
   #define DART_TASK_INIT_TIME 201
@@ -90,6 +91,7 @@ __weak void DartInit(void)
     DartTransInit();
     DartFeedInit();
     ChassisInit();
+    DartShootInit();
 }
   __weak void DartHandleException(void)
   {
@@ -101,6 +103,7 @@ __weak void DartSetMode(void)
     DartTransSetMode();
     DartFeedSetMode();
     ChassisSetMode();
+    DartShootSetMode();
 }
 __weak void DartObserver(void)
 {
@@ -108,6 +111,7 @@ __weak void DartObserver(void)
     DartTransObserver();
     DartFeedObserver();
     ChassisObserver();
+    DartShootObserver();
 }
 __weak void DartReference(void)
 {
@@ -115,6 +119,7 @@ __weak void DartReference(void)
     DartTransReference();
     DartFeedReference();
     ChassisReference();
+    DartShootReference();
 }
 __weak void DartConsole(void)
 {
@@ -122,6 +127,7 @@ __weak void DartConsole(void)
     DartTransConsole();
     DartFeedConsole();
     ChassisConsole();
+    DartShootConsole();
 }
 __weak void DartSendCmd(void)
 {
@@ -129,4 +135,5 @@ __weak void DartSendCmd(void)
     DartTransSendCmd();
     DartFeedSendCmd();
     ChassisSendCmd();
+    DartShootSendCmd();
 }

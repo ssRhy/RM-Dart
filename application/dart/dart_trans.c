@@ -37,7 +37,7 @@ static fp32 trans_delta;
  */
 void DartTransInit(void) 
 { 
-    MotorInit(&dart.dart_motor,1, 1,DJI_M3508, 1, 1.0f, 0);
+    MotorInit(&dart.dart_motor,5, 1,DJI_M3508, 1, 1.0f, 0);
 
     const fp32 pid_angel[3] = {DART_ANGEL_PID_KP, DART_ANGEL_PID_KI, DART_ANGEL_PID_KD}; 
     const fp32 pid_speed[3] = {DART_SPEED_PID_KP, DART_SPEED_PID_KI, DART_SPEED_PID_KD}; 
@@ -176,6 +176,7 @@ void DartTransConsole(void)
 void DartTransSendCmd(void) 
 {
     CanCmdDjiMotor(DART_CAN,DART_TRANS_STD_ID, dart.dart_motor.set.curr, 0, 0, 0);
+    //CanCmdDjiMotor(DART_CAN,DART_TRANS_STD_ID, 0, 0, 0, 0);
 
     ModifyDebugDataPackage(1, dart.motor_ref.motor_angle_ref, "ref");
     ModifyDebugDataPackage(2, dart.motor_fdb.motor_angle_fdb, "fdb");
