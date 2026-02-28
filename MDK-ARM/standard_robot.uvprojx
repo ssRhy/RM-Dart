@@ -3727,19 +3727,9 @@
           <GroupName>New Group</GroupName>
           <Files>
             <File>
-              <FileName>dart_feed.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\application\dart\dart_feed.c</FilePath>
-            </File>
-            <File>
               <FileName>dart_task.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\application\dart\dart_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>dart_trans.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\application\dart\dart_trans.c</FilePath>
             </File>
             <File>
               <FileName>dart_chasis.c</FileName>

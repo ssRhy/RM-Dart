@@ -20,7 +20,6 @@
 #include "attribute_typedef.h"
 #include "cmsis_os.h"
 #include "dart_main.h"
-#include "dart_chasis.h"
 #include "dart_shoot.h"
   
   #ifndef DART_TASK_INIT_TIME
@@ -88,7 +87,6 @@ __weak void DartInit(void)
 {
 #if (DART_BOARD_TYPE == DART_BOARD_MAIN)
     DartMainInit();
-    ChassisInit();
 #endif
 #if (DART_BOARD_TYPE == DART_BOARD_SHOOT)
     DartShootInit();
@@ -102,7 +100,6 @@ __weak void DartSetMode(void)
 {
 #if (DART_BOARD_TYPE == DART_BOARD_MAIN)
     DartMainSetMode();
-    ChassisSetMode();
 #endif
 #if (DART_BOARD_TYPE == DART_BOARD_SHOOT)
     DartShootSetMode();
@@ -112,7 +109,6 @@ __weak void DartObserver(void)
 {
 #if (DART_BOARD_TYPE == DART_BOARD_MAIN)
     DartMainObserver();
-    ChassisObserver();
 #endif
 #if (DART_BOARD_TYPE == DART_BOARD_SHOOT)
     DartShootObserver();
@@ -122,7 +118,6 @@ __weak void DartReference(void)
 {
 #if (DART_BOARD_TYPE == DART_BOARD_MAIN)
     DartMainReference();
-    ChassisReference();
 #endif
 #if (DART_BOARD_TYPE == DART_BOARD_SHOOT)
     DartShootReference();
@@ -132,7 +127,6 @@ __weak void DartConsole(void)
 {
 #if (DART_BOARD_TYPE == DART_BOARD_MAIN)
     DartMainConsole();
-    ChassisConsole();
 #endif
 #if (DART_BOARD_TYPE == DART_BOARD_SHOOT)
     DartShootConsole();
@@ -142,7 +136,6 @@ __weak void DartSendCmd(void)
 {
 #if (DART_BOARD_TYPE == DART_BOARD_MAIN)
     DartMainSendCmd();
-    ChassisSendCmd();
 #endif
 #if (DART_BOARD_TYPE == DART_BOARD_SHOOT)
     DartShootSendCmd();

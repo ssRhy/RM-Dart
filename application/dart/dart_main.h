@@ -1,9 +1,9 @@
 /**
  ****************************(C) COPYRIGHT 2024 Polarbear****************************
  * @file       dart_main.c/h
- * @brief      飞镖主控板机构控制器（trans + feed 合并管理）
- * @note       参照 shoot_fric_trigger 模块风格，将 trans 和 feed 统一在一个结构体中，
- *             实现先 trans 到位、再 feed 动作的时序控制，并合并 CAN 帧发送。
+ * @brief      飞镖主控板机构控制器（chassis + feed + trans 合并管理）
+ * @note       参照 shoot_fric_trigger 模块风格，将三个机构统一在一个结构体中，
+ *             时序约束：chassis 到位 → feed 到位 → trans 执行
  * @history
  *  Version    Date            Author          Modification
  *  V1.0.0     2025-2-27       HY            1. 由 dart_trans + dart_feed 重构合并
@@ -30,6 +30,12 @@
 #include "arm_math.h"
 #include "cmsis_os.h"
 
+/* ==================== Chassis 模式枚举 ==================== */
+typedef enum {
+    CHASSIS_ANGEL = 0,
+    CHASSIS_STOP,
+} ChassisMode_e;
+
 /* ==================== Trans 模式枚举 ==================== */
 typedef enum {
     TRANS_ANGEL = 0,
@@ -42,49 +48,38 @@ typedef enum {
     FEED_STOP,
 } FeedMode_e;
 
-/* ==================== Trans 反馈/期望 ==================== */
+/* ==================== 通用反馈/期望结构 ==================== */
 typedef struct {
     fp32 speed_fdb;
     fp32 angle_fdb;
-} TransFdb_t;
+} MotorFdb_t;
 
 typedef struct {
     fp32 speed_ref;
     fp32 angle_ref;
-} TransRef_t;
-
-/* ==================== Feed 反馈/期望 ==================== */
-typedef struct {
-    fp32 speed_fdb;
-    fp32 angle_fdb;
-} FeedFdb_t;
-
-typedef struct {
-    fp32 speed_ref;
-    fp32 angle_ref;
-} FeedRef_t;
+} MotorRef_t;
 
 /* ==================== 主控板统一结构体 ==================== */
 typedef struct
 {
-    /* ---------- Trans 电机 ---------- */
-    Motor_s trans_motor;
-    TransRef_t trans_ref;
-    TransFdb_t trans_fdb;
-    TransMode_e trans_mode;
-    pid_type_def trans_speed_pid;
-    pid_type_def trans_angle_pid;
-    uint8_t  trans_move_flag;
-    int16_t  trans_last_ecd;
-    int16_t  trans_ecd_count;
-    uint32_t trans_time;
-    uint32_t trans_last_time;
+    /* ---------- Chassis 电机（ID1，CAN1+0x1FF，DJI_M6020） ---------- */
+    Motor_s      chassis_motor;
+    MotorRef_t   chassis_ref;
+    MotorFdb_t   chassis_fdb;
+    ChassisMode_e chassis_mode;
+    pid_type_def chassis_speed_pid;
+    pid_type_def chassis_angle_pid;
+    uint8_t  chassis_move_flag;
+    int16_t  chassis_last_ecd;
+    int16_t  chassis_ecd_count;
+    uint32_t chassis_time;
+    uint32_t chassis_last_time;
 
-    /* ---------- Feed 电机 ---------- */
-    Motor_s feed_motor;
-    FeedRef_t feed_ref;
-    FeedFdb_t feed_fdb;
-    FeedMode_e feed_mode;
+    /* ---------- Feed 电机（ID2，CAN1+0x200，DJI_M2006） ---------- */
+    Motor_s      feed_motor;
+    MotorRef_t   feed_ref;
+    MotorFdb_t   feed_fdb;
+    FeedMode_e   feed_mode;
     pid_type_def feed_speed_pid;
     pid_type_def feed_angle_pid;
     uint8_t  feed_move_flag;
@@ -92,6 +87,19 @@ typedef struct
     int16_t  feed_ecd_count;
     uint32_t feed_time;
     uint32_t feed_last_time;
+
+    /* ---------- Trans 电机（ID3，CAN1+0x200，DJI_M3508） ---------- */
+    Motor_s      trans_motor;
+    MotorRef_t   trans_ref;
+    MotorFdb_t   trans_fdb;
+    TransMode_e  trans_mode;
+    pid_type_def trans_speed_pid;
+    pid_type_def trans_angle_pid;
+    uint8_t  trans_move_flag;
+    int16_t  trans_last_ecd;
+    int16_t  trans_ecd_count;
+    uint32_t trans_time;
+    uint32_t trans_last_time;
 } DartMain_s;
 
 /* ==================== 对外接口 ==================== */

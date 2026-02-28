@@ -39,7 +39,7 @@ static fp32 chassis_delta;
  */
 void ChassisInit(void) 
 { 
-    MotorInit(&chassis.chassis_motor,4, 1,DJI_M6020, -1, 1.0f, 0);
+    MotorInit(&chassis.chassis_motor,8,1,DJI_M6020, -1, 1.0f, 0);
 
     const fp32 pid_angel[3] = {CHASSIS_ANGEL_PID_KP, CHASSIS_ANGEL_PID_KI, CHASSIS_ANGEL_PID_KD}; 
     const fp32 pid_speed[3] = {CHASSIS_SPEED_PID_KP, CHASSIS_SPEED_PID_KI, CHASSIS_SPEED_PID_KD}; 
