@@ -133,6 +133,10 @@ void DartMainSetMode(void)
     {
         DART.feed_mode = FEED_STOP;
     }
+    else if (DART.feed_step == 2)
+    {
+        DART.feed_mode = FEED_STOP;
+    }
     else if (DART.feed_move_flag == 1)
     {
         DART.feed_mode = FEED_ANGEL;
@@ -143,7 +147,8 @@ void DartMainSetMode(void)
     }
     else
     {
-        DART.feed_ref.angle_ref = DART.feed_fdb.angle_fdb + 10 * PI / 2;
+        DART.feed_ref.angle_ref = DART.feed_fdb.angle_fdb + 3 * PI;
+        DART.feed_step          = 1;
         DART.feed_move_flag     = 1;
         DART.feed_mode          = FEED_ANGEL;
     }
@@ -264,6 +269,14 @@ void DartMainReference(void)
     {
     case FEED_STOP:
         DART.feed_ref.speed_ref = STOP_SPEED;
+        if (DART.feed_step == 2 &&
+            osKernelSysTick() - DART.feed_delay_start >= 3000)
+        {
+            DART.feed_ref.angle_ref = DART.feed_fdb.angle_fdb + 3 * PI;
+            DART.feed_step          = 3;
+            DART.feed_move_flag     = 1;
+            DART.feed_mode          = FEED_ANGEL;
+        }
         break;
 
     case FEED_ANGEL:
@@ -273,8 +286,18 @@ void DartMainReference(void)
         }
         else
         {
-            DART.feed_move_flag  = 0;
-            DART.feed_done_flag  = 1;
+            if (DART.feed_step == 1)
+            {
+                DART.feed_step        = 2;
+                DART.feed_delay_start = osKernelSysTick();
+                DART.feed_mode        = FEED_STOP;
+                DART.feed_move_flag   = 1;
+            }
+            else
+            {
+                DART.feed_move_flag  = 0;
+                DART.feed_done_flag  = 1;
+            }
         }
         break;
 

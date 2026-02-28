@@ -85,6 +85,8 @@ typedef struct
     pid_type_def feed_angle_pid;
     uint8_t  feed_move_flag;
     uint8_t  feed_done_flag;
+    uint8_t  feed_step;          // 0=未开始, 1=第一段5PI, 2=延时中, 3=第二段5PI
+    uint32_t feed_delay_start;   // 第一段到位后记录延时起始 tick
     int16_t  feed_last_ecd;
     int32_t  feed_ecd_count;
     uint32_t feed_time;
