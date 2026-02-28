@@ -18,13 +18,14 @@
 
 #include "dart_trans.h"
 
-#if (CHASSIS_TYPE == DART_CHASSIS)
+#if (CHASSIS_TYPE == DART_CHASSIS) && (DART_BOARD_TYPE == DART_BOARD_MAIN)
 
 #include "robot_param.h"
 
 static Dart_s dart = {
   .move_flag = 0,
   .last_time = 0,
+  .mode = MOTOR_ANGEL,
 };
 
 static fp32 trans_delta;
@@ -37,13 +38,15 @@ static fp32 trans_delta;
  */
 void DartTransInit(void) 
 { 
-    MotorInit(&dart.dart_motor,5, 1,DJI_M3508, 1, 1.0f, 0);
+    MotorInit(&dart.dart_motor,1, 1,DJI_M3508, 1, 1.0f, 0);
 
     const fp32 pid_angel[3] = {DART_ANGEL_PID_KP, DART_ANGEL_PID_KI, DART_ANGEL_PID_KD}; 
     const fp32 pid_speed[3] = {DART_SPEED_PID_KP, DART_SPEED_PID_KI, DART_SPEED_PID_KD}; 
 
     PID_init(&dart.motor_angle_pid, PID_POSITION, pid_angel, DART_ANGEL_PID_MAX_OUT, DART_ANGEL_PID_MAX_IOUT);   
-    PID_init(&dart.motor_speed_pid, PID_POSITION, pid_speed, DART_PID_MAX_OUT, DART_PID_MAX_IOUT);   
+    PID_init(&dart.motor_speed_pid, PID_POSITION, pid_speed, DART_PID_MAX_OUT, DART_PID_MAX_IOUT);
+
+    dart.last_time = osKernelSysTick() - CHANGE_TIME - 1;
 }
 
 /*-------------------- Set mode --------------------*/
@@ -175,11 +178,11 @@ void DartTransConsole(void)
  */
 void DartTransSendCmd(void) 
 {
-    //CanCmdDjiMotor(DART_CAN,DART_TRANS_STD_ID, dart.dart_motor.set.curr, 0, 0, 0);
-    //CanCmdDjiMotor(DART_CAN,DART_TRANS_STD_ID, 0, 0, 0, 0);
+    CanCmdDjiMotor(DART_CAN,DART_TRANS_STD_ID, dart.dart_motor.set.curr, 0, 0, 0);
+    
 
     ModifyDebugDataPackage(1, dart.motor_ref.motor_angle_ref, "ref");
     ModifyDebugDataPackage(2, dart.motor_fdb.motor_angle_fdb, "fdb");
 }
 
-#endif  // CHASSIS_TYPE == DART_CHASSIS
+#endif  // CHASSIS_TYPE == DART_CHASSIS && DART_BOARD_TYPE == DART_BOARD_MAIN

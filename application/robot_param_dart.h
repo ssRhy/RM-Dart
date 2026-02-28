@@ -18,6 +18,11 @@
 #ifndef ROBOT_PARAM_DART_H
 #define ROBOT_PARAM_DART_H
 
+// 飞镖多板配置
+#define DART_BOARD_MAIN    1  // 主控板：负责拨弹(feed) + 横移(trans) + 底盘(chassis)
+#define DART_BOARD_SHOOT   2  // 射击板：负责射击摩擦轮(shoot)
+#define DART_BOARD_TYPE    DART_BOARD_MAIN  // ← 烧录前在此选择目标板
+
 // 底盘类型选择
 #define CHASSIS_TYPE DART_CHASSIS  // 选择底盘类型为飞镖
 

@@ -3751,6 +3751,11 @@
               <FileType>1</FileType>
               <FilePath>..\application\dart\dart_shoot.c</FilePath>
             </File>
+            <File>
+              <FileName>dart_main.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\dart\dart_main.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

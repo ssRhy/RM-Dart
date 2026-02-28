@@ -18,7 +18,7 @@
 
 #include "dart_shoot.h"
 
-#if (CHASSIS_TYPE == DART_CHASSIS)
+#if (CHASSIS_TYPE == DART_CHASSIS) && (DART_BOARD_TYPE == DART_BOARD_SHOOT)
 
 #include "robot_param.h"
 
@@ -135,4 +135,4 @@ void DartShootSendCmd(void)
     CanCmdDjiMotor(SHOOT_CAN, SHOOT_STD_ID_2, -shoot.shoot_motor_rear[0].set.curr, shoot.shoot_motor_rear[1].set.curr, 0, 0);
 }
 
-#endif  // CHASSIS_TYPE == DART_CHASSIS
+#endif  // CHASSIS_TYPE == DART_CHASSIS && DART_BOARD_TYPE == DART_BOARD_SHOOT

@@ -19,8 +19,7 @@
 
 #include "attribute_typedef.h"
 #include "cmsis_os.h"
-#include "dart_trans.h"
-#include "dart_feed.h"
+#include "dart_main.h"
 #include "dart_chasis.h"
 #include "dart_shoot.h"
   
@@ -87,53 +86,66 @@
   }
 __weak void DartInit(void)
 {
-    // 初始化 trans、feed、chassis
-    DartTransInit();
-    DartFeedInit();
+#if (DART_BOARD_TYPE == DART_BOARD_MAIN)
+    DartMainInit();
     ChassisInit();
+#endif
+#if (DART_BOARD_TYPE == DART_BOARD_SHOOT)
     DartShootInit();
+#endif
 }
-  __weak void DartHandleException(void)
-  {
-      // 空函数，由具体实现文件重写
-  }
+__weak void DartHandleException(void)
+{
+    // 空函数，由具体实现文件重写
+}
 __weak void DartSetMode(void)
 {
-    // 执行 trans、feed、chassis 模式设置
-    DartTransSetMode();
-    DartFeedSetMode();
+#if (DART_BOARD_TYPE == DART_BOARD_MAIN)
+    DartMainSetMode();
     ChassisSetMode();
+#endif
+#if (DART_BOARD_TYPE == DART_BOARD_SHOOT)
     DartShootSetMode();
+#endif
 }
 __weak void DartObserver(void)
 {
-    // 执行 trans、feed、chassis 状态观测
-    DartTransObserver();
-    DartFeedObserver();
+#if (DART_BOARD_TYPE == DART_BOARD_MAIN)
+    DartMainObserver();
     ChassisObserver();
+#endif
+#if (DART_BOARD_TYPE == DART_BOARD_SHOOT)
     DartShootObserver();
+#endif
 }
 __weak void DartReference(void)
 {
-    // 执行 trans、feed、chassis 目标设置
-    DartTransReference();
-    DartFeedReference();
+#if (DART_BOARD_TYPE == DART_BOARD_MAIN)
+    DartMainReference();
     ChassisReference();
+#endif
+#if (DART_BOARD_TYPE == DART_BOARD_SHOOT)
     DartShootReference();
+#endif
 }
 __weak void DartConsole(void)
 {
-    // 执行 trans、feed、chassis 控制计算
-    DartTransConsole();
-    DartFeedConsole();
+#if (DART_BOARD_TYPE == DART_BOARD_MAIN)
+    DartMainConsole();
     ChassisConsole();
+#endif
+#if (DART_BOARD_TYPE == DART_BOARD_SHOOT)
     DartShootConsole();
+#endif
 }
 __weak void DartSendCmd(void)
 {
-    // 执行 trans、feed、chassis 命令发送
-    DartTransSendCmd();
-    DartFeedSendCmd();
+#if (DART_BOARD_TYPE == DART_BOARD_MAIN)
+    DartMainSendCmd();
     ChassisSendCmd();
+#endif
+#if (DART_BOARD_TYPE == DART_BOARD_SHOOT)
     DartShootSendCmd();
+#endif
 }
+
