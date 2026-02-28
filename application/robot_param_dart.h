@@ -58,6 +58,7 @@
 #define DART_SPEED (3.0f)
 //飞镖电机标准ID
 #define DART_TRANS_STD_ID (0x200)
+#define TRANS_DIRECTION (1)
 //飞镖电机CAN总线
 #define DART_CAN (1)
 
@@ -91,6 +92,7 @@
 // Feed motor CAN parameters
 #define FEED_STD_ID (0x200)
 #define FEED_CAN (1)
+#define FEED_DIRECTION (-1)
 
 
 // Chassis motor PID parameters
@@ -109,6 +111,10 @@
 // Chassis motor CAN parameters
 #define CHASSIS_STD_ID (0x1FF)
 #define CHASSIS_CAN (1)
+#define CHASSIS_DIRECTION (1)
+
+
+
 
 // ===================== 射击机构参数 =====================
 // 摩擦轮电机 ID（CAN 报文位置）

@@ -3732,11 +3732,6 @@
               <FilePath>..\application\dart\dart_task.c</FilePath>
             </File>
             <File>
-              <FileName>dart_chasis.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\application\dart\dart_chasis.c</FilePath>
-            </File>
-            <File>
               <FileName>dart_shoot.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\application\dart\dart_shoot.c</FilePath>
