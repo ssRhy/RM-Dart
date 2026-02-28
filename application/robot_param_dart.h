@@ -73,7 +73,9 @@
 //飞镖模式切换时间(ms)
 #define CHANGE_TIME (1500)
 //停止速度
-#define STOP_SPEED (0.0f) 
+#define STOP_SPEED (0.0f)
+//到位判断阈值(rad)
+#define ARRIVE_THRESHOLD (0.05f)
 
 // Feed motor PID parameters
 #define FEED_ANGEL_PID_KP (30.0f)

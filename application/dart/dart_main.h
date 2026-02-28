@@ -70,6 +70,7 @@ typedef struct
     pid_type_def chassis_speed_pid;
     pid_type_def chassis_angle_pid;
     uint8_t  chassis_move_flag;
+    uint8_t  chassis_done_flag;
     int16_t  chassis_last_ecd;
     int16_t  chassis_ecd_count;
     uint32_t chassis_time;
@@ -83,6 +84,7 @@ typedef struct
     pid_type_def feed_speed_pid;
     pid_type_def feed_angle_pid;
     uint8_t  feed_move_flag;
+    uint8_t  feed_done_flag;
     int16_t  feed_last_ecd;
     int16_t  feed_ecd_count;
     uint32_t feed_time;
@@ -96,6 +98,7 @@ typedef struct
     pid_type_def trans_speed_pid;
     pid_type_def trans_angle_pid;
     uint8_t  trans_move_flag;
+    uint8_t  trans_done_flag;
     int16_t  trans_last_ecd;
     int16_t  trans_ecd_count;
     uint32_t trans_time;

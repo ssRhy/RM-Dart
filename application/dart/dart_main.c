@@ -29,13 +29,16 @@
 #include "robot_param.h"
 
 static DartMain_s DART = {
-    .chassis_move_flag = 0,
+    .chassis_move_flag = 1,
+    .chassis_done_flag = 0,
     .chassis_last_time = 0,
     .chassis_mode      = CHASSIS_ANGEL,
     .feed_move_flag    = 0,
+    .feed_done_flag    = 0,
     .feed_last_time    = 0,
     .feed_mode         = FEED_STOP,
     .trans_move_flag   = 0,
+    .trans_done_flag   = 0,
     .trans_last_time   = 0,
     .trans_mode        = TRANS_STOP,
 };
@@ -54,7 +57,7 @@ static fp32 trans_delta;
 void DartMainInit(void)
 {
     /* ----- Chassis（ID1，M6020） ----- */
-    MotorInit(&DART.chassis_motor, 4, 1, DJI_M6020, 1, 1.0f, 0);
+    MotorInit(&DART.chassis_motor, 1, 1, DJI_M6020, 1, 1.0f, 0);
 
     const fp32 pid_chassis_angle[3] = {CHASSIS_ANGEL_PID_KP, CHASSIS_ANGEL_PID_KI, CHASSIS_ANGEL_PID_KD};
     const fp32 pid_chassis_speed[3] = {CHASSIS_SPEED_PID_KP, CHASSIS_SPEED_PID_KI, CHASSIS_SPEED_PID_KD};
@@ -101,18 +104,23 @@ void DartMainInit(void)
 void DartMainSetMode(void)
 {
     /* ===== 第1层：Chassis 模式（始终运行，无前置条件） ===== */
-    if (DART.chassis_move_flag == 0 && (DART.chassis_time - DART.chassis_last_time) >= CHANGE_TIME)
+    if (DART.chassis_done_flag)
     {
-        DART.chassis_mode      = CHASSIS_ANGEL;
-        DART.chassis_last_time = DART.chassis_time;
+        DART.chassis_mode = CHASSIS_STOP;
     }
     else if (DART.chassis_move_flag == 1)
     {
+        /* 首次进入：设置目标角度（基于当前反馈 + 增量） */
+        if (DART.chassis_ref.angle_ref == 0.0f)
+        {
+            DART.chassis_ref.angle_ref = theta_format(DART.chassis_fdb.angle_fdb + PI / 3);
+        }
         DART.chassis_mode = CHASSIS_ANGEL;
     }
     else
     {
-        DART.chassis_mode = CHASSIS_STOP;
+        DART.chassis_done_flag = 1;
+        DART.chassis_mode      = CHASSIS_STOP;
     }
 
     /* ===== 第2层：Feed 模式（chassis 到位才允许） ===== */
@@ -123,18 +131,23 @@ void DartMainSetMode(void)
         return;
     }
 
-    if (DART.feed_move_flag == 0 && (DART.feed_time - DART.feed_last_time) >= CHANGE_TIME)
+    if (DART.feed_done_flag)
     {
-        DART.feed_mode      = FEED_ANGEL;
-        DART.feed_last_time = DART.feed_time;
+        DART.feed_mode = FEED_STOP;
     }
     else if (DART.feed_move_flag == 1)
     {
         DART.feed_mode = FEED_ANGEL;
     }
-    else
+    else if (!DART.chassis_done_flag)
     {
         DART.feed_mode = FEED_STOP;
+    }
+    else
+    {
+        DART.feed_ref.angle_ref = theta_format(DART.feed_fdb.angle_fdb + PI / 3);
+        DART.feed_move_flag     = 1;
+        DART.feed_mode          = FEED_ANGEL;
     }
 
     /* ===== 第3层：Trans 模式（feed 到位才允许） ===== */
@@ -144,18 +157,23 @@ void DartMainSetMode(void)
         return;
     }
 
-    if (DART.trans_move_flag == 0 && (DART.trans_time - DART.trans_last_time) >= CHANGE_TIME)
+    if (DART.trans_done_flag)
     {
-        DART.trans_mode      = TRANS_ANGEL;
-        DART.trans_last_time = DART.trans_time;
+        DART.trans_mode = TRANS_STOP;
     }
     else if (DART.trans_move_flag == 1)
     {
         DART.trans_mode = TRANS_ANGEL;
     }
-    else
+    else if (!DART.feed_done_flag)
     {
         DART.trans_mode = TRANS_STOP;
+    }
+    else
+    {
+        DART.trans_ref.angle_ref = theta_format(DART.trans_fdb.angle_fdb + PI / 2);
+        DART.trans_move_flag     = 1;
+        DART.trans_mode          = TRANS_ANGEL;
     }
 }
 
@@ -243,11 +261,7 @@ void DartMainReference(void)
         break;
 
     case CHASSIS_ANGEL:
-        if (DART.chassis_move_flag == 0)
-        {
-            DART.chassis_ref.angle_ref = theta_format(DART.chassis_fdb.angle_fdb + PI / 3);
-        }
-        if (theta_format(DART.chassis_ref.angle_ref - DART.chassis_fdb.angle_fdb) > 0.001f)
+        if (theta_format(DART.chassis_ref.angle_ref - DART.chassis_fdb.angle_fdb) > ARRIVE_THRESHOLD)
             DART.chassis_move_flag = 1;
         else
             DART.chassis_move_flag = 0;
@@ -265,14 +279,15 @@ void DartMainReference(void)
         break;
 
     case FEED_ANGEL:
-        if (DART.feed_move_flag == 0)
+        if (theta_format(DART.feed_ref.angle_ref - DART.feed_fdb.angle_fdb) > ARRIVE_THRESHOLD)
         {
-            DART.feed_ref.angle_ref = theta_format(DART.feed_fdb.angle_fdb + PI / 3);
-        }
-        if (theta_format(DART.feed_ref.angle_ref - DART.feed_fdb.angle_fdb) > 0.001f)
             DART.feed_move_flag = 1;
+        }
         else
-            DART.feed_move_flag = 0;
+        {
+            DART.feed_move_flag  = 0;
+            DART.feed_done_flag  = 1;
+        }
         break;
 
     default:
@@ -287,14 +302,15 @@ void DartMainReference(void)
         break;
 
     case TRANS_ANGEL:
-        if (DART.trans_move_flag == 0)
+        if (theta_format(DART.trans_ref.angle_ref - DART.trans_fdb.angle_fdb) > ARRIVE_THRESHOLD)
         {
-            DART.trans_ref.angle_ref = theta_format(DART.trans_fdb.angle_fdb + PI / 2);
-        }
-        if (theta_format(DART.trans_ref.angle_ref - DART.trans_fdb.angle_fdb) > 0.001f)
             DART.trans_move_flag = 1;
+        }
         else
+        {
             DART.trans_move_flag = 0;
+            DART.trans_done_flag = 1;
+        }
         break;
 
     default:
@@ -371,7 +387,7 @@ void DartMainSendCmd(void)
     CanCmdDjiMotor(CHASSIS_CAN,CHASSIS_STD_ID,DART.chassis_motor.set.curr,0,0,0); 
 
     /* trans + feed 合并帧（0x200，ID2 + ID3 槽位） */
-    // CanCmdDjiMotor(DART_CAN, DART_TRANS_STD_ID,0,DART.feed_motor.set.curr, DART.trans_motor.set.curr, 0);
+    CanCmdDjiMotor(DART_CAN, DART_TRANS_STD_ID,0,DART.feed_motor.set.curr, DART.trans_motor.set.curr, 0);
 
     ModifyDebugDataPackage(1, DART.chassis_ref.angle_ref, "chas_ref");
     ModifyDebugDataPackage(2, DART.chassis_fdb.angle_fdb, "chas_fdb");
