@@ -47,6 +47,8 @@ static fp32 chassis_delta;
 static fp32 feed_delta;
 static fp32 trans_delta;
 
+#define FEED_DELTA_MAX  2.0f
+
 /*-------------------- Init --------------------*/
 
 /**
@@ -141,7 +143,7 @@ void DartMainSetMode(void)
     }
     else
     {
-        DART.feed_ref.angle_ref = theta_format(DART.feed_fdb.angle_fdb + PI / 3);
+        DART.feed_ref.angle_ref = DART.feed_fdb.angle_fdb + 10 * PI / 2;
         DART.feed_move_flag     = 1;
         DART.feed_mode          = FEED_ANGEL;
     }
@@ -167,7 +169,7 @@ void DartMainSetMode(void)
     }
     else
     {
-        DART.trans_ref.angle_ref = theta_format(DART.trans_fdb.angle_fdb + PI / 2);
+        DART.trans_ref.angle_ref = DART.trans_fdb.angle_fdb + 10 * PI / 2;
         DART.trans_move_flag     = 1;
         DART.trans_mode          = TRANS_ANGEL;
     }
@@ -209,11 +211,6 @@ void DartMainObserver(void)
     else if (DART.feed_motor.fdb.ecd - DART.feed_last_ecd < -HALF_ECD_RANGE)
         DART.feed_ecd_count++;
 
-    if (DART.feed_ecd_count == FULL_COUNT)
-        DART.feed_ecd_count = -(FULL_COUNT - 1);
-    else if (DART.feed_ecd_count == -FULL_COUNT)
-        DART.feed_ecd_count = FULL_COUNT - 1;
-
     DART.feed_fdb.angle_fdb = (DART.feed_ecd_count * ECD_RANGE + DART.feed_motor.fdb.ecd) * MOTOR_ECD_TO_ANGLE * DART.feed_motor.direction;
     DART.feed_last_ecd      = DART.feed_motor.fdb.ecd;
     DART.feed_time          = osKernelSysTick();
@@ -226,11 +223,6 @@ void DartMainObserver(void)
         DART.trans_ecd_count--;
     else if (DART.trans_motor.fdb.ecd - DART.trans_last_ecd < -HALF_ECD_RANGE)
         DART.trans_ecd_count++;
-
-    if (DART.trans_ecd_count == FULL_COUNT)
-        DART.trans_ecd_count = -(FULL_COUNT - 1);
-    else if (DART.trans_ecd_count == -FULL_COUNT)
-        DART.trans_ecd_count = FULL_COUNT - 1;
 
     DART.trans_fdb.angle_fdb = (DART.trans_ecd_count * ECD_RANGE + DART.trans_motor.fdb.ecd) * MOTOR_ECD_TO_ANGLE * DART.trans_motor.direction;
     DART.trans_last_ecd      = DART.trans_motor.fdb.ecd;
@@ -275,7 +267,7 @@ void DartMainReference(void)
         break;
 
     case FEED_ANGEL:
-        if (fabsf(theta_format(DART.feed_ref.angle_ref - DART.feed_fdb.angle_fdb)) > ARRIVE_THRESHOLD)
+        if (fabsf(DART.feed_ref.angle_ref - DART.feed_fdb.angle_fdb) > ARRIVE_THRESHOLD)
         {
             DART.feed_move_flag = 1;
         }
@@ -298,7 +290,7 @@ void DartMainReference(void)
         break;
 
     case TRANS_ANGEL:
-        if (fabsf(theta_format(DART.trans_ref.angle_ref - DART.trans_fdb.angle_fdb)) > ARRIVE_THRESHOLD)
+        if (fabsf(DART.trans_ref.angle_ref - DART.trans_fdb.angle_fdb) > ARRIVE_THRESHOLD)
         {
             DART.trans_move_flag = 1;
         }
@@ -343,7 +335,11 @@ void DartMainConsole(void)
     }
     else if (DART.feed_mode == FEED_ANGEL)
     {
-        feed_delta               = theta_format(DART.feed_ref.angle_ref - DART.feed_fdb.angle_fdb);
+        feed_delta               = DART.feed_ref.angle_ref - DART.feed_fdb.angle_fdb;
+        if (feed_delta > FEED_DELTA_MAX)
+            feed_delta = FEED_DELTA_MAX;
+        else if (feed_delta < -FEED_DELTA_MAX)
+            feed_delta = -FEED_DELTA_MAX;
         DART.feed_ref.speed_ref  = PID_calc(&DART.feed_angle_pid, 0, feed_delta);
         DART.feed_motor.set.curr = PID_calc(&DART.feed_speed_pid,DART.feed_fdb.speed_fdb,DART.feed_ref.speed_ref);
     }
@@ -356,7 +352,11 @@ void DartMainConsole(void)
     }
     else if (DART.trans_mode == TRANS_ANGEL)
     {
-        trans_delta               = theta_format(DART.trans_ref.angle_ref - DART.trans_fdb.angle_fdb);
+        trans_delta               = DART.trans_ref.angle_ref - DART.trans_fdb.angle_fdb;
+        if (trans_delta > FEED_DELTA_MAX)
+            trans_delta = FEED_DELTA_MAX;
+        else if (trans_delta < -FEED_DELTA_MAX)
+            trans_delta = -FEED_DELTA_MAX;
         DART.trans_ref.speed_ref  = PID_calc(&DART.trans_angle_pid, 0, trans_delta);
         DART.trans_motor.set.curr = PID_calc(&DART.trans_speed_pid,DART.trans_fdb.speed_fdb,DART.trans_ref.speed_ref);
     }
@@ -377,7 +377,7 @@ void DartMainSendCmd(void)
 {
 
     CanCmdDjiMotor(CHASSIS_CAN,CHASSIS_STD_ID,DART.chassis_motor.set.curr,0,0,0); 
-    CanCmdDjiMotor(DART_CAN, DART_TRANS_STD_ID,0,DART.feed_motor.set.curr, DART.trans_motor.set.curr, 0);
+    CanCmdDjiMotor(DART_CAN,DART_TRANS_STD_ID,0,DART.feed_motor.set.curr, DART.trans_motor.set.curr, 0);
 
     ModifyDebugDataPackage(1, DART.chassis_ref.angle_ref, "chas_ref");
     ModifyDebugDataPackage(2, DART.chassis_fdb.angle_fdb, "chas_fdb");

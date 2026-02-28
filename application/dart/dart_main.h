@@ -86,7 +86,7 @@ typedef struct
     uint8_t  feed_move_flag;
     uint8_t  feed_done_flag;
     int16_t  feed_last_ecd;
-    int16_t  feed_ecd_count;
+    int32_t  feed_ecd_count;
     uint32_t feed_time;
     uint32_t feed_last_time;
 
