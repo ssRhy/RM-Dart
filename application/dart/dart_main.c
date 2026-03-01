@@ -23,13 +23,13 @@
 */
 
 #include "dart_main.h"
+#include "robot_param.h"
 
 #if (CHASSIS_TYPE == DART_CHASSIS) && (DART_BOARD_TYPE == DART_BOARD_MAIN)
 
-#include "robot_param.h"
 
 static DartMain_s DART = {
-    .chassis_move_flag = 1,
+    .chassis_move_flag = 0,
     .chassis_done_flag = 0,
     .chassis_last_time = 0,
     .chassis_mode      = CHASSIS_ANGEL,
@@ -99,8 +99,33 @@ void DartMainInit(void)
  * @param[in]      none
  * @retval         none
  */
+
 void DartMainSetMode(void)
 {
+    static bool last_dart_on = false;
+    bool dart_on = GetScCmdDartOn();
+
+    if (dart_on) {
+        DART.chassis_mode = CHASSIS_STOP;
+        DART.feed_mode    = FEED_STOP;
+        DART.trans_mode   = TRANS_STOP;
+        last_dart_on = false;
+        return;
+    }
+
+    if (!last_dart_on && !dart_on) {
+        DART.chassis_move_flag     = 1;
+        DART.chassis_done_flag     = 0;
+        DART.chassis_ref.angle_ref = 0.0f;
+        DART.feed_move_flag        = 0;
+        DART.feed_done_flag        = 0;
+        DART.feed_step             = 0;
+        DART.trans_move_flag       = 0;
+        DART.trans_done_flag       = 0;
+    }
+    last_dart_on = !dart_on;//真正上位机的时候这个给逻辑要改
+    
+
     /* ===== 第1层：Chassis 模式（始终运行，无前置条件） ===== */
     if (DART.chassis_done_flag)
     {
@@ -133,7 +158,7 @@ void DartMainSetMode(void)
     {
         DART.feed_mode = FEED_STOP;
     }
-    else if (DART.feed_step == 2)
+    else if (DART.feed_step == 2 || DART.feed_step == 4)
     {
         DART.feed_mode = FEED_STOP;
     }
@@ -147,7 +172,7 @@ void DartMainSetMode(void)
     }
     else
     {
-        DART.feed_ref.angle_ref = DART.feed_fdb.angle_fdb + 3 * PI;
+        DART.feed_ref.angle_ref = DART.feed_fdb.angle_fdb + 11 * PI/2;
         DART.feed_step          = 1;
         DART.feed_move_flag     = 1;
         DART.feed_mode          = FEED_ANGEL;
@@ -174,7 +199,7 @@ void DartMainSetMode(void)
     }
     else
     {
-        DART.trans_ref.angle_ref = DART.trans_fdb.angle_fdb + 10 * PI / 2;
+        DART.trans_ref.angle_ref = DART.trans_fdb.angle_fdb + 20 * PI ;
         DART.trans_move_flag     = 1;
         DART.trans_mode          = TRANS_ANGEL;
     }
@@ -272,8 +297,16 @@ void DartMainReference(void)
         if (DART.feed_step == 2 &&
             osKernelSysTick() - DART.feed_delay_start >= 3000)
         {
-            DART.feed_ref.angle_ref = DART.feed_fdb.angle_fdb + 3 * PI;
+            DART.feed_ref.angle_ref = DART.feed_fdb.angle_fdb + 9 * PI/2;
             DART.feed_step          = 3;
+            DART.feed_move_flag     = 1;
+            DART.feed_mode          = FEED_ANGEL;
+        }
+        else if (DART.feed_step == 4 &&
+                 osKernelSysTick() - DART.feed_delay_start >= 3000)
+        {
+            DART.feed_ref.angle_ref = DART.feed_fdb.angle_fdb - 10 * PI;
+            DART.feed_step          = 5;
             DART.feed_move_flag     = 1;
             DART.feed_mode          = FEED_ANGEL;
         }
@@ -289,6 +322,13 @@ void DartMainReference(void)
             if (DART.feed_step == 1)
             {
                 DART.feed_step        = 2;
+                DART.feed_delay_start = osKernelSysTick();
+                DART.feed_mode        = FEED_STOP;
+                DART.feed_move_flag   = 1;
+            }
+            else if (DART.feed_step == 3)
+            {
+                DART.feed_step        = 4;
                 DART.feed_delay_start = osKernelSysTick();
                 DART.feed_mode        = FEED_STOP;
                 DART.feed_move_flag   = 1;

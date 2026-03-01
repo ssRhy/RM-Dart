@@ -21,6 +21,7 @@
 #ifndef DART_MAIN_H
 #define DART_MAIN_H
 
+#include "supervisory_computer_cmd.h"
 #include "motor.h"
 #include "pid.h"
 #include "CAN_communication.h"
