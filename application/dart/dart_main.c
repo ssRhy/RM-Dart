@@ -451,7 +451,7 @@ void DartMainSendCmd(void)
     ModifyDebugDataPackage(2, DART.chassis_fdb.angle_fdb, "chas_fdb");
     ModifyDebugDataPackage(3, DART.feed_ref.angle_ref,    "feed_ref");
     ModifyDebugDataPackage(4, DART.feed_fdb.angle_fdb,    "feed_fdb");
-=    ModifyDebugDataPackage(5, DART.trans_ref.angle_ref,   "trans_ref");
+    ModifyDebugDataPackage(5, DART.trans_ref.angle_ref,   "trans_ref");
     ModifyDebugDataPackage(6, DART.trans_fdb.angle_fdb,   "trans_fdb");
 }
 

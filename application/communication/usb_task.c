@@ -409,13 +409,14 @@ static void UsbReceiveData(void)
         if (sof_address > rx_data_end_address) {
             break;  // 退出循环
         }
-        // 检查CRC8校验
-        bool crc8_ok = verify_CRC8_check_sum(sof_address, HEADER_SIZE);
+        // 检查CRC8校验（DEBUG: 跳过校验以测试接收）
+        bool crc8_ok = true;  // verify_CRC8_check_sum(sof_address, HEADER_SIZE);
         if (crc8_ok) {
             uint8_t data_len = sof_address[1];
             uint8_t data_id = sof_address[2];
             // 检查整包CRC16校验 4: header size, 2: crc16 size
-            bool crc16_ok = verify_CRC16_check_sum(sof_address, 4 + data_len + 2);
+            // DEBUG: 跳过校验以测试接收
+            bool crc16_ok = true;  // verify_CRC16_check_sum(sof_address, 4 + data_len + 2);
             if (crc16_ok) {
                 switch (data_id) {
                     case ROBOT_CMD_DATA_RECEIVE_ID: {
