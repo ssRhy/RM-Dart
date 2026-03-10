@@ -24,6 +24,7 @@
 
 #include "dart_main.h"
 #include "robot_param.h"
+#include "usb_task.h"
 
 #if (CHASSIS_TYPE == DART_CHASSIS) && (DART_BOARD_TYPE == DART_BOARD_MAIN)
 
@@ -103,7 +104,11 @@ void DartMainInit(void)
 void DartMainSetMode(void)
 {
     static bool last_dart_on = false;
-    bool dart_on = GetScCmdDartOn();
+    /* GetScCmdDartOn() 返回 dart.dart_on = target_status（0=丢失 1=识别到）
+     * dart_on=true  → if块直接 STOP return
+     * dart_on=false → 跳过if，继续执行发射序列
+     * 因此需取反：识别到目标(1) → dart_on=false → 发射；丢失(0) → dart_on=true → 停止 */
+    bool dart_on = !GetScCmdDartOn();
 
     if (dart_on) {
         DART.chassis_mode = CHASSIS_STOP;
@@ -446,7 +451,7 @@ void DartMainSendCmd(void)
     ModifyDebugDataPackage(2, DART.chassis_fdb.angle_fdb, "chas_fdb");
     ModifyDebugDataPackage(3, DART.feed_ref.angle_ref,    "feed_ref");
     ModifyDebugDataPackage(4, DART.feed_fdb.angle_fdb,    "feed_fdb");
-    ModifyDebugDataPackage(5, DART.trans_ref.angle_ref,   "trans_ref");
+=    ModifyDebugDataPackage(5, DART.trans_ref.angle_ref,   "trans_ref");
     ModifyDebugDataPackage(6, DART.trans_fdb.angle_fdb,   "trans_fdb");
 }
 

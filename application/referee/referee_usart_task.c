@@ -25,6 +25,7 @@
 #include "fifo.h"
 #include "protocol.h"
 #include "referee.h"
+#include "robot_param.h"
 
 
 
@@ -64,7 +65,10 @@ void referee_usart_task(void const * argument)
 {
     init_referee_struct_data();
     fifo_s_init(&referee_fifo, referee_fifo_buf, REFEREE_FIFO_BUF_LENGTH);
+#if (CHASSIS_TYPE != DART_CHASSIS)
+    /* 飞镖板 USART6 由 vision_uart.c 独占，裁判系统不初始化该串口 */
     usart6_init(usart6_buf[0], usart6_buf[1], USART_RX_BUF_LENGHT);
+#endif
 
     while(1)
     {
@@ -183,6 +187,8 @@ void referee_unpack_fifo_data(void)
 }
 
 
+#if (CHASSIS_TYPE != DART_CHASSIS)
+/* 飞镖板的 USART6_IRQHandler 由 vision_uart.c 定义 */
 void USART6_IRQHandler(void)
 {
     static volatile uint8_t res;
@@ -214,5 +220,6 @@ void USART6_IRQHandler(void)
         }
     }
 }
+#endif  /* CHASSIS_TYPE != DART_CHASSIS */
 
 
