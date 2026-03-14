@@ -21,7 +21,7 @@
 // 飞镖多板配置
 #define DART_BOARD_MAIN    1  // 主控板：负责拨弹(feed) + 横移(trans) + 底盘(chassis)
 #define DART_BOARD_SHOOT   2  // 射击板：负责射击摩擦轮(shoot)
-#define DART_BOARD_TYPE    DART_BOARD_MAIN  // ← 烧录前在此选择目标板
+#define DART_BOARD_TYPE    DART_BOARD_SHOOT  // ← 烧录前在此选择目标板
 
 // 底盘类型选择
 #define CHASSIS_TYPE DART_CHASSIS  // 选择底盘类型为飞镖
@@ -58,7 +58,7 @@
 #define DART_SPEED (3.0f)
 //飞镖电机标准ID
 #define DART_TRANS_STD_ID (0x200)
-#define TRANS_DIRECTION (1)
+#define TRANS_DIRECTION (-1)
 //飞镖电机CAN总线
 #define DART_CAN (1)
 
@@ -127,9 +127,9 @@
 #define SHOOT_STD_ID_2        (0x1FF)
 
 // 摩擦轮速度设定（rad/s，与 MOTOR_RPM_TO_SPEED 对应）
-#define SHOOT_READY_SPEED_FRONT (100.0f)
-#define SHOOT_READY_SPEED_MID (70.0f)
-#define SHOOT_READY_SPEED_REAR (70.0f)
+#define SHOOT_READY_SPEED_FRONT (300.0f)
+#define SHOOT_READY_SPEED_MID (300.0f)
+#define SHOOT_READY_SPEED_REAR (600.0f)
 
 // 发射持续时间（ms）：摩擦轮维持全速的时长
 #define SHOOT_LAUNCH_TIME   (300)

@@ -25,6 +25,7 @@
 #include "dart_main.h"
 #include "robot_param.h"
 #include "usb_task.h"
+#include "bsp_buzzer.h"
 
 #if (CHASSIS_TYPE == DART_CHASSIS) && (DART_BOARD_TYPE == DART_BOARD_MAIN)
 
@@ -103,12 +104,32 @@ void DartMainInit(void)
 
 void DartMainSetMode(void)
 {
+    // static bool last_dart_on = false;
+    // bool dart_on = GetScCmdDartOn();
+
+    // if (!dart_on) {
+    //     DART.chassis_mode = CHASSIS_STOP;
+    //     DART.feed_mode    = FEED_STOP;
+    //     DART.trans_mode   = TRANS_STOP;
+    //     last_dart_on = false;
+    //     return;
+    // }
+
+    // if (dart_on && !last_dart_on) {  // 检测上升沿：dart_on 从 false 变为 true
+    //     buzzer_on(50, 10000);  // 接收到上位机飞镖命令时蜂鸣器响一下
+    //     DART.chassis_move_flag     = 1;
+    //     DART.chassis_done_flag     = 0;
+    //     DART.chassis_ref.angle_ref = 0.0f;
+    //     DART.feed_move_flag        = 0;
+    //     DART.feed_done_flag        = 0;
+    //     DART.feed_step             = 0;
+    //     DART.trans_move_flag       = 0;
+    //     DART.trans_done_flag       = 0;
+    // }
+    // last_dart_on = dart_on;  // 保存当前状态用于下次边缘检测
+
     static bool last_dart_on = false;
-    /* GetScCmdDartOn() 返回 dart.dart_on = target_status（0=丢失 1=识别到）
-     * dart_on=true  → if块直接 STOP return
-     * dart_on=false → 跳过if，继续执行发射序列
-     * 因此需取反：识别到目标(1) → dart_on=false → 发射；丢失(0) → dart_on=true → 停止 */
-    bool dart_on = !GetScCmdDartOn();
+    bool dart_on = GetScCmdDartOn();
 
     if (dart_on) {
         DART.chassis_mode = CHASSIS_STOP;
@@ -445,7 +466,7 @@ void DartMainSendCmd(void)
 {
 
     CanCmdDjiMotor(CHASSIS_CAN,CHASSIS_STD_ID,DART.chassis_motor.set.curr,0,0,0); 
-    CanCmdDjiMotor(DART_CAN,DART_TRANS_STD_ID,0,DART.feed_motor.set.curr, DART.trans_motor.set.curr, 0);
+    CanCmdDjiMotor(DART_CAN,DART_TRANS_STD_ID,0,DART.feed_motor.set.curr, DART.trans_motor.set.curr, 0);//s
 
     ModifyDebugDataPackage(1, DART.chassis_ref.angle_ref, "chas_ref");
     ModifyDebugDataPackage(2, DART.chassis_fdb.angle_fdb, "chas_fdb");

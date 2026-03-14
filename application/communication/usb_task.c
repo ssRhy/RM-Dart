@@ -104,6 +104,7 @@ static SendDataBuff_s        SEND_BUFF_DATA;
 
 // 数据接收结构体
 static ReceiveDataRobotCmd_s RECEIVE_ROBOT_CMD_DATA;
+static ReceiveDataDart_s RECEIVE_DART_DATA;
 static ReceiveDataPidDebug_s RECEIVE_PID_DEBUG_DATA;
 static ReceiveDataVirtualRc_s RECEIVE_VIRTUAL_RC_DATA;
 
@@ -224,6 +225,7 @@ static void UsbInit(void)
     // 数据置零
     memset(&LAST_SEND_TIME, 0, sizeof(LastSendTime_t));
     memset(&RECEIVE_ROBOT_CMD_DATA, 0, sizeof(ReceiveDataRobotCmd_s));
+    memset(&RECEIVE_DART_DATA, 0, sizeof(ReceiveDataDart_s));
     memset(&RECEIVE_PID_DEBUG_DATA, 0, sizeof(ReceiveDataPidDebug_s));
     memset(&RECEIVE_VIRTUAL_RC_DATA, 0, sizeof(ReceiveDataVirtualRc_s));
     memset(&ROBOT_CMD_DATA, 0, sizeof(RobotCmdData_t));
@@ -400,6 +402,13 @@ static void UsbReceiveData(void)
     // 读取数据
     USB_Receive(rx_data_start_address, &len);  // Read data into the buffer
 
+    // DEBUG: 检查是否收到数据
+    if (len > 0) {
+        // 在这里设置断点查看收到的数据
+        // rx_data_start_address[0] 就是第一个字节
+        __nop();  
+    }
+
     while (sof_address <= rx_data_end_address) {  // 解析缓冲区中的所有数据包
         // 寻找帧头位置
         while (*(sof_address) != RECEIVE_SOF && (sof_address <= rx_data_end_address)) {
@@ -420,7 +429,13 @@ static void UsbReceiveData(void)
             if (crc16_ok) {
                 switch (data_id) {
                     case ROBOT_CMD_DATA_RECEIVE_ID: {
-                        memcpy(&RECEIVE_ROBOT_CMD_DATA, sof_address, sizeof(ReceiveDataRobotCmd_s));
+                        if (data_len == 5) {
+                            // 新格式：11字节精简版（Dart数据）
+                            memcpy(&RECEIVE_DART_DATA, sof_address, sizeof(ReceiveDataDart_s));
+                        } else {
+                            // 旧格式：49字节完整版（RobotCmd数据）
+                            memcpy(&RECEIVE_ROBOT_CMD_DATA, sof_address, sizeof(ReceiveDataRobotCmd_s));
+                        }
                     } break;
                     case PID_DEBUG_DATA_RECEIVE_ID: {
                         memcpy(&RECEIVE_PID_DEBUG_DATA, sof_address, sizeof(ReceiveDataPidDebug_s));
@@ -669,7 +684,13 @@ static void GetCmdData(void)
     ROBOT_CMD_DATA.shoot.fire = RECEIVE_ROBOT_CMD_DATA.data.shoot.fire;
     ROBOT_CMD_DATA.shoot.fric_on = RECEIVE_ROBOT_CMD_DATA.data.shoot.fric_on;
 
-    ROBOT_CMD_DATA.dart.dart_on = RECEIVE_ROBOT_CMD_DATA.data.dart.dart_on;
+    // 支持两种格式：11字节精简版(Dart)和49字节完整版(RobotCmd)
+    // 优先使用新格式的 dart_on 数据
+    if (RECEIVE_DART_DATA.data.dart_on != 0 || RECEIVE_DART_DATA.time_stamp > RECEIVE_ROBOT_CMD_DATA.time_stamp) {
+        ROBOT_CMD_DATA.dart.dart_on = RECEIVE_DART_DATA.data.dart_on;
+    } else {
+        ROBOT_CMD_DATA.dart.dart_on = RECEIVE_ROBOT_CMD_DATA.data.dart.dart_on;
+    }
 }
 
 static void GetVirtualRcCtrlData(void)

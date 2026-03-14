@@ -376,6 +376,18 @@ typedef struct RobotCmdData
     uint16_t checksum;
 } __packed__ ReceiveDataRobotCmd_s;
 
+// 飞镖控制数据包
+typedef struct
+{
+    FrameHeader_t frame_header;  // 数据段id = 0x01
+    uint32_t time_stamp;
+    struct
+    {
+        uint8_t dart_on;
+    } __packed__ data;
+    uint16_t checksum;
+} __packed__ ReceiveDataDart_s;
+
 // PID调参数据包
 typedef struct
 {
