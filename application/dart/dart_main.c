@@ -43,6 +43,8 @@ static DartMain_s DART = {
     .trans_done_flag   = 0,
     .trans_last_time   = 0,
     .trans_mode        = TRANS_STOP,
+    .trans_step        = 0,
+    .trans_delay_start = 0,
 };
 
 static fp32 chassis_delta;
@@ -148,6 +150,7 @@ void DartMainSetMode(void)
         DART.feed_step             = 0;
         DART.trans_move_flag       = 0;
         DART.trans_done_flag       = 0;
+        DART.trans_step            = 0;
     }
     last_dart_on = !dart_on;//真正上位机的时候这个给逻辑要改
     
@@ -162,7 +165,7 @@ void DartMainSetMode(void)
         /* 首次进入：设置目标角度（基于当前反馈 + 增量） */
         if (DART.chassis_ref.angle_ref == 0.0f)
         {
-            DART.chassis_ref.angle_ref = theta_format(DART.chassis_fdb.angle_fdb + PI / 3);
+            DART.chassis_ref.angle_ref = theta_format(DART.chassis_fdb.angle_fdb + PI*0);
         }
         DART.chassis_mode = CHASSIS_ANGEL;
     }
@@ -198,7 +201,7 @@ void DartMainSetMode(void)
     }
     else
     {
-        DART.feed_ref.angle_ref = DART.feed_fdb.angle_fdb + 8 * PI/2;//11
+        DART.feed_ref.angle_ref = DART.feed_fdb.angle_fdb + 11 * PI/2;//11
         DART.feed_step          = 1;
         DART.feed_move_flag     = 1;
         DART.feed_mode          = FEED_ANGEL;
@@ -215,6 +218,10 @@ void DartMainSetMode(void)
     {
         DART.trans_mode = TRANS_STOP;
     }
+    else if (DART.trans_step == 2 || DART.trans_step == 4)
+    {
+        DART.trans_mode = TRANS_STOP;
+    }
     else if (DART.trans_move_flag == 1)
     {
         DART.trans_mode = TRANS_ANGEL;
@@ -225,7 +232,8 @@ void DartMainSetMode(void)
     }
     else
     {
-        DART.trans_ref.angle_ref = DART.trans_fdb.angle_fdb + 20 * PI ;
+        DART.trans_ref.angle_ref = DART.trans_fdb.angle_fdb + 2 * PI;
+        DART.trans_step          = 1;
         DART.trans_move_flag     = 1;
         DART.trans_mode          = TRANS_ANGEL;
     }
@@ -331,7 +339,7 @@ void DartMainReference(void)
         else if (DART.feed_step == 4 &&
                  osKernelSysTick() - DART.feed_delay_start >= 3000)
         {
-            DART.feed_ref.angle_ref = DART.feed_fdb.angle_fdb - 3 * PI;//10
+            DART.feed_ref.angle_ref = DART.feed_fdb.angle_fdb - 17 * PI/2;//10
             DART.feed_step          = 5;
             DART.feed_move_flag     = 1;
             DART.feed_mode          = FEED_ANGEL;
@@ -376,6 +384,14 @@ void DartMainReference(void)
     {
     case TRANS_STOP:
         DART.trans_ref.speed_ref = STOP_SPEED;
+        if (DART.trans_step == 2 &&
+            osKernelSysTick() - DART.trans_delay_start >= 3000)
+        {
+            DART.trans_ref.angle_ref = DART.trans_fdb.angle_fdb - 2 * PI;
+            DART.trans_step          = 3;
+            DART.trans_move_flag     = 1;
+            DART.trans_mode          = TRANS_ANGEL;
+        }
         break;
 
     case TRANS_ANGEL:
@@ -385,8 +401,18 @@ void DartMainReference(void)
         }
         else
         {
-            DART.trans_move_flag = 0;
-            DART.trans_done_flag = 1;
+            if (DART.trans_step == 1)
+            {
+                DART.trans_step        = 2;
+                DART.trans_delay_start = osKernelSysTick();
+                DART.trans_mode        = TRANS_STOP;
+                DART.trans_move_flag   = 1;
+            }
+            else
+            {
+                DART.trans_move_flag  = 0;
+                DART.trans_done_flag  = 1;
+            }
         }
         break;
 

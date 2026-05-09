@@ -1,5 +1,0 @@
---cpu Cortex-M4.fp.sp -g --apcs=interwork -I ..\\Inc -I ../Inc
--I.\RTE\_standard_robot
--IC:\Users\mi\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include
---pd "__UVISION_VERSION SETA 536" --pd "_RTE_ SETA 1" --pd "STM32F407xx SETA 1" --pd "_RTE_ SETA 1"
---list startup_stm32f407xx.lst --xref -o standard_tpye_c\startup_stm32f407xx.o --depend standard_tpye_c\startup_stm32f407xx.d "startup_stm32f407xx.s"

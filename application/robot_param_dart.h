@@ -97,7 +97,7 @@
 // Feed motor CAN parameters
 #define FEED_STD_ID (0x200)
 #define FEED_CAN (1)
-#define FEED_DIRECTION (1)//向下
+#define FEED_DIRECTION (-1)//1向下
 
 
 // Chassis motor PID parameters

@@ -102,6 +102,8 @@ typedef struct
     pid_type_def trans_angle_pid;
     uint8_t  trans_move_flag;
     uint8_t  trans_done_flag;
+    uint8_t  trans_step;          // 0=未开始, 1=第一段上升, 2=延时中, 3=第二段下降
+    uint32_t trans_delay_start;   // 第一段到位后记录延时起始 tick
     int16_t  trans_last_ecd;
     int16_t  trans_ecd_count;
     uint32_t trans_time;
