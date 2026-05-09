@@ -35,12 +35,12 @@ static Shoot_s shoot = {
  */
 void DartShootInit(void) 
 { 
-    MotorInit(&shoot.shoot_motor_front[0],1, 1,DJI_M3508, 1, 1.0f, 0);
-    MotorInit(&shoot.shoot_motor_front[1],2, 1,DJI_M3508, 1, 1.0f, 0);
-    MotorInit(&shoot.shoot_motor_mid[0],3, 1,DJI_M3508, 1, 1.0f, 0);
-    MotorInit(&shoot.shoot_motor_mid[1],4, 1,DJI_M3508, 1, 1.0f, 0);
-    MotorInit(&shoot.shoot_motor_rear[0],5, 1,DJI_M3508, 1, 1.0f, 0);
-    MotorInit(&shoot.shoot_motor_rear[1],6, 1,DJI_M3508, 1, 1.0f, 0);
+    MotorInit(&shoot.shoot_motor_front[0],1, SHOOT_CAN,DJI_M3508, 1, 1.0f, 0);
+    MotorInit(&shoot.shoot_motor_front[1],2, SHOOT_CAN,DJI_M3508, 1, 1.0f, 0);
+    MotorInit(&shoot.shoot_motor_mid[0],3, SHOOT_CAN,DJI_M3508, 1, 1.0f, 0);
+    MotorInit(&shoot.shoot_motor_mid[1],4, SHOOT_CAN,DJI_M3508, 1, 1.0f, 0);
+    MotorInit(&shoot.shoot_motor_rear[0],5, SHOOT_CAN,DJI_M3508, 1, 1.0f, 0);
+    MotorInit(&shoot.shoot_motor_rear[1],6, SHOOT_CAN,DJI_M3508, 1, 1.0f, 0);
     const fp32 pid_speed_front[3] = {SHOOT_FRONT_PID_KP, SHOOT_FRONT_PID_KI, SHOOT_FRONT_PID_KD}; 
     const fp32 pid_speed_mid[3] = {SHOOT_MID_PID_KP, SHOOT_MID_PID_KI, SHOOT_MID_PID_KD}; 
     const fp32 pid_speed_rear[3] = {SHOOT_REAR_PID_KP, SHOOT_REAR_PID_KI, SHOOT_REAR_PID_KD}; 

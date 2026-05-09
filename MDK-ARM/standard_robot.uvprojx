@@ -3741,6 +3741,11 @@
               <FileType>1</FileType>
               <FilePath>..\application\dart\dart_main.c</FilePath>
             </File>
+            <File>
+              <FileName>dart_trans.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\dart\dart_trans.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

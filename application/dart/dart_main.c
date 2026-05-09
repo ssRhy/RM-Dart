@@ -198,7 +198,7 @@ void DartMainSetMode(void)
     }
     else
     {
-        DART.feed_ref.angle_ref = DART.feed_fdb.angle_fdb + 11 * PI/2;
+        DART.feed_ref.angle_ref = DART.feed_fdb.angle_fdb + 8 * PI/2;//11
         DART.feed_step          = 1;
         DART.feed_move_flag     = 1;
         DART.feed_mode          = FEED_ANGEL;
@@ -323,7 +323,7 @@ void DartMainReference(void)
         if (DART.feed_step == 2 &&
             osKernelSysTick() - DART.feed_delay_start >= 3000)
         {
-            DART.feed_ref.angle_ref = DART.feed_fdb.angle_fdb + 9 * PI/2;
+            DART.feed_ref.angle_ref = DART.feed_fdb.angle_fdb + 3*PI;//4
             DART.feed_step          = 3;
             DART.feed_move_flag     = 1;
             DART.feed_mode          = FEED_ANGEL;
@@ -331,7 +331,7 @@ void DartMainReference(void)
         else if (DART.feed_step == 4 &&
                  osKernelSysTick() - DART.feed_delay_start >= 3000)
         {
-            DART.feed_ref.angle_ref = DART.feed_fdb.angle_fdb - 10 * PI;
+            DART.feed_ref.angle_ref = DART.feed_fdb.angle_fdb - 3 * PI;//10
             DART.feed_step          = 5;
             DART.feed_move_flag     = 1;
             DART.feed_mode          = FEED_ANGEL;

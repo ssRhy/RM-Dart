@@ -19,8 +19,18 @@
 
 #include "attribute_typedef.h"
 #include "cmsis_os.h"
+
+#if (DART_BOARD_TYPE == DART_BOARD_MAIN)
 #include "dart_main.h"
+#endif
+
+#if (DART_BOARD_TYPE == DART_BOARD_SHOOT)
 #include "dart_shoot.h"
+#endif
+
+#if (DART_BOARD_TYPE == DART_BOARD_TRANS)
+#include "dart_trans.h"
+#endif
   
   #ifndef DART_TASK_INIT_TIME
   #define DART_TASK_INIT_TIME 201
@@ -91,6 +101,9 @@ __weak void DartInit(void)
 #if (DART_BOARD_TYPE == DART_BOARD_SHOOT)
     DartShootInit();
 #endif
+#if (DART_BOARD_TYPE == DART_BOARD_TRANS)
+    TransInit();
+#endif
 }
 __weak void DartHandleException(void)
 {
@@ -113,6 +126,9 @@ __weak void DartObserver(void)
 #if (DART_BOARD_TYPE == DART_BOARD_SHOOT)
     DartShootObserver();
 #endif
+#if (DART_BOARD_TYPE == DART_BOARD_TRANS)
+    TransObserver();
+#endif
 }
 __weak void DartReference(void)
 {
@@ -131,6 +147,9 @@ __weak void DartConsole(void)
 #if (DART_BOARD_TYPE == DART_BOARD_SHOOT)
     DartShootConsole();
 #endif
+#if (DART_BOARD_TYPE == DART_BOARD_TRANS)
+    TransConsole();
+#endif
 }
 __weak void DartSendCmd(void)
 {
@@ -139,6 +158,9 @@ __weak void DartSendCmd(void)
 #endif
 #if (DART_BOARD_TYPE == DART_BOARD_SHOOT)
     DartShootSendCmd();
+#endif
+#if (DART_BOARD_TYPE == DART_BOARD_TRANS)
+    TransSendCmd();
 #endif
 }
 

@@ -21,13 +21,14 @@
 // 飞镖多板配置
 #define DART_BOARD_MAIN    1  // 主控板：负责拨弹(feed) + 横移(trans) + 底盘(chassis)
 #define DART_BOARD_SHOOT   2  // 射击板：负责射击摩擦轮(shoot)
-#define DART_BOARD_TYPE    DART_BOARD_SHOOT  // ← 烧录前在此选择目标板
+#define DART_BOARD_TRANS   3  // 横移板：仅负责横移(trans)电机控制
+#define DART_BOARD_TYPE     DART_BOARD_MAIN  // ← 烧录前在此选择目标板
 
 // 底盘类型选择
 #define CHASSIS_TYPE DART_CHASSIS  // 选择底盘类型为飞镖
 
 // 飞镖电机参数
-#define DART_TRANS_MOTOR_ID 4            // 飞镖电机ID
+#define DART_TRANS_MOTOR_ID 3            // 飞镖电机ID
 #define MOTOR_DART_CAN 1           // 飞镖电机CAN总线
 #define MOTOR_TRANS_TYPE DJI_M3508  // 飞镖电机类型
 #define MOTOR_DART_DIRECTION 1     // 飞镖电机方向
@@ -48,17 +49,21 @@
 #define DART_PID_MAX_IOUT (1000.0f)
 
 //飞镖电机角度环PID
-#define DART_ANGEL_PID_KP (30.0f)
+#define DART_ANGEL_PID_KP (50.0f)
 #define DART_ANGEL_PID_KI (0.05f)
 #define DART_ANGEL_PID_KD (0.05f)
 
 #define DART_ANGEL_PID_MAX_OUT (300.0f)
 #define DART_ANGEL_PID_MAX_IOUT (30.0f)
+
+// Trans 电机参数（与 DART 共用，但独立定义便于区分）
+#define TRANS_DELTA_MAX  2.0f
+
 //飞镖速度限制
-#define DART_SPEED (3.0f)
+#define DART_SPEED (5.0f)
 //飞镖电机标准ID
 #define DART_TRANS_STD_ID (0x200)
-#define TRANS_DIRECTION (-1)
+#define TRANS_DIRECTION (1)//-1向上 1向下
 //飞镖电机CAN总线
 #define DART_CAN (1)
 
@@ -92,7 +97,7 @@
 // Feed motor CAN parameters
 #define FEED_STD_ID (0x200)
 #define FEED_CAN (1)
-#define FEED_DIRECTION (-1)
+#define FEED_DIRECTION (1)//向下
 
 
 // Chassis motor PID parameters
@@ -122,7 +127,7 @@
 #define SHOOT_MOTOR_R_ID    (2)         // 右摩擦轮电机 ID
 
 // 射击电机 CAN 总线及标准帧 ID
-#define SHOOT_CAN           (1)
+#define SHOOT_CAN           (2)
 #define SHOOT_STD_ID_1        (0x200)
 #define SHOOT_STD_ID_2        (0x1FF)
 
