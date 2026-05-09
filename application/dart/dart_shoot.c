@@ -18,7 +18,7 @@
 
 #include "dart_shoot.h"
 
-#if (CHASSIS_TYPE == DART_CHASSIS) && (DART_BOARD_TYPE == DART_BOARD_SHOOT)
+#if (CHASSIS_TYPE == DART_CHASSIS) && (DART_BOARD_TYPE == DART_BOARD_SHOOT || DART_BOARD_TYPE == DART_BOARD_MAIN)
 
 #include "robot_param.h"
 

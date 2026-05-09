@@ -22,6 +22,7 @@
 
 #if (DART_BOARD_TYPE == DART_BOARD_MAIN)
 #include "dart_main.h"
+#include "dart_shoot.h"
 #endif
 
 #if (DART_BOARD_TYPE == DART_BOARD_SHOOT)
@@ -97,6 +98,7 @@ __weak void DartInit(void)
 {
 #if (DART_BOARD_TYPE == DART_BOARD_MAIN)
     DartMainInit();
+    DartShootInit();
 #endif
 #if (DART_BOARD_TYPE == DART_BOARD_SHOOT)
     DartShootInit();
@@ -113,6 +115,7 @@ __weak void DartSetMode(void)
 {
 #if (DART_BOARD_TYPE == DART_BOARD_MAIN)
     DartMainSetMode();
+    DartShootSetMode();
 #endif
 #if (DART_BOARD_TYPE == DART_BOARD_SHOOT)
     DartShootSetMode();
@@ -122,6 +125,7 @@ __weak void DartObserver(void)
 {
 #if (DART_BOARD_TYPE == DART_BOARD_MAIN)
     DartMainObserver();
+    DartShootObserver();
 #endif
 #if (DART_BOARD_TYPE == DART_BOARD_SHOOT)
     DartShootObserver();
@@ -134,6 +138,7 @@ __weak void DartReference(void)
 {
 #if (DART_BOARD_TYPE == DART_BOARD_MAIN)
     DartMainReference();
+    DartShootReference();
 #endif
 #if (DART_BOARD_TYPE == DART_BOARD_SHOOT)
     DartShootReference();
@@ -143,6 +148,7 @@ __weak void DartConsole(void)
 {
 #if (DART_BOARD_TYPE == DART_BOARD_MAIN)
     DartMainConsole();
+    DartShootConsole();
 #endif
 #if (DART_BOARD_TYPE == DART_BOARD_SHOOT)
     DartShootConsole();
@@ -155,6 +161,7 @@ __weak void DartSendCmd(void)
 {
 #if (DART_BOARD_TYPE == DART_BOARD_MAIN)
     DartMainSendCmd();
+    DartShootSendCmd();
 #endif
 #if (DART_BOARD_TYPE == DART_BOARD_SHOOT)
     DartShootSendCmd();
